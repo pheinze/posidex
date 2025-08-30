@@ -118,9 +118,9 @@
 
 <main class="my-8 w-full max-w-4xl mx-auto calculator-wrapper rounded-2xl shadow-2xl p-6 sm:p-8 fade-in">
 
-    <div class="flex justify-between items-center mb-6">
+    <div class="flex flex-wrap justify-between items-center mb-6 gap-y-4">
         <h1 class="text-2xl sm:text-3xl font-bold">{$_('app.title')}</h1>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center flex-wrap justify-end gap-2">
             <select id="preset-loader" class="input-field px-3 py-2 rounded-md text-sm" on:change={handlePresetLoad} bind:value={currentAppState.selectedPreset}>
                 <option value="">{$_('dashboard.presetLoad')}</option>
                 {#each currentAppState.availablePresets as presetName}

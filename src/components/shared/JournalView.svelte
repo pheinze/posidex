@@ -85,7 +85,7 @@
             </tbody>
         </table>
     </div>
-     <div class="flex items-center gap-4 mt-4">
+     <div class="flex items-center flex-wrap gap-4 mt-4">
         <button id="export-csv-btn" class="bg-green-700 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2" title="{$_('journal.exportCsvTitle')}" on:click={app.exportToCSV}>{@html icons.export}<span>{$_('journal.export')}</span></button>
         <input type="file" id="import-csv-input" accept=".csv" class="hidden" on:change={handleImportCsv}/>
         <button id="import-csv-btn" class="bg-blue-700 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2" on:click={() => document.getElementById('import-csv-input')?.click()}>{@html icons.import}<span>{$_('journal.import')}</span></button>
