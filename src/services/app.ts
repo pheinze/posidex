@@ -314,6 +314,7 @@ export const app = {
             atrMultiplier: currentAppState.atrMultiplier,
             symbol: currentAppState.symbol,
             targets: currentAppState.targets,
+            selectedPreset: currentAppState.selectedPreset
         };
     },
     saveSettings: () => {
@@ -349,7 +350,7 @@ export const app = {
                         { price: '', percent: '', isLocked: false },
                         { price: '', percent: '', isLocked: false }
                     ],
-                    // selectedPreset: presetName, // THIS LINE IS REMOVED
+                    selectedPreset: settings.selectedPreset || '',
                 }));
                 toggleAtrInputs(settings.useAtrSl || false);
                 return;
