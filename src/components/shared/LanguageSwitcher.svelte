@@ -1,17 +1,36 @@
 <script lang="ts">
     import { locale, setLocale } from '../../locales/i18n';
-
-    function handleLanguageChange(event: Event) {
-        const newLocale = (event.target as HTMLSelectElement).value;
-        setLocale(newLocale);
-    }
 </script>
 
-<select class="input-field px-3 py-2 rounded-md text-sm" on:change={handleLanguageChange} bind:value={$locale}>
-    <option value="en">English</option>
-    <option value="de">Deutsch</option>
-</select>
+<div class="flex items-center justify-center gap-2">
+    <button
+        class="w-10 h-10 rounded-full flex items-center justify-center text-xl transition-all duration-200"
+        class:border-2={$locale === 'de'}
+        class:border-[var(--accent-color)]={$locale === 'de'}
+        class:border-transparent={$locale !== 'de'}
+        class:opacity-50={$locale !== 'de'}
+        class:hover:opacity-100={$locale !== 'de'}
+        on:click={() => setLocale('de')}
+        title="Deutsch"
+    >
+        🇩🇪
+    </button>
+    <button
+        class="w-10 h-10 rounded-full flex items-center justify-center text-xl transition-all duration-200"
+        class:border-2={$locale === 'en'}
+        class:border-[var(--accent-color)]={$locale === 'en'}
+        class:border-transparent={$locale !== 'en'}
+        class:opacity-50={$locale !== 'en'}
+        class:hover:opacity-100={$locale !== 'en'}
+        on:click={() => setLocale('en')}
+        title="English"
+    >
+        🇬🇧
+    </button>
+</div>
 
 <style>
-    /* Add any specific styling for the language switcher here if needed */
+    button {
+        border-style: solid;
+    }
 </style>

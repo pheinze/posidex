@@ -54,7 +54,7 @@
 </section>
 
 <style>
-    .visual-bar-container { background-color: var(--bg-primary); padding: 2.5rem 1rem 2.5rem 1rem; border-radius: 0.5rem; margin-top: 1.5rem; position: relative; }
+    .visual-bar-container { background-color: var(--bg-primary); padding: 1rem; border-radius: 0.5rem; margin-top: 1.5rem; position: relative; }
     .visual-bar { height: 1.5rem; position: relative; display: flex; border-radius: 0.375rem; overflow: visible; background-color: var(--bg-tertiary); }
     .loss-zone { background-color: var(--danger-color); position: absolute; height: 100%;}
     .gain-zone { background-color: var(--success-color); position: absolute; height: 100%;}

@@ -124,24 +124,22 @@
             <button id="view-journal-btn-mobile" class="text-sm md:hidden bg-[var(--btn-accent-bg)] hover:bg-[var(--btn-accent-hover)] text-[var(--btn-accent-text)] font-bold py-2 px-4 rounded-lg" title="{$_('app.journalButtonTitle')}" on:click={() => uiStore.toggleJournalModal(true)}>{$_('app.journalButton')}</button>
         </div>
         <div class="flex items-center flex-wrap justify-end gap-2 w-full md:w-auto">
-            <div class="flex items-center flex-wrap justify-end gap-2 md:order-1">
-                <select id="preset-loader" class="input-field px-3 py-2 rounded-md text-sm" on:change={handlePresetLoad} bind:value={currentAppState.selectedPreset}>
-                    <option value="">{$_('dashboard.presetLoad')}</option>
-                    {#each currentAppState.availablePresets as presetName}
-                        <option value={presetName}>{presetName}</option>
-                    {/each}
-                </select>
-                <button id="save-preset-btn" class="text-sm bg-[var(--btn-default-bg)] hover:bg-[var(--btn-default-hover-bg)] text-[var(--btn-default-text)] font-bold py-2.5 px-2.5 rounded-lg" title="{$_('dashboard.savePresetTitle')}" aria-label="{$_('dashboard.savePresetAriaLabel')}" on:click={app.savePreset}>{@html icons.save}</button>
-                <button id="delete-preset-btn" class="text-sm bg-[var(--btn-danger-bg)] hover:bg-[var(--btn-danger-hover-bg)] text-[var(--btn-danger-text)] font-bold py-2.5 px-2.5 rounded-lg disabled:cursor-not-allowed" title="{$_('dashboard.deletePresetTitle')}" disabled={!currentAppState.selectedPreset} on:click={app.deletePreset}>{@html icons.delete}</button>
-                <button id="reset-btn" class="text-sm bg-[var(--btn-default-bg)] hover:bg-[var(--btn-default-hover-bg)] text-[var(--btn-default-text)] font-bold py-2.5 px-2.5 rounded-lg flex items-center gap-2" title="{$_('dashboard.resetButtonTitle')}" on:click={resetAllInputs}>{@html icons.broom}</button>
-                <button
-                    id="theme-switcher"
-                    class="text-sm bg-[var(--btn-default-bg)] hover:bg-[var(--btn-default-hover-bg)] text-[var(--btn-default-text)] font-bold py-2 px-2.5 rounded-lg"
-                    aria-label="{$_('dashboard.themeSwitcherAriaLabel')}"
-                    on:click={handleThemeSwitch}
-                    title={themeTitle}>{@html themeIcons[$uiStore.currentTheme as keyof typeof themeIcons]}</button>
-            </div>
-            <button id="view-journal-btn-desktop" class="hidden md:inline-block text-sm bg-[var(--btn-accent-bg)] hover:bg-[var(--btn-accent-hover)] text-[var(--btn-accent-text)] font-bold py-2 px-4 rounded-lg md:order-2" title="{$_('app.journalButtonTitle')}" on:click={() => uiStore.toggleJournalModal(true)}>{$_('app.journalButton')}</button>
+            <button id="view-journal-btn-desktop" class="hidden md:inline-block text-sm bg-[var(--btn-accent-bg)] hover:bg-[var(--btn-accent-hover)] text-[var(--btn-accent-text)] font-bold py-2 px-4 rounded-lg" title="{$_('app.journalButtonTitle')}" on:click={() => uiStore.toggleJournalModal(true)}>{$_('app.journalButton')}</button>
+            <select id="preset-loader" class="input-field px-3 py-2 rounded-md text-sm" on:change={handlePresetLoad} bind:value={currentAppState.selectedPreset}>
+                <option value="">{$_('dashboard.presetLoad')}</option>
+                {#each currentAppState.availablePresets as presetName}
+                    <option value={presetName}>{presetName}</option>
+                {/each}
+            </select>
+            <button id="save-preset-btn" class="text-sm bg-[var(--btn-default-bg)] hover:bg-[var(--btn-default-hover-bg)] text-[var(--btn-default-text)] font-bold py-2.5 px-2.5 rounded-lg" title="{$_('dashboard.savePresetTitle')}" aria-label="{$_('dashboard.savePresetAriaLabel')}" on:click={app.savePreset}>{@html icons.save}</button>
+            <button id="delete-preset-btn" class="text-sm bg-[var(--btn-danger-bg)] hover:bg-[var(--btn-danger-hover-bg)] text-[var(--btn-danger-text)] font-bold py-2.5 px-2.5 rounded-lg disabled:cursor-not-allowed" title="{$_('dashboard.deletePresetTitle')}" disabled={!currentAppState.selectedPreset} on:click={app.deletePreset}>{@html icons.delete}</button>
+            <button id="reset-btn" class="text-sm bg-[var(--btn-default-bg)] hover:bg-[var(--btn-default-hover-bg)] text-[var(--btn-default-text)] font-bold py-2.5 px-2.5 rounded-lg flex items-center gap-2" title="{$_('dashboard.resetButtonTitle')}" on:click={resetAllInputs}>{@html icons.broom}</button>
+            <button
+                id="theme-switcher"
+                class="text-sm bg-[var(--btn-default-bg)] hover:bg-[var(--btn-default-hover-bg)] text-[var(--btn-default-text)] font-bold py-2 px-2.5 rounded-lg"
+                aria-label="{$_('dashboard.themeSwitcherAriaLabel')}"
+                on:click={handleThemeSwitch}
+                title={themeTitle}>{@html themeIcons[$uiStore.currentTheme as keyof typeof themeIcons]}</button>
         </div>
     </div>
 
@@ -236,7 +234,9 @@
                 <button id="show-dashboard-readme-btn" class="font-bold p-3 rounded-lg btn-secondary-action" title="{$_('dashboard.showInstructionsTitle')}" aria-label="{$_('dashboard.showInstructionsAriaLabel')}" on:click={() => app.uiManager.showReadme('dashboard')}>{@html icons.book}</button>
                 {#if $uiStore.showSaveFeedback}<span id="save-feedback" class="save-feedback" class:visible={$uiStore.showSaveFeedback}>{$_('dashboard.savedFeedback')}</span>{/if}
             </div>
-            <LanguageSwitcher />
+            <div class="mt-4">
+                <LanguageSwitcher />
+            </div>
         </footer>
     </section>
 </main>
