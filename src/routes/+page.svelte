@@ -240,7 +240,7 @@
 </main>
 
 <footer class="w-full max-w-4xl mx-auto text-center py-4 text-sm text-gray-500">
-    Version 0.92b - <button class="text-blue-500 hover:underline" on:click={() => uiStore.toggleChangelogModal(true)}>Changelog</button>
+    Version 0.92b - <button class="text-link" on:click={() => uiStore.toggleChangelogModal(true)}>Changelog</button>
 </footer>
 
 <div id="journal-modal" class="modal-overlay" class:visible={$uiStore.showJournalModal} class:opacity-100={$uiStore.showJournalModal}>

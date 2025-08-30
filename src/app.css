@@ -427,3 +427,12 @@ input[type="checkbox"]:checked + .atr-toggle-track::after { transform: translate
     30% { background-color: color-mix(in srgb, var(--accent-color) 50%, var(--bg-tertiary)); }
     100% { background-color: var(--bg-tertiary); }
 }
+
+.text-link {
+  color: var(--accent-color);
+  text-decoration: none;
+}
+
+.text-link:hover {
+  text-decoration: underline;
+}

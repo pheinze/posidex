@@ -14,7 +14,7 @@ export const CONSTANTS = {
     DEFAULT_ATR_MULTIPLIER: '1.5'
 };
 
-export const themes = ['dark', 'light', 'meteor', 'vip', 'matrix', 'dracula', 'solarized-light', 'nord'];
+export const themes = ['dark', 'meteor', 'light', 'vip', 'matrix', 'dracula', 'solarized-light', 'nord'];
 export const themeIcons = {
     dark: '🌙', light: '☀️', meteor: '☄️', vip: '💎', matrix: '💻', dracula: '🧛', 'solarized-light': '📜', nord: '🏔️'
 };

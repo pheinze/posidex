@@ -1,6 +1,6 @@
 {
   "app": {
-    "title": "Trading Dashboard",
+    "title": "Posidex",
     "journalButton": "Journal",
     "changelogTitle": "Changelog",
     "closeChangelogAriaLabel": "Changelog schließen"
