@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { locale, setLocale } from '../../locales/i18n';
+    import { locale, setLocale, _ } from '../../locales/i18n';
 </script>
 
 <div class="flex items-center justify-center gap-2">
@@ -11,7 +11,7 @@
         class:opacity-50={$locale !== 'de'}
         class:hover:opacity-100={$locale !== 'de'}
         on:click={() => setLocale('de')}
-        title="Deutsch"
+        title={$_('languages.german')}
     >
         🇩🇪
     </button>
@@ -23,7 +23,7 @@
         class:opacity-50={$locale !== 'en'}
         class:hover:opacity-100={$locale !== 'en'}
         on:click={() => setLocale('en')}
-        title="English"
+        title={$_('languages.english')}
     >
         🇬🇧
     </button>

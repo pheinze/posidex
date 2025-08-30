@@ -142,5 +142,9 @@
     "title": "Posidex - Trading Positionsgröße & Risikorechner",
     "description": "Posidex ist ein umfassender Trading-Rechner für Positionsgrößenbestimmung, Risikomanagement und Take-Profit-Ziele. Optimiere deine Trades mit Echtzeitberechnungen und visueller Analyse.",
     "keywords": "Trading Rechner, Positionsgröße, Risikomanagement, Take Profit, Krypto Trading, Forex Trading, Aktien Trading, Trading Tools, Finanzrechner, Trade Optimierer"
+  },
+  "languages": {
+    "german": "Deutsch",
+    "english": "Englisch"
   }
 }
