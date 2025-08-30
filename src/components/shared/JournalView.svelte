@@ -1,19 +1,21 @@
 <script lang="ts">
-    import { appStore, journalStore, toggleJournalModal } from '$lib/stores';
-    import { app } from '$lib/app';
-    import { _ } from '$lib/i18n';
-    import { icons, CONSTANTS } from '$lib/constants';
+    import { tradeStore } from '../../stores/tradeStore';
+    import { journalStore } from '../../stores/journalStore';
+    import { uiStore } from '../../stores/uiStore';
+    import { app } from '../../services/app';
+    import { _ } from '../../locales/i18n';
+    import { icons, CONSTANTS } from '../../lib/constants';
     import { onMount } from 'svelte';
     import { browser } from '$app/environment';
-    import { uiManager } from '$lib/uiManager';
+    import { uiManager } from '../../services/uiManager';
     import { get } from 'svelte/store';
-    import { loadInstruction } from '$lib/markdownLoader';
+    import { loadInstruction } from '../../services/markdownLoader';
 
-    let currentAppState = $appStore;
+    let currentAppState = $tradeStore;
     let unsubscribe: () => void;
 
     onMount(() => {
-        unsubscribe = appStore.subscribe(s => currentAppState = s);
+        unsubscribe = tradeStore.subscribe(s => currentAppState = s);
         return () => unsubscribe();
     });
 
@@ -32,7 +34,7 @@
 </script>
 
 <div class="modal-content w-full h-full max-w-6xl">
-     <div class="flex justify-between items-center mb-4"><h2 class="text-2xl font-bold">{$_('journal.title')}</h2><button id="close-journal-btn" class="text-3xl" aria-label="{$_('journal.closeJournalAriaLabel')}" on:click={() => toggleJournalModal(false)}>&times;</button></div>
+     <div class="flex justify-between items-center mb-4"><h2 class="text-2xl font-bold">{$_('journal.title')}</h2><button id="close-journal-btn" class="text-3xl" aria-label="{$_('journal.closeJournalAriaLabel')}" on:click={() => uiStore.toggleJournalModal(false)}>&times;</button></div>
      <div id="journal-stats" class="journal-stats"></div>
      <div class="flex gap-4 my-4"><input type="text" id="journal-search" class="input-field w-full px-3 py-2 rounded-md" placeholder="{$_('journal.searchSymbolPlaceholder')}" bind:value={currentAppState.journalSearchQuery}><select id="journal-filter" class="input-field px-3 py-2 rounded-md" bind:value={currentAppState.journalFilterStatus}><option value="all">{$_('journal.filterAll')}</option><option value="Open">{$_('journal.filterOpen')}</option><option value="Won">{$_('journal.filterWon')}</option><option value="Lost">{$_('journal.filterLost')}</option></select></div>
     <div class="max-h-[calc(100vh-20rem)] overflow-auto">

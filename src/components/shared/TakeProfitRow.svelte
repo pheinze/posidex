@@ -1,8 +1,8 @@
 <script lang="ts">
-    import { icons } from '$lib/constants';
+    import { icons } from '../../lib/constants';
     import { createEventDispatcher } from 'svelte';
-    import { numberInput } from '$lib/inputUtils'; // Import the action
-    import { _ } from '$lib/i18n';
+    import { numberInput } from '../../utils/inputUtils'; // Import the action
+    import { _ } from '../../locales/i18n';
 
     const dispatch = createEventDispatcher();
 

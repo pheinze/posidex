@@ -1,29 +1,31 @@
 <script lang="ts">
-    import GeneralInputs from '$lib/components/GeneralInputs.svelte';
-    import PortfolioInputs from '$lib/components/PortfolioInputs.svelte';
-    import TradeSetupInputs from '$lib/components/TradeSetupInputs.svelte';
-    import TakeProfitTargets from '$lib/components/TakeProfitTargets.svelte';
-    import CustomModal from '$lib/components/CustomModal.svelte';
-    import VisualBar from '$lib/components/VisualBar.svelte';
-    import { CONSTANTS, themes, themeIcons, icons } from '$lib/constants';
-    import { app } from '$lib/app';
-    import { appStore, updateStore, showError, showFeedback, toggleAtrInputs, resetAllInputs, toggleJournalModal, setTheme, initialAppState, journalStore, toggleChangelogModal } from '$lib/stores';
+    import GeneralInputs from '../components/inputs/GeneralInputs.svelte';
+    import PortfolioInputs from '../components/inputs/PortfolioInputs.svelte';
+    import TradeSetupInputs from '../components/inputs/TradeSetupInputs.svelte';
+    import TakeProfitTargets from '../components/inputs/TakeProfitTargets.svelte';
+    import CustomModal from '../components/shared/CustomModal.svelte';
+    import VisualBar from '../components/shared/VisualBar.svelte';
+    import { CONSTANTS, themes, themeIcons, icons } from '../lib/constants';
+    import { app } from '../services/app';
+    import { tradeStore, updateTradeStore, resetAllInputs, toggleAtrInputs } from '../stores/tradeStore';
+    import { journalStore } from '../stores/journalStore';
+    import { uiStore } from '../stores/uiStore';
     import { onMount } from 'svelte';
-    import { _, locale } from '$lib/i18n'; // Import locale
+    import { _, locale } from '../locales/i18n'; // Import locale
     import { get } from 'svelte/store'; // Import get
-    import { loadInstruction } from '$lib/markdownLoader';
+    import { loadInstruction } from '../services/markdownLoader';
     
-    import type { IndividualTpResult } from '$lib/calculator';
-import SummaryResults from '../lib/components/results/SummaryResults.svelte';
-    import LanguageSwitcher from '$lib/components/LanguageSwitcher.svelte';
+    import type { IndividualTpResult } from '../lib/calculator';
+    import SummaryResults from '../components/results/SummaryResults.svelte';
+    import LanguageSwitcher from '../components/shared/LanguageSwitcher.svelte';
 
-        $: currentAppState = $appStore; // Initialize with the current value of the store
+        $: currentAppState = $tradeStore; // Initialize with the current value of the store
     let unsubscribe: () => void; // Declare unsubscribe function
     let changelogContent = '';
 
     // Initialisierung der App-Logik, sobald die Komponente gemountet ist
     onMount(() => {
-        unsubscribe = appStore.subscribe(s => currentAppState = s); // Subscribe to appStore for reactivity
+        unsubscribe = tradeStore.subscribe(s => currentAppState = s); // Subscribe to tradeStore for reactivity
         app.init();
         return () => unsubscribe(); // Unsubscribe on component destroy
     });
@@ -65,35 +67,35 @@ import SummaryResults from '../lib/components/results/SummaryResults.svelte';
     }
 
     function handleTradeSetupError(e: CustomEvent<string>) {
-        showError(e.detail);
+        uiStore.showError(e.detail);
     }
 
     function handleTradeSetupSetLoading(e: CustomEvent<boolean>) {
-        updateStore(s => ({ ...s, isPriceFetching: e.detail }));
+        updateTradeStore(s => ({ ...s, isPriceFetching: e.detail }));
     }
 
     
 
     function handleTargetsChange(event: CustomEvent<Array<{ price: string; percent: string; isLocked: boolean }>>) {
-        updateStore(s => ({ ...s, targets: event.detail }));
+        updateTradeStore(s => ({ ...s, targets: event.detail }));
     }
 
     function handleTpRemove(event: CustomEvent<number>) {
         const index = event.detail;
         const newTargets = currentAppState.targets.filter((_, i) => i !== index);
-        updateStore(s => ({ ...s, targets: newTargets }));
+        updateTradeStore(s => ({ ...s, targets: newTargets }));
         app.adjustTpPercentages(null); // Pass null to signify a removal
     }
 
     function handleThemeSwitch() {
         const currentIndex = themes.indexOf(currentAppState.currentTheme);
         const nextIndex = (currentIndex + 1) % themes.length;
-        setTheme(themes[nextIndex]);
+        uiStore.setTheme(themes[nextIndex]);
     }
 
     // Diese reaktive Variable formatiert den Theme-Namen benutzerfreundlich.
     // z.B. 'solarized-light' wird zu 'Solarized Light'
-    $: themeTitle = $appStore.currentTheme
+    $: themeTitle = $uiStore.currentTheme
         .split('-')
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
         .join(' ');
@@ -101,7 +103,7 @@ import SummaryResults from '../lib/components/results/SummaryResults.svelte';
     function handlePresetLoad(event: Event) {
         const selectedPreset = (event.target as HTMLSelectElement).value;
         app.loadPreset(selectedPreset);
-        updateStore(s => ({ ...s, selectedPreset: selectedPreset }));
+        updateTradeStore(s => ({ ...s, selectedPreset: selectedPreset }));
         app.populatePresetLoader();
     }
 
@@ -133,8 +135,8 @@ import SummaryResults from '../lib/components/results/SummaryResults.svelte';
                 class="text-sm bg-[var(--btn-default-bg)] hover:bg-[var(--btn-default-hover-bg)] text-[var(--btn-default-text)] font-bold py-2 px-2.5 rounded-lg"
                 aria-label="{$_('dashboard.themeSwitcherAriaLabel')}"
                 on:click={handleThemeSwitch}
-                title={themeTitle}>{@html themeIcons[currentAppState.currentTheme as keyof typeof themeIcons]}</button>
-            <button id="view-journal-btn" class="text-sm bg-[var(--btn-accent-bg)] hover:bg-[var(--btn-accent-hover)] text-[var(--btn-accent-text)] font-bold py-2 px-4 rounded-lg" title="{$_('app.journalButtonTitle')}" on:click={() => toggleJournalModal(true)}>{$_('app.journalButton')}</button>
+                title={themeTitle}>{@html themeIcons[$uiStore.currentTheme as keyof typeof themeIcons]}</button>
+            <button id="view-journal-btn" class="text-sm bg-[var(--btn-accent-bg)] hover:bg-[var(--btn-accent-hover)] text-[var(--btn-accent-text)] font-bold py-2 px-4 rounded-lg" title="{$_('app.journalButtonTitle')}" on:click={() => uiStore.toggleJournalModal(true)}>{$_('app.journalButton')}</button>
         </div>
     </div>
 
@@ -159,9 +161,9 @@ import SummaryResults from '../lib/components/results/SummaryResults.svelte';
             
             on:fetchPrice={() => app.handleFetchPrice()}
             on:toggleAtrInputs={(e) => toggleAtrInputs(e.detail)}
-            on:updateSymbolSuggestions={(e) => updateStore(s => ({ ...s, symbolSuggestions: e.detail, showSymbolSuggestions: e.detail.length > 0 }))}
+            on:updateSymbolSuggestions={(e) => updateTradeStore(s => ({ ...s, symbolSuggestions: e.detail, showSymbolSuggestions: e.detail.length > 0 }))}
             on:selectSymbolSuggestion={(e) => {
-                updateStore(s => ({ ...s, symbol: e.detail, showSymbolSuggestions: false }));
+                updateTradeStore(s => ({ ...s, symbol: e.detail, showSymbolSuggestions: false }));
                 app.handleFetchPrice();
             }}
             atrFormulaDisplay={currentAppState.atrFormulaText}
@@ -174,22 +176,22 @@ import SummaryResults from '../lib/components/results/SummaryResults.svelte';
 
     <TakeProfitTargets bind:targets={currentAppState.targets} on:change={handleTargetsChange} on:remove={handleTpRemove} calculatedTpDetails={currentAppState.calculatedTpDetails} />
 
-    {#if currentAppState.showErrorMessage}
-        <div id="error-message" class="text-[var(--danger-color)] text-center text-sm font-medium mt-4 md:col-span-2">{$_(currentAppState.errorMessage)}</div>
+    {#if $uiStore.showErrorMessage}
+        <div id="error-message" class="text-[var(--danger-color)] text-center text-sm font-medium mt-4 md:col-span-2">{$_($uiStore.errorMessage)}</div>
     {/if}
 
     <section id="results" class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-x-8">
         <div>
             <SummaryResults
                 isPositionSizeLocked={currentAppState.isPositionSizeLocked}
-                showCopyFeedback={currentAppState.showCopyFeedback}
+                showCopyFeedback={$uiStore.showCopyFeedback}
                 positionSize={currentAppState.positionSize}
                 netLoss={currentAppState.netLoss}
                 requiredMargin={currentAppState.requiredMargin}
                 liquidationPrice={currentAppState.liquidationPrice}
                 breakEvenPrice={currentAppState.breakEvenPrice}
                 on:toggleLock={() => app.togglePositionSizeLock()}
-                on:copy={() => showFeedback('copy')}
+                on:copy={() => uiStore.showFeedback('copy')}
             />
             {#if currentAppState.showTotalMetricsGroup}
                 <div id="total-metrics-group" class="result-group">
@@ -227,7 +229,7 @@ import SummaryResults from '../lib/components/results/SummaryResults.svelte';
             <div class="flex items-center gap-4">
                 <button id="save-journal-btn" class="w-full font-bold py-3 px-4 rounded-lg btn-primary-action" on:click={app.addTrade} disabled={currentAppState.positionSize === '-'}>{$_('dashboard.addTradeToJournal')}</button>
                 <button id="show-dashboard-readme-btn" class="font-bold p-3 rounded-lg btn-secondary-action" title="{$_('dashboard.showInstructionsTitle')}" aria-label="{$_('dashboard.showInstructionsAriaLabel')}" on:click={() => app.uiManager.showReadme('dashboard')}>{@html icons.book}</button>
-                {#if currentAppState.showSaveFeedback}<span id="save-feedback" class="save-feedback" class:visible={currentAppState.showSaveFeedback}>{$_('dashboard.savedFeedback')}</span>{/if}
+                {#if $uiStore.showSaveFeedback}<span id="save-feedback" class="save-feedback" class:visible={$uiStore.showSaveFeedback}>{$_('dashboard.savedFeedback')}</span>{/if}
             </div>
             <LanguageSwitcher />
         </footer>
@@ -235,12 +237,12 @@ import SummaryResults from '../lib/components/results/SummaryResults.svelte';
 </main>
 
 <footer class="w-full max-w-4xl mx-auto text-center py-4 text-sm text-gray-500">
-    Version 0.92b - <button class="text-blue-500 hover:underline" on:click={() => toggleChangelogModal(true)}>Changelog</button>
+    Version 0.92b - <button class="text-blue-500 hover:underline" on:click={() => uiStore.toggleChangelogModal(true)}>Changelog</button>
 </footer>
 
-<div id="journal-modal" class="modal-overlay" class:visible={currentAppState.showJournalModal} class:opacity-100={currentAppState.showJournalModal}>
+<div id="journal-modal" class="modal-overlay" class:visible={$uiStore.showJournalModal} class:opacity-100={$uiStore.showJournalModal}>
     <div class="modal-content w-full h-full max-w-6xl">
-         <div class="flex justify-between items-center mb-4"><h2 class="text-2xl font-bold">{$_('journal.title')}</h2><button id="close-journal-btn" class="text-3xl" aria-label="{$_('journal.closeJournalAriaLabel')}" on:click={() => toggleJournalModal(false)}>&times;</button></div>
+         <div class="flex justify-between items-center mb-4"><h2 class="text-2xl font-bold">{$_('journal.title')}</h2><button id="close-journal-btn" class="text-3xl" aria-label="{$_('journal.closeJournalAriaLabel')}" on:click={() => uiStore.toggleJournalModal(false)}>&times;</button></div>
          <div id="journal-stats" class="journal-stats"></div>
          <div class="flex gap-4 my-4"><input type="text" id="journal-search" class="input-field w-full px-3 py-2 rounded-md" placeholder="{$_('journal.searchSymbolPlaceholder')}" bind:value={currentAppState.journalSearchQuery}><select id="journal-filter" class="input-field px-3 py-2 rounded-md" bind:value={currentAppState.journalFilterStatus}><option value="all">{$_('journal.filterAll')}</option><option value="Open">{$_('journal.filterOpen')}</option><option value="Won">{$_('journal.filterWon')}</option><option value="Lost">{$_('journal.filterLost')}</option></select></div>
         <div class="max-h-[calc(100vh-20rem)] overflow-auto">
@@ -303,11 +305,11 @@ import SummaryResults from '../lib/components/results/SummaryResults.svelte';
 
 <CustomModal />
 
-<div id="changelog-modal" class="modal-overlay" class:visible={currentAppState.showChangelogModal} class:opacity-100={currentAppState.showChangelogModal}>
+<div id="changelog-modal" class="modal-overlay" class:visible={$uiStore.showChangelogModal} class:opacity-100={$uiStore.showChangelogModal}>
     <div class="modal-content w-full h-full max-w-6xl">
         <div class="flex justify-between items-center mb-4">
             <h2 class="text-2xl font-bold">{$_('app.changelogTitle')}</h2>
-            <button id="close-changelog-btn" class="text-3xl" aria-label="{$_('app.closeChangelogAriaLabel')}" on:click={() => toggleChangelogModal(false)}>&times;</button>
+            <button id="close-changelog-btn" class="text-3xl" aria-label="{$_('app.closeChangelogAriaLabel')}" on:click={() => uiStore.toggleChangelogModal(false)}>&times;</button>
         </div>
         <div id="changelog-content" class="prose dark:prose-invert max-h-[calc(100vh-10rem)] overflow-y-auto">
             {@html changelogContent}

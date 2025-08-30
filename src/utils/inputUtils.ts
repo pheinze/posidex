@@ -1,4 +1,3 @@
-
 export function numberInput(node: HTMLInputElement, options: { decimalPlaces: number, isPercentage?: boolean }) {
     const { decimalPlaces, isPercentage = false } = options;
 

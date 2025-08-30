@@ -1,21 +1,16 @@
 <script lang="ts">
-	import favicon from '$lib/assets/favicon.svg';
-	import { appStore, updateStore } from '$lib/stores'; // Import appStore and updateStore
-	import { onMount } from 'svelte'; // Import onMount
+	import favicon from '../assets/favicon.svg';
+	import { tradeStore, updateTradeStore } from '../stores/tradeStore';
+	import { uiStore } from '../stores/uiStore';
+	import { onMount } from 'svelte';
 
-	let { children, data } = $props(); // Destructure data prop
+	let { children, data } = $props();
 
-	import '../app.css'; // Importiere die globale CSS-Datei
-
-	// The theme class is now applied server-side by src/hooks.server.ts
-	// No need for client-side manipulation here.
+	import '../app.css';
 
 	onMount(() => {
-        appStore.set(data.initialAppState); // Set initial state from server
-		// Update the appStore's currentTheme with the server-rendered theme
-		// This ensures the client-side store (and thus the theme switcher icon)
-		// reflects the correct theme on initial load.
-		updateStore(s => ({ ...s, currentTheme: data.theme }));
+		tradeStore.set(data.initialAppState);
+		uiStore.setTheme(data.theme);
 	});
 </script>
 

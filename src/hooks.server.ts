@@ -1,6 +1,6 @@
 import { sequence } from '@sveltejs/kit/hooks';
 import type { Handle } from '@sveltejs/kit';
-import { CONSTANTS } from '$lib/constants';
+import { CONSTANTS } from './lib/constants';
 
 const themeHandler: Handle = async ({ event, resolve }) => {
     const theme = event.cookies.get(CONSTANTS.LOCAL_STORAGE_THEME_KEY) || 'dark';

@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { locale, setLocale } from '$lib/i18n';
+    import { locale, setLocale } from '../../locales/i18n';
 
     function handleLanguageChange(event: Event) {
         const newLocale = (event.target as HTMLSelectElement).value;
