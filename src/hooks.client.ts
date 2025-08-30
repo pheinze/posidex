@@ -1,1 +1,1 @@
-import './lib/i18n';
+import './locales/i18n';
