@@ -105,6 +105,9 @@ export const toggleAtrInputs = (useAtrSl: boolean) => {
 
 // Helper function to reset all inputs
 export const resetAllInputs = () => {
-    tradeStore.set(initialAppState);
+    tradeStore.update(state => ({
+        ...initialAppState,
+        availablePresets: state.availablePresets
+    }));
     clearResults(true);
 };

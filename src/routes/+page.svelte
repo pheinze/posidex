@@ -103,8 +103,6 @@
     function handlePresetLoad(event: Event) {
         const selectedPreset = (event.target as HTMLSelectElement).value;
         app.loadPreset(selectedPreset);
-        updateTradeStore(s => ({ ...s, selectedPreset: selectedPreset }));
-        app.populatePresetLoader();
     }
 
     function handleImportCsv(event: Event) {

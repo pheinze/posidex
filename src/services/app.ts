@@ -58,6 +58,8 @@ export const app = {
             app.loadSettings();
             app.populatePresetLoader();
             app.calculateAndDisplay();
+            // Explicitly save settings after initial load to persist the loaded selectedPreset
+            app.saveSettings();
         }
     },
 
