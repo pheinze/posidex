@@ -1,5 +1,5 @@
 import { marked } from 'marked';
-import { locale } from './i18n';
+import { locale } from '../locales/i18n';
 import { get } from 'svelte/store';
 
 interface InstructionContent {
@@ -14,8 +14,8 @@ export async function loadInstruction(name: 'dashboard' | 'journal' | 'changelog
     try {
         // Dynamically import the markdown file content
         // Vite/SvelteKit handles this import.meta.glob for static assets
-        const modules = import.meta.glob('/src/lib/instructions/*.md', { query: '?raw', import: 'default' });
-        const modulePath = `/src/lib${filePath}`;
+        const modules = import.meta.glob('/src/instructions/*.md', { query: '?raw', import: 'default' });
+        const modulePath = `/src${filePath}`;
         
         if (!modules[modulePath]) {
             throw new Error(`Markdown file not found: ${modulePath}`);

@@ -31,7 +31,7 @@
     });
 
     // Load changelog content when modal is opened
-    $: if (currentAppState.showChangelogModal && changelogContent === '') {
+    $: if ($uiStore.showChangelogModal && changelogContent === '') {
         loadInstruction('changelog').then(content => {
             changelogContent = content.html;
         });
@@ -88,7 +88,7 @@
     }
 
     function handleThemeSwitch() {
-        const currentIndex = themes.indexOf(currentAppState.currentTheme);
+        const currentIndex = themes.indexOf($uiStore.currentTheme);
         const nextIndex = (currentIndex + 1) % themes.length;
         uiStore.setTheme(themes[nextIndex]);
     }

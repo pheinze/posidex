@@ -1,10 +1,10 @@
-import { CONSTANTS, themes, themeIcons } from './constants';
-import { parseDecimal } from './utils';
+import { CONSTANTS, themes, themeIcons } from '../lib/constants';
+import { parseDecimal } from '../utils/utils';
 import { modalManager } from './modalManager';
-import { calculator } from './calculator';
+import { calculator } from '../lib/calculator';
 import { Decimal } from 'decimal.js';
 import { loadInstruction } from './markdownLoader';
-import { _ } from './i18n';
+import { _ } from '../locales/i18n';
 import { get } from 'svelte/store';
 
 interface VisualBarContentItem {
