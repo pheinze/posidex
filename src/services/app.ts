@@ -368,8 +368,11 @@ export const app = {
             presets[presetName] = app.getInputsAsObject();
             localStorage.setItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY, JSON.stringify(presets));
             uiStore.showFeedback('save');
-            app.populatePresetLoader();
-            updateTradeStore(state => ({ ...state, selectedPreset: presetName }));
+            updateTradeStore(state => ({
+                ...state,
+                availablePresets: Object.keys(presets),
+                selectedPreset: presetName
+            }));
         } catch (e) {
             console.error("Fehler beim Speichern des Presets:", e);
             uiStore.showError("Preset konnte nicht gespeichert werden. Der lokale Speicher ist möglicherweise voll oder blockiert.");
@@ -385,8 +388,11 @@ export const app = {
             const presets = JSON.parse(localStorage.getItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY) || '{}');
             delete presets[presetName];
             localStorage.setItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY, JSON.stringify(presets));
-            app.populatePresetLoader();
-            updateTradeStore(state => ({ ...state, selectedPreset: '' }));
+            updateTradeStore(state => ({
+                ...state,
+                availablePresets: Object.keys(presets),
+                selectedPreset: ''
+            }));
         } catch (e) { uiStore.showError("Preset konnte nicht gelöscht werden."); }
     },
     loadPreset: (presetName: string) => {
