@@ -118,9 +118,13 @@
 
 <main class="my-8 w-full max-w-4xl mx-auto calculator-wrapper rounded-2xl shadow-2xl p-6 sm:p-8 fade-in">
 
-    <div class="flex flex-wrap justify-between items-center mb-6 gap-y-4">
-        <h1 class="text-2xl sm:text-3xl font-bold">{$_('app.title')}</h1>
-        <div class="flex items-center flex-wrap justify-end gap-2">
+    <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
+        <div class="flex justify-between items-center w-full md:w-auto">
+            <h1 class="text-2xl sm:text-3xl font-bold">{$_('app.title')}</h1>
+            <button id="view-journal-btn-mobile" class="text-sm md:hidden bg-[var(--btn-accent-bg)] hover:bg-[var(--btn-accent-hover)] text-[var(--btn-accent-text)] font-bold py-2 px-4 rounded-lg" title="{$_('app.journalButtonTitle')}" on:click={() => uiStore.toggleJournalModal(true)}>{$_('app.journalButton')}</button>
+        </div>
+        <div class="flex items-center flex-wrap justify-end gap-2 w-full md:w-auto">
+            <button id="view-journal-btn-desktop" class="hidden md:inline-block text-sm bg-[var(--btn-accent-bg)] hover:bg-[var(--btn-accent-hover)] text-[var(--btn-accent-text)] font-bold py-2 px-4 rounded-lg" title="{$_('app.journalButtonTitle')}" on:click={() => uiStore.toggleJournalModal(true)}>{$_('app.journalButton')}</button>
             <select id="preset-loader" class="input-field px-3 py-2 rounded-md text-sm" on:change={handlePresetLoad} bind:value={currentAppState.selectedPreset}>
                 <option value="">{$_('dashboard.presetLoad')}</option>
                 {#each currentAppState.availablePresets as presetName}
@@ -136,7 +140,6 @@
                 aria-label="{$_('dashboard.themeSwitcherAriaLabel')}"
                 on:click={handleThemeSwitch}
                 title={themeTitle}>{@html themeIcons[$uiStore.currentTheme as keyof typeof themeIcons]}</button>
-            <button id="view-journal-btn" class="text-sm bg-[var(--btn-accent-bg)] hover:bg-[var(--btn-accent-hover)] text-[var(--btn-accent-text)] font-bold py-2 px-4 rounded-lg" title="{$_('app.journalButtonTitle')}" on:click={() => uiStore.toggleJournalModal(true)}>{$_('app.journalButton')}</button>
         </div>
     </div>
 
