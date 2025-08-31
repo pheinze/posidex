@@ -1,12 +1,12 @@
 {
   ".svelte-kit/generated/client-optimized/app.js": {
-    "file": "_app/immutable/entry/app.DHaii5R9.js",
+    "file": "_app/immutable/entry/app.B_xdIPu3.js",
     "name": "entry/app",
     "src": ".svelte-kit/generated/client-optimized/app.js",
     "isEntry": true,
     "imports": [
-      "_CPiIxmvj.js",
-      "_DFAaWNzm.js",
+      "_G4WxTAMN.js",
+      "_NkhEIytD.js",
       "_DsnmJJEf.js"
     ],
     "dynamicImports": [
@@ -16,137 +16,137 @@
     ]
   },
   ".svelte-kit/generated/client-optimized/nodes/0.js": {
-    "file": "_app/immutable/nodes/0.DBBP4kJ1.js",
+    "file": "_app/immutable/nodes/0.RsOc149r.js",
     "name": "nodes/0",
     "src": ".svelte-kit/generated/client-optimized/nodes/0.js",
     "isEntry": true,
     "isDynamicEntry": true,
     "imports": [
       "_DsnmJJEf.js",
-      "_DFAaWNzm.js",
-      "_CM4uSmwo.js"
+      "_NkhEIytD.js",
+      "_DPmpeZiJ.js"
     ],
     "css": [
-      "_app/immutable/assets/0.DtB1XLPx.css"
+      "_app/immutable/assets/0.DWZ1zkS_.css"
     ]
   },
   ".svelte-kit/generated/client-optimized/nodes/1.js": {
-    "file": "_app/immutable/nodes/1.DhCUaOpw.js",
+    "file": "_app/immutable/nodes/1.BVhN4tuz.js",
     "name": "nodes/1",
     "src": ".svelte-kit/generated/client-optimized/nodes/1.js",
     "isEntry": true,
     "isDynamicEntry": true,
     "imports": [
       "_DsnmJJEf.js",
-      "_CCwjE8Ld.js",
-      "_DFAaWNzm.js",
-      "_BxkLBzAw.js"
+      "_cKqHS28b.js",
+      "_NkhEIytD.js",
+      "_4gaBXyzE.js"
     ]
   },
   ".svelte-kit/generated/client-optimized/nodes/2.js": {
-    "file": "_app/immutable/nodes/2.BizqdVOW.js",
+    "file": "_app/immutable/nodes/2.DQ7Z1FzQ.js",
     "name": "nodes/2",
     "src": ".svelte-kit/generated/client-optimized/nodes/2.js",
     "isEntry": true,
     "isDynamicEntry": true,
     "imports": [
       "_DsnmJJEf.js",
-      "_CCwjE8Ld.js",
-      "_DFAaWNzm.js",
-      "_CPiIxmvj.js",
-      "_CM4uSmwo.js"
+      "_cKqHS28b.js",
+      "_NkhEIytD.js",
+      "_G4WxTAMN.js",
+      "_DPmpeZiJ.js"
     ],
     "dynamicImports": [
-      "src/instructions/changelog.de.md?raw",
-      "src/instructions/changelog.en.md?raw",
-      "src/instructions/dashboard.de.md?raw",
-      "src/instructions/dashboard.en.md?raw",
-      "src/instructions/journal.de.md?raw",
-      "src/instructions/journal.en.md?raw"
+      "src/lib/instructions/changelog.de.md?raw",
+      "src/lib/instructions/changelog.en.md?raw",
+      "src/lib/instructions/dashboard.de.md?raw",
+      "src/lib/instructions/dashboard.en.md?raw",
+      "src/lib/instructions/journal.de.md?raw",
+      "src/lib/instructions/journal.en.md?raw"
     ],
     "css": [
-      "_app/immutable/assets/2.BpdoRalt.css"
+      "_app/immutable/assets/2.DBfLDQfX.css"
     ]
   },
-  "_BxkLBzAw.js": {
-    "file": "_app/immutable/chunks/BxkLBzAw.js",
+  "_4gaBXyzE.js": {
+    "file": "_app/immutable/chunks/4gaBXyzE.js",
     "name": "entry",
     "imports": [
-      "_DFAaWNzm.js"
+      "_NkhEIytD.js"
     ]
   },
-  "_CCwjE8Ld.js": {
-    "file": "_app/immutable/chunks/CCwjE8Ld.js",
-    "name": "legacy",
+  "_DPmpeZiJ.js": {
+    "file": "_app/immutable/chunks/DPmpeZiJ.js",
+    "name": "stores",
     "imports": [
-      "_DFAaWNzm.js"
+      "_NkhEIytD.js"
     ]
-  },
-  "_CM4uSmwo.js": {
-    "file": "_app/immutable/chunks/CM4uSmwo.js",
-    "name": "tradeStore",
-    "imports": [
-      "_DFAaWNzm.js"
-    ]
-  },
-  "_CPiIxmvj.js": {
-    "file": "_app/immutable/chunks/CPiIxmvj.js",
-    "name": "i18n",
-    "imports": [
-      "_DFAaWNzm.js"
-    ]
-  },
-  "_DFAaWNzm.js": {
-    "file": "_app/immutable/chunks/DFAaWNzm.js",
-    "name": "index-client"
   },
   "_DsnmJJEf.js": {
     "file": "_app/immutable/chunks/DsnmJJEf.js",
     "name": "disclose-version"
   },
+  "_G4WxTAMN.js": {
+    "file": "_app/immutable/chunks/G4WxTAMN.js",
+    "name": "i18n",
+    "imports": [
+      "_NkhEIytD.js"
+    ]
+  },
+  "_NkhEIytD.js": {
+    "file": "_app/immutable/chunks/NkhEIytD.js",
+    "name": "index-client"
+  },
+  "_cKqHS28b.js": {
+    "file": "_app/immutable/chunks/cKqHS28b.js",
+    "name": "legacy",
+    "imports": [
+      "_NkhEIytD.js"
+    ]
+  },
   "node_modules/@sveltejs/kit/src/runtime/client/entry.js": {
-    "file": "_app/immutable/entry/start.Cyme4SlU.js",
+    "file": "_app/immutable/entry/start.DxoYqcl6.js",
     "name": "entry/start",
     "src": "node_modules/@sveltejs/kit/src/runtime/client/entry.js",
     "isEntry": true,
     "imports": [
-      "_BxkLBzAw.js"
+      "_4gaBXyzE.js"
     ]
   },
-  "src/instructions/changelog.de.md?raw": {
-    "file": "_app/immutable/chunks/BfzYUEuP.js",
+  "src/lib/instructions/changelog.de.md?raw": {
+    "file": "_app/immutable/chunks/3mDhsH5b.js",
     "name": "changelog.de",
-    "src": "src/instructions/changelog.de.md?raw",
+    "src": "src/lib/instructions/changelog.de.md?raw",
     "isDynamicEntry": true
   },
-  "src/instructions/changelog.en.md?raw": {
-    "file": "_app/immutable/chunks/D_GJU2op.js",
+  "src/lib/instructions/changelog.en.md?raw": {
+    "file": "_app/immutable/chunks/DoBREwaw.js",
     "name": "changelog.en",
-    "src": "src/instructions/changelog.en.md?raw",
+    "src": "src/lib/instructions/changelog.en.md?raw",
     "isDynamicEntry": true
   },
-  "src/instructions/dashboard.de.md?raw": {
+  "src/lib/instructions/dashboard.de.md?raw": {
     "file": "_app/immutable/chunks/DVOM6Yl5.js",
     "name": "dashboard.de",
-    "src": "src/instructions/dashboard.de.md?raw",
+    "src": "src/lib/instructions/dashboard.de.md?raw",
     "isDynamicEntry": true
   },
-  "src/instructions/dashboard.en.md?raw": {
+  "src/lib/instructions/dashboard.en.md?raw": {
     "file": "_app/immutable/chunks/DEVCXaag.js",
     "name": "dashboard.en",
-    "src": "src/instructions/dashboard.en.md?raw",
+    "src": "src/lib/instructions/dashboard.en.md?raw",
     "isDynamicEntry": true
   },
-  "src/instructions/journal.de.md?raw": {
+  "src/lib/instructions/journal.de.md?raw": {
     "file": "_app/immutable/chunks/CA_rnUQW.js",
     "name": "journal.de",
-    "src": "src/instructions/journal.de.md?raw",
+    "src": "src/lib/instructions/journal.de.md?raw",
     "isDynamicEntry": true
   },
-  "src/instructions/journal.en.md?raw": {
+  "src/lib/instructions/journal.en.md?raw": {
     "file": "_app/immutable/chunks/DYg12FaZ.js",
     "name": "journal.en",
-    "src": "src/instructions/journal.en.md?raw",
+    "src": "src/lib/instructions/journal.en.md?raw",
     "isDynamicEntry": true
   }
 }

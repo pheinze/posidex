@@ -8,7 +8,7 @@ import { calculator } from '../lib/calculator';
 import { tradeStore, updateTradeStore, clearResults, resetAllInputs, toggleAtrInputs } from '../stores/tradeStore';
 import { journalStore } from '../stores/journalStore';
 import { uiStore } from '../stores/uiStore';
-import { presetStore } from '../stores/presetStore';
+import { availablePresets, selectedPreset, savePreset, deletePreset, loadPreset, updateAvailablePresets } from '../stores/presetStore';
 import type { TradeValues, IndividualTpResult } from '../lib/calculator';
 import type { AppState, JournalEntry } from '../stores/types';
 import { Decimal } from 'decimal.js';
@@ -54,7 +54,7 @@ export const app = {
     init: () => {
         if (browser) {
             app.loadSettings();
-            presetStore.loadPresets();
+            updateAvailablePresets();
             app.calculateAndDisplay();
         }
     },
@@ -347,7 +347,6 @@ export const app = {
                         { price: '', percent: '', isLocked: false },
                         { price: '', percent: '', isLocked: false }
                     ],
-                    // selectedPreset: presetName, // THIS LINE IS REMOVED
                 }));
                 toggleAtrInputs(settings.useAtrSl || false);
                 return;
@@ -356,9 +355,30 @@ export const app = {
             console.warn("Could not load settings from localStorage.", e);
         }
     },
-    savePreset: () => presetStore.saveCurrentPreset(),
-    deletePreset: () => presetStore.deleteSelectedPreset(),
-    loadPreset: (presetName: string) => presetStore.loadPreset(presetName),
+    savePreset: async () => {
+        const presetName = await modalManager.show("Preset speichern", "Geben Sie einen Namen für Ihr Preset ein:", "prompt");
+        if (!presetName) return;
+
+        const presets = get(availablePresets);
+        if (presets.includes(presetName)) {
+            const overwrite = await modalManager.show("Überschreiben?", `Preset \"${presetName}\" existiert bereits. Möchten Sie es überschreiben?`, "confirm");
+            if (!overwrite) return;
+        }
+
+        savePreset(presetName);
+        uiStore.showFeedback('save');
+    },
+    deletePreset: async () => {
+        const presetName = get(selectedPreset);
+        if (!presetName) return;
+
+        if (await modalManager.show("Preset löschen", `Preset \"${presetName}\" wirklich löschen?`, "confirm")) {
+            deletePreset(presetName);
+        }
+    },
+    loadPreset: (presetName: string) => {
+        loadPreset(presetName);
+    },
     exportToCSV: () => {
         if (!browser) return;
         const journalData = get(journalStore);

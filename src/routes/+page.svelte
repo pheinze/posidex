@@ -10,7 +10,7 @@
     import { tradeStore, updateTradeStore, resetAllInputs, toggleAtrInputs } from '../stores/tradeStore';
     import { journalStore } from '../stores/journalStore';
     import { uiStore } from '../stores/uiStore';
-    import { presetStore } from '../stores/presetStore';
+    import { availablePresets, selectedPreset } from '../stores/presetStore';
     import { onMount } from 'svelte';
     import { _, locale } from '../locales/i18n';
     import { get } from 'svelte/store';
@@ -55,6 +55,11 @@
         }
     }
 
+    // Reactive statement to load a preset when the selection changes
+    $: if ($selectedPreset) {
+        app.loadPreset($selectedPreset);
+    }
+
     function handleTradeSetupError(e: CustomEvent<string>) {
         uiStore.showError(e.detail);
     }
@@ -62,8 +67,6 @@
     function handleTradeSetupSetLoading(e: CustomEvent<boolean>) {
         updateTradeStore(s => ({ ...s, isPriceFetching: e.detail }));
     }
-
-    
 
     function handleTargetsChange(event: CustomEvent<Array<{ price: string; percent: string; isLocked: boolean }>>) {
         updateTradeStore(s => ({ ...s, targets: event.detail }));
@@ -82,17 +85,11 @@
         uiStore.setTheme(themes[nextIndex]);
     }
 
-    // Diese reaktive Variable formatiert den Theme-Namen benutzerfreundlich.
-    // z.B. 'solarized-light' wird zu 'Solarized Light'
+    // This reactive variable formats the theme name for display
     $: themeTitle = $uiStore.currentTheme
         .split('-')
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
         .join(' ');
-
-    function handlePresetLoad(event: Event) {
-        const selectedPreset = (event.target as HTMLSelectElement).value;
-        presetStore.loadPreset(selectedPreset);
-    }
 
     function handleImportCsv(event: Event) {
         const file = (event.target as HTMLInputElement).files?.[0];
@@ -112,14 +109,14 @@
         </div>
         <div class="flex items-center flex-wrap justify-end gap-2 w-full md:w-auto">
             <div class="flex items-center flex-wrap justify-end gap-2 md:order-1">
-                <select id="preset-loader" class="input-field px-3 py-2 rounded-md text-sm" on:change={handlePresetLoad} bind:value={$presetStore.selectedPreset}>
+                <select id="preset-loader" class="input-field px-3 py-2 rounded-md text-sm" bind:value={$selectedPreset}>
                     <option value="">{$_('dashboard.presetLoad')}</option>
-                    {#each $presetStore.availablePresets as presetName}
+                    {#each $availablePresets as presetName}
                         <option value={presetName}>{presetName}</option>
                     {/each}
                 </select>
                 <button id="save-preset-btn" class="text-sm bg-[var(--btn-default-bg)] hover:bg-[var(--btn-default-hover-bg)] text-[var(--btn-default-text)] font-bold py-2.5 px-2.5 rounded-lg" title="{$_('dashboard.savePresetTitle')}" aria-label="{$_('dashboard.savePresetAriaLabel')}" on:click={app.savePreset}>{@html icons.save}</button>
-                <button id="delete-preset-btn" class="text-sm bg-[var(--btn-danger-bg)] hover:bg-[var(--btn-danger-hover-bg)] text-[var(--btn-danger-text)] font-bold py-2.5 px-2.5 rounded-lg disabled:cursor-not-allowed" title="{$_('dashboard.deletePresetTitle')}" disabled={!$presetStore.selectedPreset} on:click={app.deletePreset}>{@html icons.delete}</button>
+                <button id="delete-preset-btn" class="text-sm bg-[var(--btn-danger-bg)] hover:bg-[var(--btn-danger-hover-bg)] text-[var(--btn-danger-text)] font-bold py-2.5 px-2.5 rounded-lg disabled:cursor-not-allowed" title="{$_('dashboard.deletePresetTitle')}" disabled={!$selectedPreset} on:click={app.deletePreset}>{@html icons.delete}</button>
                 <button id="reset-btn" class="text-sm bg-[var(--btn-default-bg)] hover:bg-[var(--btn-default-hover-bg)] text-[var(--btn-default-text)] font-bold py-2.5 px-2.5 rounded-lg flex items-center gap-2" title="{$_('dashboard.resetButtonTitle')}" on:click={resetAllInputs}>{@html icons.broom}</button>
                 <button
                     id="theme-switcher"
@@ -172,7 +169,7 @@
         <div id="error-message" class="text-[var(--danger-color)] text-center text-sm font-medium mt-4 md:col-span-2">{$_($uiStore.errorMessage)}</div>
     {/if}
 
-<section id="results" class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-x-8">
+    <section id="results" class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-x-8">
         <div>
             <SummaryResults
                 isPositionSizeLocked={$tradeStore.isPositionSizeLocked}

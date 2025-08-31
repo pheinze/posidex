@@ -1,13 +1,12 @@
 import { p as push, e as escape_html, c as attr_class, b as attr, d as store_get, u as unsubscribe_stores, f as bind_props, a as pop, i as ensure_array_like, j as stringify, k as copy_payload, l as assign_payload, m as attr_style, n as maybe_selected } from "../../chunks/index2.js";
 import { C as CONSTANTS, i as icons, t as themeIcons } from "../../chunks/constants.js";
 import { Decimal } from "decimal.js";
-import { u as uiStore } from "../../chunks/uiStore.js";
 import { d as derived, w as writable, g as get } from "../../chunks/index.js";
 import deepmerge from "deepmerge";
 import { IntlMessageFormat } from "intl-messageformat";
 import { z as fallback } from "../../chunks/utils2.js";
 import { marked } from "marked";
-import { u as updateTradeStore, c as clearResults, t as tradeStore } from "../../chunks/tradeStore.js";
+import { s as showError, u as updateStore, a as showFeedback, j as journalStore, h as hideError, c as clearResults, b as appStore } from "../../chunks/stores.js";
 function html(value) {
   var html2 = String(value ?? "");
   var open = "<!---->";
@@ -527,17 +526,15 @@ derived([$locale], () => formatTime);
 derived([$locale], () => formatDate);
 derived([$locale], () => formatNumber);
 derived([$locale, $dictionary], () => getJSON);
-const app$2 = { "title": "Posidex", "journalButton": "Journal", "changelogTitle": "Changelog", "closeChangelogAriaLabel": "Close Changelog" };
+const app$2 = { "title": "Trading Dashboard", "journalButton": "Journal", "changelogTitle": "Changelog", "closeChangelogAriaLabel": "Close Changelog" };
 const dashboard$1 = { "presetLoad": "Load Preset...", "savePresetTitle": "Save current inputs as preset", "savePresetAriaLabel": "Save Preset", "deletePresetTitle": "Delete selected preset", "resetButton": "Reset", "themeSwitcherAriaLabel": "Switch Theme", "totalTradeMetrics": "Total Trade Metrics", "totalTradeMetricsTooltip": "Overview of the most important key figures for the entire trade.", "riskPerTradeCurrency": "Risk per Trade (Currency)", "riskPerTradeCurrencyTooltip": "The absolute amount of money you risk at most.", "totalFees": "Total Fees", "totalFeesTooltip": "The estimated total cost for this trade.", "maxPotentialProfit": "Max. Potential Profit", "maxPotentialProfitTooltip": "The maximum net profit if the entire position were closed at the best TP.", "weightedRR": "Weighted R/R", "weightedRRTooltip": "The average risk-reward ratio of all partial sales.", "totalNetProfit": "Total Net Profit", "totalNetProfitTooltip": "The accumulated net profit from all partial sales.", "soldPosition": "Sold Position", "soldPositionTooltip": "The total percentage of the position sold.", "takeProfit": "Take Profit", "netProfit": "Net Profit", "netProfitTooltip": "The estimated profit for this partial sale.", "priceChange": "Price Change", "priceChangeTooltip": "The percentage price movement from entry.", "returnOnCapital": "Return on Capital", "returnOnCapitalTooltip": "The percentage profit in relation to the capital.", "partialVolume": "Partial Volume", "partialVolumeTooltip": "The quantity of units for this partial sale.", "tradeNotesPlaceholder": "Notes on the trade...", "addTradeToJournal": "Add Trade to Journal", "showInstructionsTitle": "Show Instructions", "showInstructionsAriaLabel": "Show Instructions", "savedFeedback": "Saved!", "generalInputs": { "header": "General", "longButton": "Long", "shortButton": "Short", "leveragePlaceholder": "Leverage (e.g. 10x)", "feesPlaceholder": "Fees per Trade (%)" }, "portfolioInputs": { "header": "Portfolio", "accountSizePlaceholder": "Account Size", "riskPerTradePlaceholder": "Risk per Trade (%)" }, "tradeSetupInputs": { "header": "Trade Setup", "symbolPlaceholder": "Symbol (e.g. BTCUSDT)", "fetchPriceTitle": "Fetch Live Price", "fetchPriceAriaLabel": "Fetch Live Price", "entryPricePlaceholder": "Entry Price", "atrStopLossLabel": "ATR Stop-Loss", "manualStopLossPlaceholder": "Manual Stop Loss", "atrValuePlaceholder": "ATR Value", "multiplierPlaceholder": "Multiplier" }, "takeProfitRow": { "winLabel": "win:", "rrLabel": "R/R:", "pricePlaceholder": "Price", "lockButtonTitle": "Lock/Unlock Percentage", "removeButtonTitle": "Remove this target" }, "takeProfitTargets": { "header": "Take-Profit Targets (Partial)", "tooltip": "Here you can see the calculated key figures for each of your partial take-profit targets.", "addTargetTitle": "Add another target" }, "summaryResults": { "header": "Summary", "positionSizeLabel": "Position Size", "lockPositionSizeTitle": "Lock/Unlock Position Size", "lockPositionSizeAriaLabel": "Lock/Unlock Position Size", "copyPositionSizeAriaLabel": "Copy Position Size", "copiedFeedback": "Copied!", "maxNetLossLabel": "Max. Net Loss", "maxNetLossTooltip": "The maximum amount you can lose on this trade, including all fees.", "requiredMarginLabel": "Required Margin", "requiredMarginTooltip": "The capital blocked from your account for this trade.", "estimatedLiquidationPriceLabel": "Est. Liquidation Price", "estimatedLiquidationPriceTooltip": "Estimated price at which your position will be liquidated.", "breakEvenPriceLabel": "Break-Even Price", "breakEvenPriceTooltip": "The price at which your trade makes zero profit/loss, considering fees." }, "customModal": { "promptPlaceholder": "Input...", "yesButton": "Yes", "noButton": "No", "okButton": "OK" }, "visualBar": { "header": "Visual Analysis", "netProfitLabel": "Net Profit:", "rrLabel": "R/R:" }, "promptForData": "Please enter the required trade data to start the calculation.", "instructionsTitle": "Instructions: Dashboard" };
 const journal$1 = { "title": "Trade Journal", "closeJournalAriaLabel": "Close Journal", "searchSymbolPlaceholder": "Search Symbol...", "filterAll": "All", "filterOpen": "Open", "filterWon": "Won", "filterLost": "Lost", "date": "Date", "symbol": "Symbol", "type": "Type", "entry": "Entry", "sl": "SL", "rr": "R/R", "status": "Status", "notes": "Notes", "action": "Action", "noTradesYet": "No trades in the journal yet.", "clickToExpand": "Click to expand", "delete": "Delete", "performancePerSymbol": "Performance per Symbol", "trades": "Trades", "profitPercent": "Profit %", "totalPL": "Total P/L", "noData": "No Data", "exportCsvTitle": "Export as CSV", "export": "Export", "import": "Import", "clearJournalTitle": "Clear entire journal", "clearAll": "Clear All", "showJournalInstructionsTitle": "Show Journal Instructions", "showJournalInstructionsAriaLabel": "Show Journal Instructions" };
 const seo$1 = { "title": "Posidex - Trading Position Size & Risk Calculator", "description": "Posidex is a comprehensive trading calculator for position sizing, risk management, and take-profit targets. Optimize your trades with real-time calculations and visual analysis.", "keywords": "trading calculator, position size, risk management, take profit, crypto trading, forex trading, stock trading, trading tools, financial calculator, trade optimizer" };
-const languages$1 = { "german": "German", "english": "English" };
 const en = {
   app: app$2,
   dashboard: dashboard$1,
   journal: journal$1,
-  seo: seo$1,
-  languages: languages$1
+  seo: seo$1
 };
 const en$1 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
@@ -545,20 +542,17 @@ const en$1 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty
   dashboard: dashboard$1,
   default: en,
   journal: journal$1,
-  languages: languages$1,
   seo: seo$1
 }, Symbol.toStringTag, { value: "Module" }));
-const app$1 = { "title": "Posidex", "journalButton": "Journal", "changelogTitle": "Changelog", "closeChangelogAriaLabel": "Changelog schließen" };
+const app$1 = { "title": "Trading Dashboard", "journalButton": "Journal", "changelogTitle": "Changelog", "closeChangelogAriaLabel": "Changelog schließen" };
 const dashboard = { "presetLoad": "Preset laden...", "savePresetTitle": "Aktuelle Eingaben als Preset speichern", "savePresetAriaLabel": "Preset speichern", "deletePresetTitle": "Ausgewähltes Preset löschen", "resetButton": "Zurücksetzen", "themeSwitcherAriaLabel": "Theme wechseln", "totalTradeMetrics": "Gesamt-Trade Metriken", "totalTradeMetricsTooltip": "Übersicht über die wichtigsten Kennzahlen für den gesamten Trade.", "riskPerTradeCurrency": "Risiko pro Trade (Währung)", "riskPerTradeCurrencyTooltip": "Der absolute Geldbetrag, den du maximal riskierst.", "totalFees": "Gesamte Gebühren", "totalFeesTooltip": "Die geschätzten Gesamtkosten für diesen Trade.", "maxPotentialProfit": "Max. potenzieller Gewinn", "maxPotentialProfitTooltip": "Der maximale Netto-Gewinn, wenn die gesamte Position zum besten TP geschlossen würde.", "weightedRR": "Gewichtetes R/R", "weightedRRTooltip": "Das durchschnittliche Chance-Risiko-Verhältnis aller Teilverkäufe.", "totalNetProfit": "Gesamt Netto-Gewinn", "totalNetProfitTooltip": "Der kumulierte Netto-Gewinn aus allen Teilverkäufen.", "soldPosition": "Verkaufte Position", "soldPositionTooltip": "Der Gesamtprozentsatz der verkauften Position.", "takeProfit": "Take Profit", "netProfit": "Netto-Gewinn", "netProfitTooltip": "Der geschätzte Gewinn für diesen Teilverkauf.", "priceChange": "Preisänderung", "priceChangeTooltip": "Die prozentuale Preisbewegung vom Einstieg.", "returnOnCapital": "Rendite auf Kapital", "returnOnCapitalTooltip": "Der prozentuale Gewinn im Verhältnis zum Kapital.", "partialVolume": "Teilverkauf Volumen", "partialVolumeTooltip": "Die Menge der Einheiten für diesen Teilverkauf.", "tradeNotesPlaceholder": "Notizen zum Trade...", "addTradeToJournal": "Trade zum Journal hinzufügen", "showInstructionsTitle": "Anleitung anzeigen", "showInstructionsAriaLabel": "Anleitung anzeigen", "savedFeedback": "Gespeichert!", "generalInputs": { "header": "Allgemein", "longButton": "Long", "shortButton": "Short", "leveragePlaceholder": "Hebel (z.B. 10x)", "feesPlaceholder": "Gebühren pro Trade (%)" }, "portfolioInputs": { "header": "Portfolio", "accountSizePlaceholder": "Konto Guthaben", "riskPerTradePlaceholder": "Risiko je Trade (%)" }, "tradeSetupInputs": { "header": "Trade Setup", "symbolPlaceholder": "Symbol (z.B. BTCUSDT)", "fetchPriceTitle": "Live-Preis holen", "fetchPriceAriaLabel": "Live-Preis holen", "entryPricePlaceholder": "Kaufpreis", "atrStopLossLabel": "ATR Stop-Loss", "manualStopLossPlaceholder": "Manueller Stopp Loss", "atrValuePlaceholder": "ATR Wert", "multiplierPlaceholder": "Multiplikator" }, "takeProfitRow": { "winLabel": "win:", "rrLabel": "R/R:", "pricePlaceholder": "Preis", "lockButtonTitle": "Prozentsatz sperren/entsperren", "removeButtonTitle": "Dieses Ziel entfernen" }, "takeProfitTargets": { "header": "Take-Profit Ziele (Partiell)", "tooltip": "Hier siehst du die berechneten Kennzahlen für jeden deiner partiellen Take-Profit-Ziele.", "addTargetTitle": "Weiteres Ziel hinzufügen" }, "summaryResults": { "header": "Zusammenfassung", "positionSizeLabel": "Positionsgröße", "lockPositionSizeTitle": "Positionsgröße sperren/entsperren", "lockPositionSizeAriaLabel": "Positionsgröße sperren/entsperren", "copyPositionSizeAriaLabel": "Positionsgröße kopieren", "copiedFeedback": "Kopiert!", "maxNetLossLabel": "Max. Verlust (Netto)", "maxNetLossTooltip": "Der maximale Betrag, den du bei diesem Trade verlieren kannst, einschließlich aller Gebühren.", "requiredMarginLabel": "Benötigte Margin", "requiredMarginTooltip": "Das Kapital, das von deinem Konto für diesen Trade blockiert wird.", "estimatedLiquidationPriceLabel": "Gesch. Liquidationspreis", "estimatedLiquidationPriceTooltip": "Geschätzter Preis, bei dem deine Position liquidiert wird.", "breakEvenPriceLabel": "Break-Even Preis", "breakEvenPriceTooltip": "Der Kurs, bei dem dein Trade unter Berücksichtigung der Gebühren null Gewinn/Verlust macht." }, "customModal": { "promptPlaceholder": "Eingabe...", "yesButton": "Ja", "noButton": "Nein", "okButton": "OK" }, "visualBar": { "header": "Visuelle Analyse", "netProfitLabel": "Netto-Gewinn:", "rrLabel": "R/R:" }, "promptForData": "Bitte geben Sie die erforderlichen Handelsdaten ein, um die Berechnung zu starten.", "instructionsTitle": "Anleitung: Dashboard" };
 const journal = { "title": "Trade Journal", "closeJournalAriaLabel": "Journal schließen", "searchSymbolPlaceholder": "Symbol suchen...", "filterAll": "Alle", "filterOpen": "Offen", "filterWon": "Gewonnen", "filterLost": "Verloren", "date": "Datum", "symbol": "Symbol", "type": "Typ", "entry": "Einstieg", "sl": "SL", "rr": "R/R", "status": "Status", "notes": "Notizen", "action": "Aktion", "noTradesYet": "Noch keine Trades im Journal vorhanden.", "clickToExpand": "Klicken zum Ausklappen", "delete": "Löschen", "performancePerSymbol": "Performance pro Symbol", "trades": "Trades", "profitPercent": "Gewinn %", "totalPL": "Gesamt P/L", "noData": "Keine Daten", "exportCsvTitle": "Als CSV exportieren", "export": "Exportieren", "import": "Importieren", "clearJournalTitle": "Ganzes Journal leeren", "clearAll": "Alles löschen", "showJournalInstructionsTitle": "Journal Anleitung anzeigen", "showJournalInstructionsAriaLabel": "Journal Anleitung anzeigen" };
 const seo = { "title": "Posidex - Trading Positionsgröße & Risikorechner", "description": "Posidex ist ein umfassender Trading-Rechner für Positionsgrößenbestimmung, Risikomanagement und Take-Profit-Ziele. Optimiere deine Trades mit Echtzeitberechnungen und visueller Analyse.", "keywords": "Trading Rechner, Positionsgröße, Risikomanagement, Take Profit, Krypto Trading, Forex Trading, Aktien Trading, Trading Tools, Finanzrechner, Trade Optimierer" };
-const languages = { "german": "Deutsch", "english": "Englisch" };
 const de = {
   app: app$1,
   dashboard,
   journal,
-  seo,
-  languages
+  seo
 };
 const de$1 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
@@ -566,7 +560,6 @@ const de$1 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty
   dashboard,
   default: de,
   journal,
-  languages,
   seo
 }, Symbol.toStringTag, { value: "Module" }));
 registerLocaleLoader("en", () => Promise.resolve(en$1));
@@ -905,8 +898,8 @@ async function loadInstruction(name) {
   const currentLocale = get(locale);
   const filePath = `/instructions/${name}.${currentLocale}.md`;
   try {
-    const modules = /* @__PURE__ */ Object.assign({ "/src/instructions/changelog.de.md": () => import("../../chunks/changelog.de.js").then((m) => m["default"]), "/src/instructions/changelog.en.md": () => import("../../chunks/changelog.en.js").then((m) => m["default"]), "/src/instructions/dashboard.de.md": () => import("../../chunks/dashboard.de.js").then((m) => m["default"]), "/src/instructions/dashboard.en.md": () => import("../../chunks/dashboard.en.js").then((m) => m["default"]), "/src/instructions/journal.de.md": () => import("../../chunks/journal.de.js").then((m) => m["default"]), "/src/instructions/journal.en.md": () => import("../../chunks/journal.en.js").then((m) => m["default"]) });
-    const modulePath = `/src${filePath}`;
+    const modules = /* @__PURE__ */ Object.assign({ "/src/lib/instructions/changelog.de.md": () => import("../../chunks/changelog.de.js").then((m) => m["default"]), "/src/lib/instructions/changelog.en.md": () => import("../../chunks/changelog.en.js").then((m) => m["default"]), "/src/lib/instructions/dashboard.de.md": () => import("../../chunks/dashboard.de.js").then((m) => m["default"]), "/src/lib/instructions/dashboard.en.md": () => import("../../chunks/dashboard.en.js").then((m) => m["default"]), "/src/lib/instructions/journal.de.md": () => import("../../chunks/journal.de.js").then((m) => m["default"]), "/src/lib/instructions/journal.en.md": () => import("../../chunks/journal.en.js").then((m) => m["default"]) });
+    const modulePath = `/src/lib${filePath}`;
     if (!modules[modulePath]) {
       throw new Error(`Markdown file not found: ${modulePath}`);
     }
@@ -965,12 +958,6 @@ function updateVisualBar(values, targets) {
   });
   return { visualBarContent, markers };
 }
-function loadJournalFromLocalStorage() {
-  return [];
-}
-const journalStore = writable(loadJournalFromLocalStorage());
-journalStore.subscribe((value) => {
-});
 const app = {
   calculator,
   // Expose calculator for use in Svelte components
@@ -978,8 +965,8 @@ const app = {
   init: () => {
   },
   calculateAndDisplay: () => {
-    uiStore.hideError();
-    const currentAppState = get(tradeStore);
+    hideError();
+    const currentAppState = get(appStore);
     const getAndValidateInputs = () => {
       const values2 = {
         accountSize: parseDecimal(currentAppState.accountSize),
@@ -1014,12 +1001,12 @@ const app = {
         if (values2.entryPrice.gt(0) && values2.atrValue.gt(0) && values2.atrMultiplier.gt(0)) {
           const operator = currentAppState.tradeType === CONSTANTS.TRADE_TYPE_LONG ? "-" : "+";
           values2.stopLossPrice = currentAppState.tradeType === CONSTANTS.TRADE_TYPE_LONG ? values2.entryPrice.minus(values2.atrValue.times(values2.atrMultiplier)) : values2.entryPrice.plus(values2.atrValue.times(values2.atrMultiplier));
-          updateTradeStore((state) => ({ ...state, showAtrFormulaDisplay: true, atrFormulaText: `SL = ${values2.entryPrice.toFixed(4)} ${operator} (${values2.atrValue} × ${values2.atrMultiplier}) = ${values2.stopLossPrice.toFixed(4)}` }));
+          updateStore((state) => ({ ...state, showAtrFormulaDisplay: true, atrFormulaText: `SL = ${values2.entryPrice.toFixed(4)} ${operator} (${values2.atrValue} × ${values2.atrMultiplier}) = ${values2.stopLossPrice.toFixed(4)}` }));
         } else if (values2.atrValue.gt(0) && values2.atrMultiplier.gt(0)) {
           return { status: CONSTANTS.STATUS_INCOMPLETE };
         }
       } else {
-        updateTradeStore((state) => ({ ...state, showAtrFormulaDisplay: false, atrFormulaText: "" }));
+        updateStore((state) => ({ ...state, showAtrFormulaDisplay: false, atrFormulaText: "" }));
       }
       if (values2.accountSize.lte(0) || values2.riskPercentage.lte(0) || values2.entryPrice.lte(0) || values2.stopLossPrice.lte(0)) {
         return { status: CONSTANTS.STATUS_INCOMPLETE };
@@ -1057,7 +1044,7 @@ const app = {
     };
     const validationResult = getAndValidateInputs();
     if (validationResult.status === CONSTANTS.STATUS_INVALID) {
-      uiStore.showError(validationResult.message || "");
+      showError(validationResult.message || "");
       clearResults();
       return;
     }
@@ -1070,13 +1057,13 @@ const app = {
     if (currentAppState.isPositionSizeLocked && currentAppState.lockedPositionSize && currentAppState.lockedPositionSize.gt(0)) {
       const riskPerUnit = values.entryPrice.minus(values.stopLossPrice).abs();
       if (riskPerUnit.lte(0)) {
-        uiStore.showError("Stop-Loss muss einen gültigen Abstand zum Einstiegspreis haben.");
+        showError("Stop-Loss muss einen gültigen Abstand zum Einstiegspreis haben.");
         clearResults();
         return;
       }
       const riskAmount = riskPerUnit.times(currentAppState.lockedPositionSize);
       const newRiskPercentage = values.accountSize.isZero() ? new Decimal(0) : riskAmount.div(values.accountSize).times(100);
-      updateTradeStore((state) => ({ ...state, riskPercentage: newRiskPercentage.toFixed(2) }));
+      updateStore((state) => ({ ...state, riskPercentage: newRiskPercentage.toFixed(2) }));
       values.riskPercentage = newRiskPercentage;
       baseMetrics = calculator.calculateBaseMetrics(values, currentAppState.tradeType);
       if (baseMetrics) baseMetrics.positionSize = currentAppState.lockedPositionSize;
@@ -1088,7 +1075,7 @@ const app = {
       if (currentAppState.isPositionSizeLocked) app.togglePositionSizeLock(false);
       return;
     }
-    updateTradeStore((state) => ({
+    updateStore((state) => ({
       ...state,
       positionSize: baseMetrics.positionSize.toFixed(4),
       requiredMargin: baseMetrics.requiredMargin.toFixed(2),
@@ -1105,10 +1092,10 @@ const app = {
         }
       }
     });
-    updateTradeStore((state) => ({ ...state, calculatedTpDetails }));
+    updateStore((state) => ({ ...state, calculatedTpDetails }));
     const totalMetrics = calculator.calculateTotalMetrics(values.targets, baseMetrics, values, currentAppState.tradeType);
     if (values.totalPercentSold.gt(0)) {
-      updateTradeStore((state) => ({
+      updateStore((state) => ({
         ...state,
         totalRR: totalMetrics.totalRR.toFixed(2),
         totalNetProfit: `+${totalMetrics.totalNetProfit.toFixed(2)}`,
@@ -1119,9 +1106,9 @@ const app = {
         showTotalMetricsGroup: true
       }));
     } else {
-      updateTradeStore((state) => ({ ...state, showTotalMetricsGroup: false }));
+      updateStore((state) => ({ ...state, showTotalMetricsGroup: false }));
     }
-    updateTradeStore((state) => ({ ...state, currentTradeData: { ...values, ...baseMetrics, ...totalMetrics, tradeType: currentAppState.tradeType, status: "Open", calculatedTpDetails } }));
+    updateStore((state) => ({ ...state, currentTradeData: { ...values, ...baseMetrics, ...totalMetrics, tradeType: currentAppState.tradeType, status: "Open", calculatedTpDetails } }));
   },
   getJournal: () => {
     return [];
@@ -1130,15 +1117,15 @@ const app = {
     return;
   },
   addTrade: () => {
-    const currentAppState = get(tradeStore);
+    const currentAppState = get(appStore);
     if (!currentAppState.currentTradeData.positionSize || currentAppState.currentTradeData.positionSize.lte(0)) {
-      uiStore.showError("Kann keinen ungültigen Trade speichern.");
+      showError("Kann keinen ungültigen Trade speichern.");
       return;
     }
     const journalData = app.getJournal();
     journalData.push({ ...currentAppState.currentTradeData, notes: currentAppState.tradeNotes, id: Date.now(), date: (/* @__PURE__ */ new Date()).toISOString() });
     journalStore.set(journalData);
-    uiStore.showFeedback("save");
+    showFeedback("save");
   },
   updateTradeStatus: (id, newStatus) => {
     const journalData = app.getJournal();
@@ -1155,16 +1142,16 @@ const app = {
   async clearJournal() {
     const journal2 = app.getJournal();
     if (journal2.length === 0) {
-      uiStore.showError("Das Journal ist bereits leer.");
+      showError("Das Journal ist bereits leer.");
       return;
     }
     if (await modalManager.show("Journal leeren", "Möchten Sie wirklich das gesamte Journal unwiderruflich löschen?", "confirm")) {
       journalStore.set([]);
-      uiStore.showFeedback("save", 2e3);
+      showFeedback("save", 2e3, "Journal geleert!");
     }
   },
   getInputsAsObject: () => {
-    const currentAppState = get(tradeStore);
+    const currentAppState = get(appStore);
     return {
       accountSize: currentAppState.accountSize,
       riskPercentage: currentAppState.riskPercentage,
@@ -1174,8 +1161,7 @@ const app = {
       useAtrSl: currentAppState.useAtrSl,
       atrMultiplier: currentAppState.atrMultiplier,
       symbol: currentAppState.symbol,
-      targets: currentAppState.targets,
-      selectedPreset: currentAppState.selectedPreset
+      targets: currentAppState.targets
     };
   },
   saveSettings: () => {
@@ -1203,32 +1189,32 @@ const app = {
     return;
   },
   handleFetchPrice: async () => {
-    const currentAppState = get(tradeStore);
+    const currentAppState = get(appStore);
     const symbol = currentAppState.symbol.toUpperCase().replace("/", "");
     if (!symbol) {
-      uiStore.showError("Bitte geben Sie ein Symbol ein.");
+      showError("Bitte geben Sie ein Symbol ein.");
       return;
     }
-    updateTradeStore((state) => ({ ...state, isPriceFetching: true }));
+    updateStore((state) => ({ ...state, isPriceFetching: true }));
     try {
       const price = await apiService.fetchBinancePrice(symbol);
-      updateTradeStore((state) => ({ ...state, entryPrice: price.toDP(4).toString() }));
-      uiStore.showFeedback("copy", 700);
+      updateStore((state) => ({ ...state, entryPrice: price.toDP(4).toString() }));
+      showFeedback("copy", 700, "Preis geladen!");
       app.calculateAndDisplay();
     } catch (error) {
-      uiStore.showError(error.message);
+      showError(error.message);
     } finally {
-      updateTradeStore((state) => ({ ...state, isPriceFetching: false }));
+      updateStore((state) => ({ ...state, isPriceFetching: false }));
     }
   },
   togglePositionSizeLock: (forceState) => {
-    const currentAppState = get(tradeStore);
+    const currentAppState = get(appStore);
     const shouldBeLocked = forceState !== void 0 ? forceState : !currentAppState.isPositionSizeLocked;
     if (shouldBeLocked && (!currentAppState.positionSize || parseDecimal(currentAppState.positionSize).lte(0))) {
-      uiStore.showError("Positionsgröße kann nicht gesperrt werden, solange sie ungültig ist.");
+      showError("Positionsgröße kann nicht gesperrt werden, solange sie ungültig ist.");
       return;
     }
-    updateTradeStore((state) => ({
+    updateStore((state) => ({
       ...state,
       isPositionSizeLocked: shouldBeLocked,
       lockedPositionSize: shouldBeLocked ? parseDecimal(currentAppState.positionSize) : null
@@ -1236,13 +1222,13 @@ const app = {
     app.calculateAndDisplay();
   },
   addTakeProfitRow: (price = "", percent = "", isLocked = false) => {
-    updateTradeStore((state) => ({
+    updateStore((state) => ({
       ...state,
       targets: [...state.targets, { price, percent, isLocked }]
     }));
   },
   adjustTpPercentages: (changedIndex) => {
-    const currentAppState = get(tradeStore);
+    const currentAppState = get(appStore);
     const targets = [...currentAppState.targets];
     let sumOfLocked = new Decimal(0);
     const unlockedIndices = [];
@@ -1255,7 +1241,7 @@ const app = {
     });
     let remainingPercent = new Decimal(100).minus(sumOfLocked);
     if (remainingPercent.lt(0)) {
-      uiStore.showError("Gesperrter Prozentsatz übersteigt 100%. Bitte anpassen.");
+      showError("Gesperrter Prozentsatz übersteigt 100%. Bitte anpassen.");
       return;
     }
     if (unlockedIndices.length > 0 && changedIndex !== null && !targets[changedIndex].isLocked) {
@@ -1283,7 +1269,7 @@ const app = {
       const evenSplit = remainingPercent.div(unlockedIndices.length);
       unlockedIndices.forEach((i) => targets[i].percent = evenSplit.toFixed(0));
     }
-    updateTradeStore((state) => ({ ...state, targets }));
+    updateStore((state) => ({ ...state, targets }));
   }
 };
 function TakeProfitTargets($$payload, $$props) {
@@ -1389,21 +1375,21 @@ function VisualBar($$payload, $$props) {
   }
   const each_array = ensure_array_like(visualBarData.visualBarContent);
   const each_array_1 = ensure_array_like(visualBarData.markers);
-  $$payload.out.push(`<section class="visual-bar-container md:col-span-2 svelte-181idyl"><h2 class="section-header text-center !mb-4">${escape_html(store_get($$store_subs ??= {}, "$_", $format)("dashboard.visualBar.header"))}</h2> <div class="visual-bar svelte-181idyl" role="img" aria-label="Trade visualization bar"><!--[-->`);
+  $$payload.out.push(`<section class="visual-bar-container md:col-span-2 svelte-du0aiv"><h2 class="section-header text-center !mb-4">${escape_html(store_get($$store_subs ??= {}, "$_", $format)("dashboard.visualBar.header"))}</h2> <div class="visual-bar svelte-du0aiv" role="img" aria-label="Trade visualization bar"><!--[-->`);
   for (let $$index = 0, $$length = each_array.length; $$index < $$length; $$index++) {
     let item = each_array[$$index];
-    $$payload.out.push(`<div${attr_class(item.type, "svelte-181idyl")}${attr_style(`left: ${stringify(item.style.left)}; width: ${stringify(item.style.width)};`)}></div>`);
+    $$payload.out.push(`<div${attr_class(item.type, "svelte-du0aiv")}${attr_style(`left: ${stringify(item.style.left)}; width: ${stringify(item.style.width)};`)}></div>`);
   }
   $$payload.out.push(`<!--]--> <!--[-->`);
   for (let i = 0, $$length = each_array_1.length; i < $$length; i++) {
     let marker = each_array_1[i];
     const tpDetail = calculatedTpDetails.find((d) => d.index === marker.index);
-    $$payload.out.push(`<div${attr_class(`bar-marker ${stringify(marker.isEntry ? "entry-marker" : "")} ${stringify(marker.index !== void 0 ? "tp-marker" : "")}`, "svelte-181idyl")}${attr_style(`left: ${stringify(marker.pos)}%;`)} role="button" tabindex="0"><span style="transform: translateX(-50%);" class="svelte-181idyl">${escape_html(marker.label)}</span> `);
+    $$payload.out.push(`<div${attr_class(`bar-marker ${stringify(marker.isEntry ? "entry-marker" : "")} ${stringify(marker.index !== void 0 ? "tp-marker" : "")}`, "svelte-du0aiv")}${attr_style(`left: ${stringify(marker.pos)}%;`)} role="button" tabindex="0"><span style="transform: translateX(-50%);" class="svelte-du0aiv">${escape_html(marker.label)}</span> `);
     if (tpDetail) {
       $$payload.out.push("<!--[-->");
-      $$payload.out.push(`<div class="tp-tooltip svelte-181idyl"><div class="tp-tooltip-line svelte-181idyl">${escape_html(store_get($$store_subs ??= {}, "$_", $format)("dashboard.visualBar.netProfitLabel"))} <span class="text-green-400 svelte-181idyl">+$${escape_html(tpDetail.netProfit.toFixed(2))}</span></div> <div class="tp-tooltip-line svelte-181idyl">${escape_html(store_get($$store_subs ??= {}, "$_", $format)("dashboard.visualBar.rrLabel"))} <span${attr_class(
+      $$payload.out.push(`<div class="tp-tooltip svelte-du0aiv"><div class="tp-tooltip-line svelte-du0aiv">${escape_html(store_get($$store_subs ??= {}, "$_", $format)("dashboard.visualBar.netProfitLabel"))} <span class="text-green-400 svelte-du0aiv">+$${escape_html(tpDetail.netProfit.toFixed(2))}</span></div> <div class="tp-tooltip-line svelte-du0aiv">${escape_html(store_get($$store_subs ??= {}, "$_", $format)("dashboard.visualBar.rrLabel"))} <span${attr_class(
         tpDetail.riskRewardRatio.gte(2) ? "text-green-400" : tpDetail.riskRewardRatio.gte(1.5) ? "text-yellow-400" : "text-red-400",
-        "svelte-181idyl"
+        "svelte-du0aiv"
       )}>${escape_html(tpDetail.riskRewardRatio.toFixed(2))}</span></div></div>`);
     } else {
       $$payload.out.push("<!--[!-->");
@@ -1462,19 +1448,11 @@ function SummaryResults($$payload, $$props) {
 function LanguageSwitcher($$payload, $$props) {
   push();
   var $$store_subs;
-  $$payload.out.push(`<div class="flex items-center justify-center gap-2"><button${attr_class("w-10 h-10 rounded-full flex items-center justify-center text-xl transition-all duration-200 svelte-1t9my1b", void 0, {
-    "border-2": store_get($$store_subs ??= {}, "$locale", locale) === "de",
-    "border-[var(--accent-color)]": store_get($$store_subs ??= {}, "$locale", locale) === "de",
-    "border-transparent": store_get($$store_subs ??= {}, "$locale", locale) !== "de",
-    "opacity-50": store_get($$store_subs ??= {}, "$locale", locale) !== "de",
-    "hover:opacity-100": store_get($$store_subs ??= {}, "$locale", locale) !== "de"
-  })}${attr("title", store_get($$store_subs ??= {}, "$_", $format)("languages.german"))}>🇩🇪</button> <button${attr_class("w-10 h-10 rounded-full flex items-center justify-center text-xl transition-all duration-200 svelte-1t9my1b", void 0, {
-    "border-2": store_get($$store_subs ??= {}, "$locale", locale) === "en",
-    "border-[var(--accent-color)]": store_get($$store_subs ??= {}, "$locale", locale) === "en",
-    "border-transparent": store_get($$store_subs ??= {}, "$locale", locale) !== "en",
-    "opacity-50": store_get($$store_subs ??= {}, "$locale", locale) !== "en",
-    "hover:opacity-100": store_get($$store_subs ??= {}, "$locale", locale) !== "en"
-  })}${attr("title", store_get($$store_subs ??= {}, "$_", $format)("languages.english"))}>🇬🇧</button></div>`);
+  $$payload.out.push(`<select class="input-field px-3 py-2 rounded-md text-sm">`);
+  $$payload.select_value = store_get($$store_subs ??= {}, "$locale", locale);
+  $$payload.out.push(`<option value="en"${maybe_selected($$payload, "en")}>English</option><option value="de"${maybe_selected($$payload, "de")}>Deutsch</option>`);
+  $$payload.select_value = void 0;
+  $$payload.out.push(`</select>`);
   if ($$store_subs) unsubscribe_stores($$store_subs);
   pop();
 }
@@ -1483,21 +1461,19 @@ function _page($$payload, $$props) {
   var $$store_subs;
   let currentAppState, themeTitle;
   let changelogContent = "";
-  currentAppState = store_get($$store_subs ??= {}, "$tradeStore", tradeStore);
-  if (store_get($$store_subs ??= {}, "$uiStore", uiStore).showChangelogModal && changelogContent === "") {
+  currentAppState = store_get($$store_subs ??= {}, "$appStore", appStore);
+  if (currentAppState.showChangelogModal && changelogContent === "") {
     loadInstruction("changelog").then((content) => {
       changelogContent = content.html;
     });
   }
   {
-    if (!store_get($$store_subs ??= {}, "$uiStore", uiStore).isInitializing) {
-      currentAppState.accountSize, currentAppState.riskPercentage, currentAppState.entryPrice, currentAppState.stopLossPrice, currentAppState.leverage, currentAppState.fees, currentAppState.symbol, currentAppState.atrValue, currentAppState.atrMultiplier, currentAppState.useAtrSl, currentAppState.tradeType, currentAppState.targets;
-      if (currentAppState.accountSize !== void 0 && currentAppState.riskPercentage !== void 0 && currentAppState.entryPrice !== void 0 && currentAppState.leverage !== void 0 && currentAppState.fees !== void 0 && currentAppState.symbol !== void 0 && currentAppState.atrValue !== void 0 && currentAppState.atrMultiplier !== void 0 && currentAppState.useAtrSl !== void 0 && currentAppState.tradeType !== void 0 && currentAppState.targets !== void 0) {
-        app.calculateAndDisplay();
-      }
+    currentAppState.accountSize, currentAppState.riskPercentage, currentAppState.entryPrice, currentAppState.stopLossPrice, currentAppState.leverage, currentAppState.fees, currentAppState.symbol, currentAppState.atrValue, currentAppState.atrMultiplier, currentAppState.useAtrSl, currentAppState.tradeType, currentAppState.targets;
+    if (currentAppState.accountSize !== void 0 && currentAppState.riskPercentage !== void 0 && currentAppState.entryPrice !== void 0 && currentAppState.leverage !== void 0 && currentAppState.fees !== void 0 && currentAppState.symbol !== void 0 && currentAppState.atrValue !== void 0 && currentAppState.atrMultiplier !== void 0 && currentAppState.useAtrSl !== void 0 && currentAppState.tradeType !== void 0 && currentAppState.targets !== void 0) {
+      app.calculateAndDisplay();
     }
   }
-  themeTitle = store_get($$store_subs ??= {}, "$uiStore", uiStore).currentTheme.split("-").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" ");
+  themeTitle = store_get($$store_subs ??= {}, "$appStore", appStore).currentTheme.split("-").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" ");
   let $$settled = true;
   let $$inner_payload;
   function $$render_inner($$payload2) {
@@ -1505,7 +1481,7 @@ function _page($$payload, $$props) {
     const each_array_1 = ensure_array_like(currentAppState.calculatedTpDetails);
     const each_array_2 = ensure_array_like(store_get($$store_subs ??= {}, "$journalStore", journalStore).filter((trade) => trade.symbol.toLowerCase().includes(currentAppState.journalSearchQuery.toLowerCase()) && (currentAppState.journalFilterStatus === "all" || trade.status === currentAppState.journalFilterStatus)));
     const each_array_3 = ensure_array_like(Object.entries(app.calculator.calculateSymbolPerformance(store_get($$store_subs ??= {}, "$journalStore", journalStore))));
-    $$payload2.out.push(`<main class="my-8 w-full max-w-4xl mx-auto calculator-wrapper rounded-2xl shadow-2xl p-6 sm:p-8 fade-in"><div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4"><div class="flex justify-between items-center w-full md:w-auto"><h1 class="text-2xl sm:text-3xl font-bold">${escape_html(store_get($$store_subs ??= {}, "$_", $format)("app.title"))}</h1> <button id="view-journal-btn-mobile" class="text-sm md:hidden bg-[var(--btn-accent-bg)] hover:bg-[var(--btn-accent-hover)] text-[var(--btn-accent-text)] font-bold py-2 px-4 rounded-lg"${attr("title", store_get($$store_subs ??= {}, "$_", $format)("app.journalButtonTitle"))}>${escape_html(store_get($$store_subs ??= {}, "$_", $format)("app.journalButton"))}</button></div> <div class="flex items-center flex-wrap justify-end gap-2 w-full md:w-auto"><div class="flex items-center flex-wrap justify-end gap-2 md:order-1"><select id="preset-loader" class="input-field px-3 py-2 rounded-md text-sm">`);
+    $$payload2.out.push(`<main class="my-8 w-full max-w-4xl mx-auto calculator-wrapper rounded-2xl shadow-2xl p-6 sm:p-8 fade-in"><div class="flex justify-between items-center mb-6"><h1 class="text-2xl sm:text-3xl font-bold">${escape_html(store_get($$store_subs ??= {}, "$_", $format)("app.title"))}</h1> <div class="flex items-center gap-2"><select id="preset-loader" class="input-field px-3 py-2 rounded-md text-sm">`);
     $$payload2.select_value = currentAppState.selectedPreset;
     $$payload2.out.push(`<option value=""${maybe_selected($$payload2, "")}>${escape_html(store_get($$store_subs ??= {}, "$_", $format)("dashboard.presetLoad"))}</option><!--[-->`);
     for (let $$index = 0, $$length = each_array.length; $$index < $$length; $$index++) {
@@ -1514,7 +1490,7 @@ function _page($$payload, $$props) {
     }
     $$payload2.out.push(`<!--]-->`);
     $$payload2.select_value = void 0;
-    $$payload2.out.push(`</select> <button id="save-preset-btn" class="text-sm bg-[var(--btn-default-bg)] hover:bg-[var(--btn-default-hover-bg)] text-[var(--btn-default-text)] font-bold py-2.5 px-2.5 rounded-lg"${attr("title", store_get($$store_subs ??= {}, "$_", $format)("dashboard.savePresetTitle"))}${attr("aria-label", store_get($$store_subs ??= {}, "$_", $format)("dashboard.savePresetAriaLabel"))}>${html(icons.save)}</button> <button id="delete-preset-btn" class="text-sm bg-[var(--btn-danger-bg)] hover:bg-[var(--btn-danger-hover-bg)] text-[var(--btn-danger-text)] font-bold py-2.5 px-2.5 rounded-lg disabled:cursor-not-allowed"${attr("title", store_get($$store_subs ??= {}, "$_", $format)("dashboard.deletePresetTitle"))}${attr("disabled", !currentAppState.selectedPreset, true)}>${html(icons.delete)}</button> <button id="reset-btn" class="text-sm bg-[var(--btn-default-bg)] hover:bg-[var(--btn-default-hover-bg)] text-[var(--btn-default-text)] font-bold py-2.5 px-2.5 rounded-lg flex items-center gap-2"${attr("title", store_get($$store_subs ??= {}, "$_", $format)("dashboard.resetButtonTitle"))}>${html(icons.broom)}</button> <button id="theme-switcher" class="text-sm bg-[var(--btn-default-bg)] hover:bg-[var(--btn-default-hover-bg)] text-[var(--btn-default-text)] font-bold py-2 px-2.5 rounded-lg"${attr("aria-label", store_get($$store_subs ??= {}, "$_", $format)("dashboard.themeSwitcherAriaLabel"))}${attr("title", themeTitle)}>${html(themeIcons[store_get($$store_subs ??= {}, "$uiStore", uiStore).currentTheme])}</button></div> <button id="view-journal-btn-desktop" class="hidden md:inline-block text-sm bg-[var(--btn-accent-bg)] hover:bg-[var(--btn-accent-hover)] text-[var(--btn-accent-text)] font-bold py-2 px-4 rounded-lg md:order-2"${attr("title", store_get($$store_subs ??= {}, "$_", $format)("app.journalButtonTitle"))}>${escape_html(store_get($$store_subs ??= {}, "$_", $format)("app.journalButton"))}</button></div></div> <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4"><div>`);
+    $$payload2.out.push(`</select> <button id="save-preset-btn" class="text-sm bg-[var(--btn-default-bg)] hover:bg-[var(--btn-default-hover-bg)] text-[var(--btn-default-text)] font-bold py-2.5 px-2.5 rounded-lg"${attr("title", store_get($$store_subs ??= {}, "$_", $format)("dashboard.savePresetTitle"))}${attr("aria-label", store_get($$store_subs ??= {}, "$_", $format)("dashboard.savePresetAriaLabel"))}>${html(icons.save)}</button> <button id="delete-preset-btn" class="text-sm bg-[var(--btn-danger-bg)] hover:bg-[var(--btn-danger-hover-bg)] text-[var(--btn-danger-text)] font-bold py-2.5 px-2.5 rounded-lg disabled:cursor-not-allowed"${attr("title", store_get($$store_subs ??= {}, "$_", $format)("dashboard.deletePresetTitle"))}${attr("disabled", !currentAppState.selectedPreset, true)}>${html(icons.delete)}</button> <button id="reset-btn" class="text-sm bg-[var(--btn-default-bg)] hover:bg-[var(--btn-default-hover-bg)] text-[var(--btn-default-text)] font-bold py-2.5 px-2.5 rounded-lg flex items-center gap-2"${attr("title", store_get($$store_subs ??= {}, "$_", $format)("dashboard.resetButtonTitle"))}>${html(icons.broom)}</button> <button id="theme-switcher" class="text-sm bg-[var(--btn-default-bg)] hover:bg-[var(--btn-default-hover-bg)] text-[var(--btn-default-text)] font-bold py-2 px-2.5 rounded-lg"${attr("aria-label", store_get($$store_subs ??= {}, "$_", $format)("dashboard.themeSwitcherAriaLabel"))}${attr("title", themeTitle)}>${html(themeIcons[currentAppState.currentTheme])}</button> <button id="view-journal-btn" class="text-sm bg-[var(--btn-accent-bg)] hover:bg-[var(--btn-accent-hover)] text-[var(--btn-accent-text)] font-bold py-2 px-4 rounded-lg"${attr("title", store_get($$store_subs ??= {}, "$_", $format)("app.journalButtonTitle"))}>${escape_html(store_get($$store_subs ??= {}, "$_", $format)("app.journalButton"))}</button></div></div> <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4"><div>`);
     GeneralInputs($$payload2, {
       get tradeType() {
         return currentAppState.tradeType;
@@ -1617,16 +1593,16 @@ function _page($$payload, $$props) {
       }
     });
     $$payload2.out.push(`<!----> `);
-    if (store_get($$store_subs ??= {}, "$uiStore", uiStore).showErrorMessage) {
+    if (currentAppState.showErrorMessage) {
       $$payload2.out.push("<!--[-->");
-      $$payload2.out.push(`<div id="error-message" class="text-[var(--danger-color)] text-center text-sm font-medium mt-4 md:col-span-2">${escape_html(store_get($$store_subs ??= {}, "$_", $format)(store_get($$store_subs ??= {}, "$uiStore", uiStore).errorMessage))}</div>`);
+      $$payload2.out.push(`<div id="error-message" class="text-[var(--danger-color)] text-center text-sm font-medium mt-4 md:col-span-2">${escape_html(store_get($$store_subs ??= {}, "$_", $format)(currentAppState.errorMessage))}</div>`);
     } else {
       $$payload2.out.push("<!--[!-->");
     }
     $$payload2.out.push(`<!--]--> <section id="results" class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-x-8"><div>`);
     SummaryResults($$payload2, {
       isPositionSizeLocked: currentAppState.isPositionSizeLocked,
-      showCopyFeedback: store_get($$store_subs ??= {}, "$uiStore", uiStore).showCopyFeedback,
+      showCopyFeedback: currentAppState.showCopyFeedback,
       positionSize: currentAppState.positionSize,
       netLoss: currentAppState.netLoss,
       requiredMargin: currentAppState.requiredMargin,
@@ -1659,19 +1635,17 @@ function _page($$payload, $$props) {
       $$payload2.out.push(`${$$body}`);
     }
     $$payload2.out.push(`</textarea> <div class="flex items-center gap-4"><button id="save-journal-btn" class="w-full font-bold py-3 px-4 rounded-lg btn-primary-action"${attr("disabled", currentAppState.positionSize === "-", true)}>${escape_html(store_get($$store_subs ??= {}, "$_", $format)("dashboard.addTradeToJournal"))}</button> <button id="show-dashboard-readme-btn" class="font-bold p-3 rounded-lg btn-secondary-action"${attr("title", store_get($$store_subs ??= {}, "$_", $format)("dashboard.showInstructionsTitle"))}${attr("aria-label", store_get($$store_subs ??= {}, "$_", $format)("dashboard.showInstructionsAriaLabel"))}>${html(icons.book)}</button> `);
-    if (store_get($$store_subs ??= {}, "$uiStore", uiStore).showSaveFeedback) {
+    if (currentAppState.showSaveFeedback) {
       $$payload2.out.push("<!--[-->");
-      $$payload2.out.push(`<span id="save-feedback"${attr_class("save-feedback", void 0, {
-        "visible": store_get($$store_subs ??= {}, "$uiStore", uiStore).showSaveFeedback
-      })}>${escape_html(store_get($$store_subs ??= {}, "$_", $format)("dashboard.savedFeedback"))}</span>`);
+      $$payload2.out.push(`<span id="save-feedback"${attr_class("save-feedback", void 0, { "visible": currentAppState.showSaveFeedback })}>${escape_html(store_get($$store_subs ??= {}, "$_", $format)("dashboard.savedFeedback"))}</span>`);
     } else {
       $$payload2.out.push("<!--[!-->");
     }
-    $$payload2.out.push(`<!--]--></div> <div class="mt-4">`);
+    $$payload2.out.push(`<!--]--></div> `);
     LanguageSwitcher($$payload2);
-    $$payload2.out.push(`<!----></div></footer></section></main> <footer class="w-full max-w-4xl mx-auto text-center py-4 text-sm text-gray-500">Version 0.92b - <button class="text-link">Changelog</button></footer> <div id="journal-modal"${attr_class("modal-overlay", void 0, {
-      "visible": store_get($$store_subs ??= {}, "$uiStore", uiStore).showJournalModal,
-      "opacity-100": store_get($$store_subs ??= {}, "$uiStore", uiStore).showJournalModal
+    $$payload2.out.push(`<!----></footer></section></main> <footer class="w-full max-w-4xl mx-auto text-center py-4 text-sm text-gray-500">Version 0.92b - <button class="text-blue-500 hover:underline">Changelog</button></footer> <div id="journal-modal"${attr_class("modal-overlay", void 0, {
+      "visible": currentAppState.showJournalModal,
+      "opacity-100": currentAppState.showJournalModal
     })}><div class="modal-content w-full h-full max-w-6xl"><div class="flex justify-between items-center mb-4"><h2 class="text-2xl font-bold">${escape_html(store_get($$store_subs ??= {}, "$_", $format)("journal.title"))}</h2><button id="close-journal-btn" class="text-3xl"${attr("aria-label", store_get($$store_subs ??= {}, "$_", $format)("journal.closeJournalAriaLabel"))}>×</button></div> <div id="journal-stats" class="journal-stats"></div> <div class="flex gap-4 my-4"><input type="text" id="journal-search" class="input-field w-full px-3 py-2 rounded-md"${attr("placeholder", store_get($$store_subs ??= {}, "$_", $format)("journal.searchSymbolPlaceholder"))}${attr("value", currentAppState.journalSearchQuery)}/><select id="journal-filter" class="input-field px-3 py-2 rounded-md">`);
     $$payload2.select_value = currentAppState.journalFilterStatus;
     $$payload2.out.push(`<option value="all"${maybe_selected($$payload2, "all")}>${escape_html(store_get($$store_subs ??= {}, "$_", $format)("journal.filterAll"))}</option><option value="Open"${maybe_selected($$payload2, "Open")}>${escape_html(store_get($$store_subs ??= {}, "$_", $format)("journal.filterOpen"))}</option><option value="Won"${maybe_selected($$payload2, "Won")}>${escape_html(store_get($$store_subs ??= {}, "$_", $format)("journal.filterWon"))}</option><option value="Lost"${maybe_selected($$payload2, "Lost")}>${escape_html(store_get($$store_subs ??= {}, "$_", $format)("journal.filterLost"))}</option>`);
@@ -1709,8 +1683,8 @@ function _page($$payload, $$props) {
     $$payload2.out.push(`<!--]--></tbody></table></div> <div class="flex items-center gap-4 mt-4"><button id="export-csv-btn" class="bg-green-700 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2"${attr("title", store_get($$store_subs ??= {}, "$_", $format)("journal.exportCsvTitle"))}>${html(icons.export)}<span>${escape_html(store_get($$store_subs ??= {}, "$_", $format)("journal.export"))}</span></button> <input type="file" id="import-csv-input" accept=".csv" class="hidden"/> <button id="import-csv-btn" class="bg-blue-700 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2">${html(icons.import)}<span>${escape_html(store_get($$store_subs ??= {}, "$_", $format)("journal.import"))}</span></button> <button id="clear-journal-btn" class="bg-red-800 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2"${attr("title", store_get($$store_subs ??= {}, "$_", $format)("journal.clearJournalTitle"))}>${html(icons.delete)}<span>${escape_html(store_get($$store_subs ??= {}, "$_", $format)("journal.clearAll"))}</span></button> <button id="show-journal-readme-btn" class="bg-slate-600 hover:bg-slate-500 text-white font-bold p-2.5 rounded-lg"${attr("title", store_get($$store_subs ??= {}, "$_", $format)("journal.showJournalInstructionsTitle"))}${attr("aria-label", store_get($$store_subs ??= {}, "$_", $format)("journal.showJournalInstructionsAriaLabel"))}>${html(icons.book)}</button></div></div></div> `);
     CustomModal($$payload2);
     $$payload2.out.push(`<!----> <div id="changelog-modal"${attr_class("modal-overlay", void 0, {
-      "visible": store_get($$store_subs ??= {}, "$uiStore", uiStore).showChangelogModal,
-      "opacity-100": store_get($$store_subs ??= {}, "$uiStore", uiStore).showChangelogModal
+      "visible": currentAppState.showChangelogModal,
+      "opacity-100": currentAppState.showChangelogModal
     })}><div class="modal-content w-full h-full max-w-6xl"><div class="flex justify-between items-center mb-4"><h2 class="text-2xl font-bold">${escape_html(store_get($$store_subs ??= {}, "$_", $format)("app.changelogTitle"))}</h2> <button id="close-changelog-btn" class="text-3xl"${attr("aria-label", store_get($$store_subs ??= {}, "$_", $format)("app.closeChangelogAriaLabel"))}>×</button></div> <div id="changelog-content" class="prose dark:prose-invert max-h-[calc(100vh-10rem)] overflow-y-auto">${html(changelogContent)}</div></div></div>`);
   }
   do {
