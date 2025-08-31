@@ -44,8 +44,6 @@ export const initialAppState: Omit<AppState, 'currentTheme' | 'showJournalModal'
     isPriceFetching: false,
     symbolSuggestions: [],
     showSymbolSuggestions: false,
-    availablePresets: [],
-    selectedPreset: '',
     journalSearchQuery: '',
     journalFilterStatus: 'all',
     currentTradeData: {},

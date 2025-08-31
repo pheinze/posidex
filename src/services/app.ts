@@ -6,6 +6,7 @@ import { modalManager } from './modalManager';
 import { uiManager } from './uiManager';
 import { calculator } from '../lib/calculator';
 import { tradeStore, updateTradeStore, clearResults, resetAllInputs, toggleAtrInputs } from '../stores/tradeStore';
+import { presetStore, updatePresetStore } from '../stores/presetStore';
 import { journalStore } from '../stores/journalStore';
 import { uiStore } from '../stores/uiStore';
 import type { TradeValues, IndividualTpResult } from '../lib/calculator';
@@ -369,7 +370,7 @@ export const app = {
             localStorage.setItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY, JSON.stringify(presets));
             uiStore.showFeedback('save');
             app.populatePresetLoader();
-            updateTradeStore(state => ({ ...state, selectedPreset: presetName }));
+            updatePresetStore(state => ({ ...state, selectedPreset: presetName }));
         } catch (e) {
             console.error("Fehler beim Speichern des Presets:", e);
             uiStore.showError("Preset konnte nicht gespeichert werden. Der lokale Speicher ist möglicherweise voll oder blockiert.");
@@ -377,8 +378,7 @@ export const app = {
     },
     deletePreset: async () => {
         if (!browser) return;
-        const currentAppState = get(tradeStore);
-        const presetName = currentAppState.selectedPreset;
+        const presetName = get(presetStore).selectedPreset;
         if (!presetName) return;
         if (!(await modalManager.show("Preset löschen", `Preset \"${presetName}\" wirklich löschen?`, "confirm"))) return;
         try {
@@ -386,7 +386,7 @@ export const app = {
             delete presets[presetName];
             localStorage.setItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY, JSON.stringify(presets));
             app.populatePresetLoader();
-            updateTradeStore(state => ({ ...state, selectedPreset: '' }));
+            updatePresetStore(state => ({ ...state, selectedPreset: '' }));
         } catch (e) { uiStore.showError("Preset konnte nicht gelöscht werden."); }
     },
     loadPreset: (presetName: string) => {
@@ -413,8 +413,8 @@ export const app = {
                         { price: '', percent: '', isLocked: false },
                         { price: '', percent: '', isLocked: false }
                     ],
-                    selectedPreset: presetName,
                 }));
+                updatePresetStore(state => ({ ...state, selectedPreset: presetName }));
                 toggleAtrInputs(preset.useAtrSl || false);
                 return;
             }
@@ -428,10 +428,10 @@ export const app = {
         try {
             const presets = JSON.parse(localStorage.getItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY) || '{}');
             const presetNames = Object.keys(presets);
-            updateTradeStore(state => ({ ...state, availablePresets: presetNames }));
+            updatePresetStore(state => ({ ...state, availablePresets: presetNames }));
         } catch (e) {
             console.warn("Could not populate presets from localStorage.", e);
-            updateTradeStore(state => ({ ...state, availablePresets: [] }));
+            updatePresetStore(state => ({ ...state, availablePresets: [] }));
         }
     },
     exportToCSV: () => {
