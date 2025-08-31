@@ -44,8 +44,6 @@ export const initialAppState: Omit<AppState, 'currentTheme' | 'showJournalModal'
     isPriceFetching: false,
     symbolSuggestions: [],
     showSymbolSuggestions: false,
-    availablePresets: [],
-    selectedPreset: '',
     journalSearchQuery: '',
     journalFilterStatus: 'all',
     currentTradeData: {},
@@ -105,9 +103,6 @@ export const toggleAtrInputs = (useAtrSl: boolean) => {
 
 // Helper function to reset all inputs
 export const resetAllInputs = () => {
-    tradeStore.update(state => ({
-        ...initialAppState,
-        availablePresets: state.availablePresets
-    }));
+    tradeStore.set(initialAppState);
     clearResults(true);
 };

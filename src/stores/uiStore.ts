@@ -10,7 +10,6 @@ interface UiState {
     showSaveFeedback: boolean;
     errorMessage: string;
     showErrorMessage: boolean;
-    isInitializing: boolean;
 }
 
 // Function to load theme from localStorage or cookie
@@ -37,7 +36,6 @@ const initialUiState: UiState = {
     showSaveFeedback: false,
     errorMessage: '',
     showErrorMessage: false,
-    isInitializing: true,
 };
 
 function createUiStore() {
@@ -86,7 +84,6 @@ function createUiStore() {
         },
         showError: (message: string) => update(state => ({ ...state, errorMessage: message, showErrorMessage: true })),
         hideError: () => update(state => ({ ...state, errorMessage: '', showErrorMessage: false })),
-        setInitializing: (initializing: boolean) => update(state => ({ ...state, isInitializing: initializing })),
     };
 }
 
