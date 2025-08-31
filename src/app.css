@@ -203,6 +203,7 @@ body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: v
 .result-item { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; padding: 0.75rem 0; border-bottom: 1px solid var(--bg-tertiary); }
 .result-item:last-child { border-bottom: none; }
 .result-label { color: var(--text-secondary); display: flex; align-items: center; gap: 0.5rem; margin-right: 1rem; }
+.input-label { @apply block text-sm font-medium text-[var(--text-secondary)] mb-1; }
 .result-value { color: var(--text-primary); font-weight: 600; text-align: right; word-break: break-all; flex-grow: 1; }
 .fade-in { animation: fadeIn 0.5s ease-in-out; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
@@ -221,45 +222,6 @@ input[type="checkbox"]:checked + .atr-toggle-track { background-color: var(--tog
 .atr-toggle-track::after { background-color: var(--toggle-circle-bg); border-color: var(--border-color); transition: transform 0.3s, background-color 0.3s, border-color 0.3s; }
 input[type="checkbox"]:checked + .atr-toggle-track::after { transform: translateX(calc(100% + 2px)); border-color: var(--toggle-circle-bg); }
 
-.tooltip { position: relative; display: inline-block; cursor: pointer; }
-.tooltip .tooltiptext {
-    visibility: hidden;
-    width: 220px;
-    background-color: var(--bg-tertiary);
-    color: var(--text-primary);
-    text-align: center;
-    border-radius: 0.5rem;
-    padding: 0.5rem 0.75rem;
-    position: absolute;
-    z-index: 10;
-    bottom: 140%;
-    left: 50%;
-    transform: translateX(-50%) translateY(10px);
-    opacity: 0;
-    transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
-    font-size: 0.8rem;
-    font-weight: 500;
-    box-shadow: var(--shadow-tooltip);
-    border: 2px solid var(--border-color);
-    pointer-events: none;
-    text-transform: none;
-}
-.tooltip .tooltiptext::after {
-    content: "";
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    margin-left: -5px;
-    border-width: 5px;
-    border-style: solid;
-    border-color: var(--bg-tertiary) transparent transparent transparent;
-}
-.tooltip:hover .tooltiptext {
-    visibility: visible;
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-}
-.tooltip-icon { width: 1rem; height: 1rem; border-radius: 99px; background-color: var(--border-color); color: var(--text-primary); font-size: 0.7rem; text-align: center; line-height: 1rem; }
 .copy-btn, .price-fetch-btn { background: none; border: none; color: var(--text-secondary); cursor: pointer; transition: color 0.2s; }
 .copy-btn:hover, .price-fetch-btn:hover { color: var(--success-color); }
 

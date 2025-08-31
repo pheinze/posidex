@@ -49,8 +49,10 @@
     },
     "portfolioInputs": {
       "header": "Portfolio",
-      "accountSizePlaceholder": "Konto Guthaben",
-      "riskPerTradePlaceholder": "Risiko je Trade (%)"
+      "accountSizeLabel": "Kontoguthaben",
+      "accountSizePlaceholder": "z.B. 10000",
+      "riskPerTradeLabel": "Risiko je Trade (%)",
+      "riskPerTradePlaceholder": "z.B. 1.5"
     },
     "tradeSetupInputs": {
       "header": "Trade Setup",
@@ -99,9 +101,11 @@
     },
     "visualBar": {
       "header": "Visuelle Analyse",
+      "ariaLabel": "Trade-Visualisierungsleiste",
       "netProfitLabel": "Netto-Gewinn:",
       "rrLabel": "R/R:"
     },
+    "riskRewardRatio": "Chance-Risiko-Verhältnis",
     "promptForData": "Bitte geben Sie die erforderlichen Handelsdaten ein, um die Berechnung zu starten.",
     "instructionsTitle": "Anleitung: Dashboard"
   },

@@ -49,8 +49,10 @@
     },
     "portfolioInputs": {
       "header": "Portfolio",
-      "accountSizePlaceholder": "Account Size",
-      "riskPerTradePlaceholder": "Risk per Trade (%)"
+      "accountSizeLabel": "Account Size",
+      "accountSizePlaceholder": "e.g., 10000",
+      "riskPerTradeLabel": "Risk per Trade (%)",
+      "riskPerTradePlaceholder": "e.g., 1.5"
     },
     "tradeSetupInputs": {
       "header": "Trade Setup",
@@ -99,9 +101,11 @@
     },
     "visualBar": {
       "header": "Visual Analysis",
+      "ariaLabel": "Trade visualization bar",
       "netProfitLabel": "Net Profit:",
       "rrLabel": "R/R:"
     },
+    "riskRewardRatio": "Risk/Reward Ratio",
     "promptForData": "Please enter the required trade data to start the calculation.",
     "instructionsTitle": "Instructions: Dashboard"
   },

@@ -27,7 +27,7 @@
     <div
         class="visual-bar"
         role="img"
-        aria-label="Trade visualization bar"
+        aria-label="{$_('dashboard.visualBar.ariaLabel')}"
     >
         {#each visualBarData.visualBarContent as item}
             <div class="{item.type}" style="left: {item.style.left}; width: {item.style.width};"></div>

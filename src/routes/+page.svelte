@@ -19,6 +19,7 @@
     import type { IndividualTpResult } from '../lib/calculator';
     import SummaryResults from '../components/results/SummaryResults.svelte';
     import LanguageSwitcher from '../components/shared/LanguageSwitcher.svelte';
+    import Tooltip from '../components/shared/Tooltip.svelte';
 
     let changelogContent = '';
 
@@ -114,29 +115,24 @@
 <main class="my-8 w-full max-w-4xl mx-auto calculator-wrapper rounded-2xl shadow-2xl p-6 sm:p-8 fade-in">
 
     <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
-        <div class="flex justify-between items-center w-full md:w-auto">
-            <h1 class="text-2xl sm:text-3xl font-bold">{$_('app.title')}</h1>
-            <button id="view-journal-btn-mobile" class="text-sm md:hidden bg-[var(--btn-accent-bg)] hover:bg-[var(--btn-accent-hover)] text-[var(--btn-accent-text)] font-bold py-2 px-4 rounded-lg" title="{$_('app.journalButtonTitle')}" on:click={() => uiStore.toggleJournalModal(true)}>{$_('app.journalButton')}</button>
-        </div>
-        <div class="flex items-center flex-wrap justify-end gap-2 w-full md:w-auto">
-            <div class="flex items-center flex-wrap justify-end gap-2 md:order-1">
-                <select id="preset-loader" class="input-field px-3 py-2 rounded-md text-sm" on:change={handlePresetLoad} bind:value={$presetStore.selectedPreset}>
-                    <option value="">{$_('dashboard.presetLoad')}</option>
-                    {#each $presetStore.availablePresets as presetName}
-                        <option value={presetName}>{presetName}</option>
-                    {/each}
-                </select>
-                <button id="save-preset-btn" class="text-sm bg-[var(--btn-default-bg)] hover:bg-[var(--btn-default-hover-bg)] text-[var(--btn-default-text)] font-bold py-2.5 px-2.5 rounded-lg" title="{$_('dashboard.savePresetTitle')}" aria-label="{$_('dashboard.savePresetAriaLabel')}" on:click={app.savePreset}>{@html icons.save}</button>
-                <button id="delete-preset-btn" class="text-sm bg-[var(--btn-danger-bg)] hover:bg-[var(--btn-danger-hover-bg)] text-[var(--btn-danger-text)] font-bold py-2.5 px-2.5 rounded-lg disabled:cursor-not-allowed" title="{$_('dashboard.deletePresetTitle')}" disabled={!$presetStore.selectedPreset} on:click={app.deletePreset}>{@html icons.delete}</button>
-                <button id="reset-btn" class="text-sm bg-[var(--btn-default-bg)] hover:bg-[var(--btn-default-hover-bg)] text-[var(--btn-default-text)] font-bold py-2.5 px-2.5 rounded-lg flex items-center gap-2" title="{$_('dashboard.resetButtonTitle')}" on:click={resetAllInputs}>{@html icons.broom}</button>
-                <button
-                    id="theme-switcher"
-                    class="text-sm bg-[var(--btn-default-bg)] hover:bg-[var(--btn-default-hover-bg)] text-[var(--btn-default-text)] font-bold py-2 px-2.5 rounded-lg"
-                    aria-label="{$_('dashboard.themeSwitcherAriaLabel')}"
-                    on:click={handleThemeSwitch}
-                    title={themeTitle}>{@html themeIcons[$uiStore.currentTheme as keyof typeof themeIcons]}</button>
-            </div>
-            <button id="view-journal-btn-desktop" class="hidden md:inline-block text-sm bg-[var(--btn-accent-bg)] hover:bg-[var(--btn-accent-hover)] text-[var(--btn-accent-text)] font-bold py-2 px-4 rounded-lg md:order-2" title="{$_('app.journalButtonTitle')}" on:click={() => uiStore.toggleJournalModal(true)}>{$_('app.journalButton')}</button>
+        <h1 class="text-2xl sm:text-3xl font-bold">{$_('app.title')}</h1>
+        <div class="flex items-center flex-wrap justify-end gap-2">
+            <button id="view-journal-btn" class="text-sm bg-[var(--btn-accent-bg)] hover:bg-[var(--btn-accent-hover)] text-[var(--btn-accent-text)] font-bold py-2 px-4 rounded-lg" title="{$_('app.journalButtonTitle')}" on:click={() => uiStore.toggleJournalModal(true)}>{$_('app.journalButton')}</button>
+            <select id="preset-loader" class="input-field px-3 py-2 rounded-md text-sm" on:change={handlePresetLoad} bind:value={$presetStore.selectedPreset}>
+                <option value="">{$_('dashboard.presetLoad')}</option>
+                {#each $presetStore.availablePresets as presetName}
+                    <option value={presetName}>{presetName}</option>
+                {/each}
+            </select>
+            <button id="save-preset-btn" class="text-sm bg-[var(--btn-default-bg)] hover:bg-[var(--btn-default-hover-bg)] text-[var(--btn-default-text)] font-bold py-2.5 px-2.5 rounded-lg" title="{$_('dashboard.savePresetTitle')}" aria-label="{$_('dashboard.savePresetAriaLabel')}" on:click={app.savePreset}>{@html icons.save}</button>
+            <button id="delete-preset-btn" class="text-sm bg-[var(--btn-danger-bg)] hover:bg-[var(--btn-danger-hover-bg)] text-[var(--btn-danger-text)] font-bold py-2.5 px-2.5 rounded-lg disabled:cursor-not-allowed" title="{$_('dashboard.deletePresetTitle')}" disabled={!$presetStore.selectedPreset} on:click={app.deletePreset}>{@html icons.delete}</button>
+            <button id="reset-btn" class="text-sm bg-[var(--btn-default-bg)] hover:bg-[var(--btn-default-hover-bg)] text-[var(--btn-default-text)] font-bold py-2.5 px-2.5 rounded-lg flex items-center gap-2" title="{$_('dashboard.resetButtonTitle')}" on:click={resetAllInputs}>{@html icons.broom}</button>
+            <button
+                id="theme-switcher"
+                class="text-sm bg-[var(--btn-default-bg)] hover:bg-[var(--btn-default-hover-bg)] text-[var(--btn-default-text)] font-bold py-2 px-2.5 rounded-lg"
+                aria-label="{$_('dashboard.themeSwitcherAriaLabel')}"
+                on:click={handleThemeSwitch}
+                title={themeTitle}>{@html themeIcons[$uiStore.currentTheme as keyof typeof themeIcons]}</button>
         </div>
     </div>
 
@@ -195,13 +191,13 @@
             />
             {#if $tradeStore.showTotalMetricsGroup}
                 <div id="total-metrics-group" class="result-group">
-                    <h2 class="section-header">{$_('dashboard.totalTradeMetrics')}<div class="tooltip"><div class="tooltip-icon">?</div><span class="tooltiptext">{$_('dashboard.totalTradeMetricsTooltip')}</span></div></h2>
-                    <div class="result-item"><span class="result-label">{$_('dashboard.riskPerTradeCurrency')}<div class="tooltip"><div class="tooltip-icon">?</div><span class="tooltiptext">{$_('dashboard.riskPerTradeCurrencyTooltip')}</span></div></span><span id="riskAmountCurrency" class="result-value text-[var(--danger-color)]">{$tradeStore.riskAmountCurrency}</span></div>
-                    <div class="result-item"><span class="result-label">{$_('dashboard.totalFees')}<div class="tooltip"><div class="tooltip-icon">?</div><span class="tooltiptext">{$_('dashboard.totalFeesTooltip')}</span></div></span><span id="totalFees" class="result-value">{$tradeStore.totalFees}</span></div>
-                    <div class="result-item"><span class="result-label">{$_('dashboard.maxPotentialProfit')}<div class="tooltip"><div class="tooltip-icon">?</div><span class="tooltiptext">{$_('dashboard.maxPotentialProfitTooltip')}</span></div></span><span id="maxPotentialProfit" class="result-value text-green-400">{$tradeStore.maxPotentialProfit}</span></div>
-                    <div class="result-item"><span class="result-label">{$_('dashboard.weightedRR')}<div class="tooltip"><div class="tooltip-icon">?</div><span class="tooltiptext">{$_('dashboard.weightedRRTooltip')}</span></div></span><span id="totalRR" class="result-value">{$tradeStore.totalRR}</span></div>
-                    <div class="result-item"><span class="result-label">{$_('dashboard.totalNetProfit')}<div class="tooltip"><div class="tooltip-icon">?</div><span class="tooltiptext">{$_('dashboard.totalNetProfitTooltip')}</span></div></span><span id="totalNetProfit" class="result-value text-green-400">{$tradeStore.totalNetProfit}</span></div>
-                    <div class="result-item"><span class="result-label">{$_('dashboard.soldPosition')}<div class="tooltip"><div class="tooltip-icon">?</div><span class="tooltiptext">{$_('dashboard.soldPositionTooltip')}</span></div></span><span id="totalPercentSold" class="result-value">{$tradeStore.totalPercentSold}</span></div>
+                    <h2 class="section-header">{$_('dashboard.totalTradeMetrics')}<Tooltip text={$_('dashboard.totalTradeMetricsTooltip')} /></h2>
+                    <div class="result-item"><span class="result-label">{$_('dashboard.riskPerTradeCurrency')}<Tooltip text={$_('dashboard.riskPerTradeCurrencyTooltip')} /></span><span id="riskAmountCurrency" class="result-value text-[var(--danger-color)]">{$tradeStore.riskAmountCurrency}</span></div>
+                    <div class="result-item"><span class="result-label">{$_('dashboard.totalFees')}<Tooltip text={$_('dashboard.totalFeesTooltip')} /></span><span id="totalFees" class="result-value">{$tradeStore.totalFees}</span></div>
+                    <div class="result-item"><span class="result-label">{$_('dashboard.maxPotentialProfit')}<Tooltip text={$_('dashboard.maxPotentialProfitTooltip')} /></span><span id="maxPotentialProfit" class="result-value text-green-400">{$tradeStore.maxPotentialProfit}</span></div>
+                    <div class="result-item"><span class="result-label">{$_('dashboard.weightedRR')}<Tooltip text={$_('dashboard.weightedRRTooltip')} /></span><span id="totalRR" class="result-value">{$tradeStore.totalRR}</span></div>
+                    <div class="result-item"><span class="result-label">{$_('dashboard.totalNetProfit')}<Tooltip text={$_('dashboard.totalNetProfitTooltip')} /></span><span id="totalNetProfit" class="result-value text-green-400">{$tradeStore.totalNetProfit}</span></div>
+                    <div class="result-item"><span class="result-label">{$_('dashboard.soldPosition')}<Tooltip text={$_('dashboard.soldPositionTooltip')} /></span><span id="totalPercentSold" class="result-value">{$tradeStore.totalPercentSold}</span></div>
                 </div>
             {/if}
         </div>
@@ -209,11 +205,11 @@
             {#each $tradeStore.calculatedTpDetails as tpDetail: IndividualTpResult}
                 <div class="result-group !mt-0 md:!mt-6">
                     <h2 class="section-header">{$_('dashboard.takeProfit')} {(tpDetail as IndividualTpResult).index + 1} ({(tpDetail as IndividualTpResult).percentSold.toFixed(0)}%)</h2>
-                    <div class="result-item"><span class="result-label">Risk/Reward Ratio</span><span class="result-value {tpDetail.riskRewardRatio.gte(2) ? 'text-green-400' : tpDetail.riskRewardRatio.gte(1.5) ? 'text-yellow-400' : 'text-red-400'}">{tpDetail.riskRewardRatio.toFixed(2)}</span></div>
-                    <div class="result-item"><span class="result-label">{$_('dashboard.netProfit')}<div class="tooltip"><div class="tooltip-icon">?</div><span class="tooltiptext">{$_('dashboard.netProfitTooltip')}</span></div></span><span class="result-value text-green-400">+{tpDetail.netProfit.toFixed(2)}</span></div>
-                    <div class="result-item"><span class="result-label">{$_('dashboard.priceChange')}<div class="tooltip"><div class="tooltip-icon">?</div><span class="tooltiptext">{$_('dashboard.priceChangeTooltip')}</span></div></span><span class="result-value {tpDetail.priceChangePercent.gt(0) ? 'text-green-400' : tpDetail.priceChangePercent.lt(0) ? 'text-red-400' : ''}">{tpDetail.priceChangePercent.toFixed(2)}%</span></div>
-                    <div class="result-item"><span class="result-label">{$_('dashboard.returnOnCapital')}<div class="tooltip"><div class="tooltip-icon">?</div><span class="tooltiptext">{$_('dashboard.returnOnCapitalTooltip')}</span></div></span><span class="result-value {tpDetail.returnOnCapital.gt(0) ? 'text-green-400' : tpDetail.returnOnCapital.lt(0) ? 'text-red-400' : ''}">{tpDetail.returnOnCapital.toFixed(2)}%</span></div>
-                    <div class="result-item"><span class="result-label">{$_('dashboard.partialVolume')}<div class="tooltip"><div class="tooltip-icon">?</div><span class="tooltiptext">{$_('dashboard.partialVolumeTooltip')}</span></div></span><span class="result-value">{tpDetail.partialVolume.toFixed(4)}</span></div>
+                    <div class="result-item"><span class="result-label">{$_('dashboard.riskRewardRatio')}</span><span class="result-value {tpDetail.riskRewardRatio.gte(2) ? 'text-green-400' : tpDetail.riskRewardRatio.gte(1.5) ? 'text-yellow-400' : 'text-red-400'}">{tpDetail.riskRewardRatio.toFixed(2)}</span></div>
+                    <div class="result-item"><span class="result-label">{$_('dashboard.netProfit')}<Tooltip text={$_('dashboard.netProfitTooltip')} /></span><span class="result-value text-green-400">+{tpDetail.netProfit.toFixed(2)}</span></div>
+                    <div class="result-item"><span class="result-label">{$_('dashboard.priceChange')}<Tooltip text={$_('dashboard.priceChangeTooltip')} /></span><span class="result-value {tpDetail.priceChangePercent.gt(0) ? 'text-green-400' : tpDetail.priceChangePercent.lt(0) ? 'text-red-400' : ''}">{tpDetail.priceChangePercent.toFixed(2)}%</span></div>
+                    <div class="result-item"><span class="result-label">{$_('dashboard.returnOnCapital')}<Tooltip text={$_('dashboard.returnOnCapitalTooltip')} /></span><span class="result-value {tpDetail.returnOnCapital.gt(0) ? 'text-green-400' : tpDetail.returnOnCapital.lt(0) ? 'text-red-400' : ''}">{tpDetail.returnOnCapital.toFixed(2)}%</span></div>
+                    <div class="result-item"><span class="result-label">{$_('dashboard.partialVolume')}<Tooltip text={$_('dashboard.partialVolumeTooltip')} /></span><span class="result-value">{tpDetail.partialVolume.toFixed(4)}</span></div>
                 </div>
             {/each}
         </div>
@@ -253,7 +249,7 @@
                 <tbody>
                     {#each $journalStore.filter(trade => trade.symbol.toLowerCase().includes($tradeStore.journalSearchQuery.toLowerCase()) && ($tradeStore.journalFilterStatus === 'all' || trade.status === $tradeStore.journalFilterStatus)) as trade}
                         <tr>
-                            <td>{new Date(trade.date).toLocaleString('de-DE', {day:'2-digit', month: '2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit'})}</td>
+                            <td>{new Date(trade.date).toLocaleString($locale || undefined, {day:'2-digit', month: '2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit'})}</td>
                             <td>{trade.symbol || '-'}</td>
                             <td class="{trade.tradeType === CONSTANTS.TRADE_TYPE_LONG ? 'text-green-400' : 'text-red-400'}">{trade.tradeType.charAt(0).toUpperCase() + trade.tradeType.slice(1)}</td>
                             <td>{trade.entryPrice.toFixed(4)}</td>

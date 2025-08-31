@@ -9,7 +9,13 @@
 <div>
     <h2 class="section-header !mt-6">{$_('dashboard.portfolioInputs.header')}</h2>
     <div class="grid grid-cols-2 gap-4">
-        <input type="text" inputmode="decimal" use:numberInput={{ decimalPlaces: 4 }} bind:value={accountSize} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.portfolioInputs.accountSizePlaceholder')}">
-        <input type="text" inputmode="decimal" use:numberInput={{ decimalPlaces: 2, isPercentage: true }} bind:value={riskPercentage} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.portfolioInputs.riskPerTradePlaceholder')}">
+        <div>
+            <label for="account-size" class="input-label">{$_('dashboard.portfolioInputs.accountSizeLabel')}</label>
+            <input id="account-size" type="text" inputmode="decimal" use:numberInput={{ decimalPlaces: 4 }} bind:value={accountSize} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.portfolioInputs.accountSizePlaceholder')}">
+        </div>
+        <div>
+            <label for="risk-percentage" class="input-label">{$_('dashboard.portfolioInputs.riskPerTradeLabel')}</label>
+            <input id="risk-percentage" type="text" inputmode="decimal" use:numberInput={{ decimalPlaces: 2, isPercentage: true }} bind:value={riskPercentage} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.portfolioInputs.riskPerTradePlaceholder')}">
+        </div>
     </div>
 </div>
