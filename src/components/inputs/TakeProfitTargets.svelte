@@ -1,6 +1,7 @@
 <script lang="ts">
     import { icons } from '../../lib/constants';
     import TakeProfitRow from '../shared/TakeProfitRow.svelte';
+    import Tooltip from '../shared/Tooltip.svelte';
     import { createEventDispatcher } from 'svelte';
     import { app } from '../../services/app';
     import { _ } from '../../locales/i18n';
@@ -42,7 +43,7 @@
     <h2 class="section-header">
         <span>{$_('dashboard.takeProfitTargets.header')}</span>
         <div class="flex items-center gap-2">
-            <div class="tooltip"><div class="tooltip-icon">?</div><span class="tooltiptext">{$_('dashboard.takeProfitTargets.tooltip')}</span></div>
+            <Tooltip text={$_('dashboard.takeProfitTargets.tooltip')} />
             <button id="add-tp-btn" class="btn-icon-accent" title="{$_('dashboard.takeProfitTargets.addTargetTitle')}" tabindex="-1" on:click={addTakeProfitRow}>
                 {@html icons.add}
             </button>

@@ -1,6 +1,7 @@
 <script lang="ts">
     import { createEventDispatcher } from 'svelte';
     import { icons } from '../../lib/constants';
+    import Tooltip from '../shared/Tooltip.svelte';
     import { _ } from '../../locales/i18n';
 
     const dispatch = createEventDispatcher();
@@ -38,11 +39,11 @@
         </div>
         <span id="positionSize" class="result-value text-lg text-green-400">{positionSize}</span>
     </div>
-    <div class="result-item"><div class="result-label">{$_('dashboard.summaryResults.maxNetLossLabel')}<div class="tooltip"><div class="tooltip-icon">?</div><span class="tooltiptext">{$_('dashboard.summaryResults.maxNetLossTooltip')}</span></div></div><span id="netLoss" class="result-value text-red-400">{netLoss}</span></div>
-    <div class="result-item"><div class="result-label">{$_('dashboard.summaryResults.requiredMarginLabel')}<div class="tooltip"><div class="tooltip-icon">?</div><span class="tooltiptext">{$_('dashboard.summaryResults.requiredMarginTooltip')}</span></div></div><span id="requiredMargin" class="result-value">{requiredMargin}</span></div>
+    <div class="result-item"><div class="result-label">{$_('dashboard.summaryResults.maxNetLossLabel')}<Tooltip text={$_('dashboard.summaryResults.maxNetLossTooltip')} /></div><span id="netLoss" class="result-value text-red-400">{netLoss}</span></div>
+    <div class="result-item"><div class="result-label">{$_('dashboard.summaryResults.requiredMarginLabel')}<Tooltip text={$_('dashboard.summaryResults.requiredMarginTooltip')} /></div><span id="requiredMargin" class="result-value">{requiredMargin}</span></div>
     <div class="result-item">
-        <span class="result-label">{$_('dashboard.summaryResults.estimatedLiquidationPriceLabel')}<div class="tooltip"><div class="tooltip-icon">?</div><span class="tooltiptext">{$_('dashboard.summaryResults.estimatedLiquidationPriceTooltip')}</span></div></span>
+        <span class="result-label">{$_('dashboard.summaryResults.estimatedLiquidationPriceLabel')}<Tooltip text={$_('dashboard.summaryResults.estimatedLiquidationPriceTooltip')} /></span>
         <span id="liquidationPrice" class="result-value text-warning-color">{liquidationPrice}</span>
     </div>
-    <div class="result-item"><span class="result-label">{$_('dashboard.summaryResults.breakEvenPriceLabel')}<div class="tooltip"><div class="tooltip-icon">?</div><span class="tooltiptext">{$_('dashboard.summaryResults.breakEvenPriceTooltip')}</span></div></span><span id="breakEvenPrice" class="result-value text-sky-400">{breakEvenPrice}</span></div>
+    <div class="result-item"><span class="result-label">{$_('dashboard.summaryResults.breakEvenPriceLabel')}<Tooltip text={$_('dashboard.summaryResults.breakEvenPriceTooltip')} /></span><span id="breakEvenPrice" class="result-value text-sky-400">{breakEvenPrice}</span></div>
 </div>
