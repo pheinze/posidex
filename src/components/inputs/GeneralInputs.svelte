@@ -33,8 +33,8 @@
             >{$_('dashboard.generalInputs.shortButton')}</button>
         </div>
         <div class="grid grid-cols-2 gap-4">
-            <input type="text" inputmode="decimal" use:numberInput={{ decimalPlaces: 4 }} bind:value={leverage} class="input-field w-full h-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.generalInputs.leveragePlaceholder')}">
-            <input type="text" inputmode="decimal" use:numberInput={{ decimalPlaces: 2, isPercentage: true }} bind:value={fees} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.generalInputs.feesPlaceholder')}">
+            <input type="text" inputmode="decimal" use:numberInput={{ noDecimals: true, maxValue: 125 }} bind:value={leverage} class="input-field w-full h-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.generalInputs.leveragePlaceholder')}">
+            <input type="text" inputmode="decimal" use:numberInput={{ decimalPlaces: 4, isPercentage: true }} bind:value={fees} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.generalInputs.feesPlaceholder')}">
         </div>
     </div>
 </div>

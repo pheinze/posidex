@@ -1,13 +1,16 @@
-export function numberInput(node: HTMLInputElement, options: { decimalPlaces: number, isPercentage?: boolean }) {
-    const { decimalPlaces, isPercentage = false } = options;
+export function numberInput(node: HTMLInputElement, options: { decimalPlaces?: number, isPercentage?: boolean, noDecimals?: boolean, maxValue?: number }) {
+    let { decimalPlaces, isPercentage = false, noDecimals = false, maxValue } = options;
 
     function formatValue(value: string): string {
         // 1. Komma zu Punkt konvertieren
         let formattedValue = value.replace(/,/g, '.');
 
-        // 2. Nur Zahlen und einen Punkt zulassen
-        // Erlaubt nur Ziffern und einen einzelnen Punkt
-        formattedValue = formattedValue.replace(/[^0-9.]/g, '');
+        // 2. Nur Zahlen und (optional) einen Punkt zulassen
+        if (noDecimals) {
+            formattedValue = formattedValue.replace(/[^0-9]/g, ''); // Nur Ziffern
+        } else {
+            formattedValue = formattedValue.replace(/[^0-9.]/g, ''); // Ziffern und Punkt
+        }
 
         // 3. Mehrere Punkte verhindern
         const parts = formattedValue.split('.');
@@ -15,11 +18,18 @@ export function numberInput(node: HTMLInputElement, options: { decimalPlaces: nu
             formattedValue = parts[0] + '.' + parts.slice(1).join('');
         }
 
-        // 4. Dezimalstellen begrenzen
-        if (formattedValue.includes('.')) {
+        // 4. Dezimalstellen begrenzen (wenn nicht noDecimals)
+        if (!noDecimals && decimalPlaces !== undefined && formattedValue.includes('.')) {
             const decimalPart = formattedValue.split('.')[1];
             if (decimalPart && decimalPart.length > decimalPlaces) {
                 formattedValue = formattedValue.substring(0, formattedValue.indexOf('.') + decimalPlaces + 1);
+            }
+        }
+
+        // 5. Maximalwert prüfen
+        if (maxValue !== undefined) {
+            if (parseFloat(formattedValue) > maxValue) {
+                formattedValue = maxValue.toString();
             }
         }
 
@@ -49,8 +59,13 @@ export function numberInput(node: HTMLInputElement, options: { decimalPlaces: nu
     node.addEventListener('input', handleInput);
 
     return {
-        update(newOptions: { decimalPlaces: number, isPercentage?: boolean }) {
-            options = newOptions;
+        update(newOptions: { decimalPlaces?: number, isPercentage?: boolean, noDecimals?: boolean, maxValue?: number }) {
+            // Update options without overwriting defaults for unspecified values
+            options = { ...options, ...newOptions };
+            decimalPlaces = newOptions.decimalPlaces;
+            isPercentage = newOptions.isPercentage ?? isPercentage;
+            noDecimals = newOptions.noDecimals ?? noDecimals;
+            maxValue = newOptions.maxValue;
         },
         destroy() {
             node.removeEventListener('input', handleInput);

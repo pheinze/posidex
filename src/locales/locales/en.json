@@ -66,7 +66,7 @@
       "multiplierPlaceholder": "Multiplier"
     },
     "takeProfitRow": {
-      "winLabel": "win:",
+      "winLabel": "Win:",
       "rrLabel": "R/R:",
       "pricePlaceholder": "Price",
       "lockButtonTitle": "Lock/Unlock Percentage",

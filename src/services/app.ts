@@ -196,11 +196,15 @@ export const app = {
             return;
         }
 
+        const liquidationPriceDisplay = values.leverage.gt(1)
+            ? baseMetrics.liquidationPrice.toFixed(values.entryPrice.decimalPlaces())
+            : 'N/A';
+
         updateTradeStore(state => ({ ...state,
             positionSize: baseMetrics.positionSize.toFixed(4),
             requiredMargin: baseMetrics.requiredMargin.toFixed(2),
             netLoss: `-${baseMetrics.netLoss.toFixed(2)}`,
-            liquidationPrice: baseMetrics.liquidationPrice.toFixed(values.entryPrice.decimalPlaces()),
+            liquidationPrice: liquidationPriceDisplay,
             breakEvenPrice: baseMetrics.breakEvenPrice.toFixed(values.entryPrice.decimalPlaces()),
         }));
 
