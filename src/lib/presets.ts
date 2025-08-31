@@ -1,5 +1,6 @@
 import { browser } from '$app/environment';
 import { get } from 'svelte/store';
+import { presetStore, updatePresetStore } from '../stores/presetStore';
 import { tradeStore, updateTradeStore, clearResults } from '../stores/tradeStore';
 import type { AppState } from '../stores/types';
 import { CONSTANTS } from './constants';
@@ -30,7 +31,7 @@ export const savePreset = (name: string, data: AppState) => {
 	presets[name] = data; // Assuming `data` is already an AppState object
 	try {
 		localStorage.setItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY, JSON.stringify(presets));
-		updateTradeStore((store) => ({
+		updatePresetStore((store) => ({
 			...store,
 			availablePresets: Object.keys(presets),
 			selectedPreset: name
@@ -50,10 +51,10 @@ export const deletePreset = (name: string) => {
 	delete presets[name];
 	try {
 		localStorage.setItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY, JSON.stringify(presets));
-		updateTradeStore((store) => ({
+		updatePresetStore((store) => ({
 			...store,
 			availablePresets: Object.keys(presets), // Update available presets
-			selectedPreset: get(tradeStore).selectedPreset === name ? '' : get(tradeStore).selectedPreset // Clear selected if deleted
+			selectedPreset: get(presetStore).selectedPreset === name ? '' : get(presetStore).selectedPreset // Clear selected if deleted
 		}));
 	} catch (e) {
 		console.warn('Could not delete preset from localStorage.', e);
@@ -70,9 +71,12 @@ export const applyPreset = (name: string) => {
 	const preset = presets[name];
 
 	if (preset) {
-		updateTradeStore((store) => ({ // Use updateTradeStore from stores
+		updateTradeStore((store) => ({
 			...store,
-			...preset,
+			...preset
+		}));
+		updatePresetStore((store) => ({
+			...store,
 			selectedPreset: name
 		}));
 		clearResults(true); // Clear results and show guidance after applying preset

@@ -87,8 +87,6 @@ export interface AppState {
     showSymbolSuggestions: boolean;
     showJournalModal: boolean;
     showChangelogModal: boolean; // Added for changelog modal
-    availablePresets: string[];
-    selectedPreset: string;
     journalSearchQuery: string;
     journalFilterStatus: string;
     currentTradeData: any; // This needs a more specific interface
