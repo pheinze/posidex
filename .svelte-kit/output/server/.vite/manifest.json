@@ -59,12 +59,20 @@
       "_utils.js"
     ]
   },
-  "_stores.js": {
-    "file": "chunks/stores.js",
-    "name": "stores",
+  "_tradeStore.js": {
+    "file": "chunks/tradeStore.js",
+    "name": "tradeStore",
     "imports": [
       "_index.js",
-      "_constants.js"
+      "_constants.js",
+      "_uiStore.js"
+    ]
+  },
+  "_uiStore.js": {
+    "file": "chunks/uiStore.js",
+    "name": "uiStore",
+    "imports": [
+      "_index.js"
     ]
   },
   "_utils.js": {
@@ -126,40 +134,40 @@
       "_constants.js"
     ]
   },
-  "src/lib/instructions/changelog.de.md?raw": {
+  "src/instructions/changelog.de.md?raw": {
     "file": "chunks/changelog.de.js",
     "name": "changelog.de",
-    "src": "src/lib/instructions/changelog.de.md?raw",
+    "src": "src/instructions/changelog.de.md?raw",
     "isDynamicEntry": true
   },
-  "src/lib/instructions/changelog.en.md?raw": {
+  "src/instructions/changelog.en.md?raw": {
     "file": "chunks/changelog.en.js",
     "name": "changelog.en",
-    "src": "src/lib/instructions/changelog.en.md?raw",
+    "src": "src/instructions/changelog.en.md?raw",
     "isDynamicEntry": true
   },
-  "src/lib/instructions/dashboard.de.md?raw": {
+  "src/instructions/dashboard.de.md?raw": {
     "file": "chunks/dashboard.de.js",
     "name": "dashboard.de",
-    "src": "src/lib/instructions/dashboard.de.md?raw",
+    "src": "src/instructions/dashboard.de.md?raw",
     "isDynamicEntry": true
   },
-  "src/lib/instructions/dashboard.en.md?raw": {
+  "src/instructions/dashboard.en.md?raw": {
     "file": "chunks/dashboard.en.js",
     "name": "dashboard.en",
-    "src": "src/lib/instructions/dashboard.en.md?raw",
+    "src": "src/instructions/dashboard.en.md?raw",
     "isDynamicEntry": true
   },
-  "src/lib/instructions/journal.de.md?raw": {
+  "src/instructions/journal.de.md?raw": {
     "file": "chunks/journal.de.js",
     "name": "journal.de",
-    "src": "src/lib/instructions/journal.de.md?raw",
+    "src": "src/instructions/journal.de.md?raw",
     "isDynamicEntry": true
   },
-  "src/lib/instructions/journal.en.md?raw": {
+  "src/instructions/journal.en.md?raw": {
     "file": "chunks/journal.en.js",
     "name": "journal.en",
-    "src": "src/lib/instructions/journal.en.md?raw",
+    "src": "src/instructions/journal.en.md?raw",
     "isDynamicEntry": true
   },
   "src/routes/+layout.server.ts": {
@@ -169,7 +177,7 @@
     "isEntry": true,
     "imports": [
       "_constants.js",
-      "_stores.js"
+      "_tradeStore.js"
     ]
   },
   "src/routes/+layout.svelte": {
@@ -178,10 +186,11 @@
     "src": "src/routes/+layout.svelte",
     "isEntry": true,
     "imports": [
-      "_index2.js"
+      "_index2.js",
+      "_uiStore.js"
     ],
     "css": [
-      "_app/immutable/assets/_layout.D2vNJ86N.css"
+      "_app/immutable/assets/_layout.T2Nd96dW.css"
     ]
   },
   "src/routes/+page.svelte": {
@@ -192,20 +201,21 @@
     "imports": [
       "_index2.js",
       "_constants.js",
+      "_uiStore.js",
       "_index.js",
       "_utils2.js",
-      "_stores.js"
+      "_tradeStore.js"
     ],
     "dynamicImports": [
-      "src/lib/instructions/changelog.de.md?raw",
-      "src/lib/instructions/changelog.en.md?raw",
-      "src/lib/instructions/dashboard.de.md?raw",
-      "src/lib/instructions/dashboard.en.md?raw",
-      "src/lib/instructions/journal.de.md?raw",
-      "src/lib/instructions/journal.en.md?raw"
+      "src/instructions/changelog.de.md?raw",
+      "src/instructions/changelog.en.md?raw",
+      "src/instructions/dashboard.de.md?raw",
+      "src/instructions/dashboard.en.md?raw",
+      "src/instructions/journal.de.md?raw",
+      "src/instructions/journal.en.md?raw"
     ],
     "css": [
-      "_app/immutable/assets/_page.DBfLDQfX.css"
+      "_app/immutable/assets/_page.BpdoRalt.css"
     ]
   }
 }

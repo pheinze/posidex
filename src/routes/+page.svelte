@@ -39,30 +39,32 @@
 
     // Reactive statement to trigger app.calculateAndDisplay() when relevant inputs change
     $: {
-        // Trigger calculation when any of these inputs change
-        currentAppState.accountSize,
-        currentAppState.riskPercentage,
-        currentAppState.entryPrice,
-        currentAppState.stopLossPrice,
-        currentAppState.leverage,
-        currentAppState.fees,
-        currentAppState.symbol,
-        currentAppState.atrValue,
-        currentAppState.atrMultiplier,
-        currentAppState.useAtrSl,
-        currentAppState.tradeType,
-        currentAppState.targets;
+        if (!$uiStore.isInitializing) {
+            // Trigger calculation when any of these inputs change
+            currentAppState.accountSize,
+            currentAppState.riskPercentage,
+            currentAppState.entryPrice,
+            currentAppState.stopLossPrice,
+            currentAppState.leverage,
+            currentAppState.fees,
+            currentAppState.symbol,
+            currentAppState.atrValue,
+            currentAppState.atrMultiplier,
+            currentAppState.useAtrSl,
+            currentAppState.tradeType,
+            currentAppState.targets;
 
-        // Only trigger if all necessary inputs are defined (not null/undefined from initial load)
-        // and not during initial setup where values might be empty
-        if (currentAppState.accountSize !== undefined && currentAppState.riskPercentage !== undefined &&
-            currentAppState.entryPrice !== undefined && currentAppState.leverage !== undefined &&
-            currentAppState.fees !== undefined && currentAppState.symbol !== undefined &&
-            currentAppState.atrValue !== undefined && currentAppState.atrMultiplier !== undefined &&
-            currentAppState.useAtrSl !== undefined && currentAppState.tradeType !== undefined &&
-            currentAppState.targets !== undefined) {
-            
-            app.calculateAndDisplay();
+            // Only trigger if all necessary inputs are defined (not null/undefined from initial load)
+            // and not during initial setup where values might be empty
+            if (currentAppState.accountSize !== undefined && currentAppState.riskPercentage !== undefined &&
+                currentAppState.entryPrice !== undefined && currentAppState.leverage !== undefined &&
+                currentAppState.fees !== undefined && currentAppState.symbol !== undefined &&
+                currentAppState.atrValue !== undefined && currentAppState.atrMultiplier !== undefined &&
+                currentAppState.useAtrSl !== undefined && currentAppState.tradeType !== undefined &&
+                currentAppState.targets !== undefined) {
+
+                app.calculateAndDisplay();
+            }
         }
     }
 

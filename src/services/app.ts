@@ -60,6 +60,7 @@ export const app = {
             app.calculateAndDisplay();
             // Explicitly save settings after initial load to persist the loaded selectedPreset
             app.saveSettings();
+            uiStore.setInitializing(false);
         }
     },
 
