@@ -12,24 +12,8 @@ interface UiState {
     showErrorMessage: boolean;
 }
 
-// Function to load theme from localStorage or cookie
-function loadTheme(): string {
-    if (browser) {
-        try {
-            const storedTheme = localStorage.getItem(CONSTANTS.LOCAL_STORAGE_THEME_KEY);
-            if (storedTheme) return storedTheme;
-        } catch (e) {
-            console.warn("Could not load theme from localStorage.", e);
-        }
-        const cookieTheme = document.cookie.split('; ').find(row => row.startsWith(`${CONSTANTS.LOCAL_STORAGE_THEME_KEY}=`))?.split('=')[1];
-        if (cookieTheme) return cookieTheme;
-    }
-    return 'dark'; // Default theme
-}
-
-
 const initialUiState: UiState = {
-    currentTheme: loadTheme(),
+    currentTheme: 'dark', // Always default to 'dark' to prevent hydration mismatch
     showJournalModal: false,
     showChangelogModal: false,
     showCopyFeedback: false,
@@ -40,18 +24,6 @@ const initialUiState: UiState = {
 
 function createUiStore() {
     const { subscribe, update } = writable<UiState>(initialUiState);
-
-    // Apply theme on initial load
-    if (browser) {
-        document.body.classList.forEach(className => {
-            if (className.startsWith('theme-')) {
-                document.body.classList.remove(className);
-            }
-        });
-        if (initialUiState.currentTheme !== 'dark') {
-            document.body.classList.add(`theme-${initialUiState.currentTheme}`);
-        }
-    }
 
     return {
         subscribe,

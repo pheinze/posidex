@@ -8,9 +8,17 @@
 
 	import '../app.css';
 
+	import { CONSTANTS } from '../lib/constants';
+
 	onMount(() => {
 		tradeStore.set(data.initialAppState);
-		uiStore.setTheme(data.theme);
+
+		// The server provides a theme from the cookie.
+		// On the client, we prioritize localStorage as it might be more up-to-date
+		// if the cookie failed to set for any reason.
+		const storedTheme = localStorage.getItem(CONSTANTS.LOCAL_STORAGE_THEME_KEY);
+		const themeToSet = storedTheme || data.theme; // Use localStorage theme, fallback to cookie theme
+		uiStore.setTheme(themeToSet);
 	});
 </script>
 
