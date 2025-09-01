@@ -11,7 +11,7 @@ export interface TradeValues {
     atrValue: Decimal;
     atrMultiplier: Decimal;
     stopLossPrice: Decimal;
-    targets: Array<{ price: Decimal; percent: Decimal; }>;
+    targets: Array<{ price: Decimal; percent: Decimal; isLocked: boolean; }>;
     totalPercentSold: Decimal;
 }
 
@@ -31,6 +31,9 @@ export interface IndividualTpResult {
     priceChangePercent: Decimal;
     returnOnCapital: Decimal;
     partialVolume: Decimal;
+    exitFee: Decimal;
+    index: number;
+    percentSold: Decimal;
 }
 
 export interface TotalMetrics {
@@ -61,6 +64,7 @@ export interface AppState {
     positionSize: string;
     requiredMargin: string;
     netLoss: string;
+    entryFee: string;
     liquidationPrice: string;
     breakEvenPrice: string;
     totalRR: string;

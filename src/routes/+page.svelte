@@ -15,8 +15,9 @@
     import { _, locale } from '../locales/i18n'; // Import locale
     import { get } from 'svelte/store'; // Import get
     import { loadInstruction } from '../services/markdownLoader';
+    import { formatDynamicDecimal } from '../utils/utils';
     
-    import type { IndividualTpResult } from '../lib/calculator';
+    import type { IndividualTpResult } from '../stores/types';
     import SummaryResults from '../components/results/SummaryResults.svelte';
     import LanguageSwitcher from '../components/shared/LanguageSwitcher.svelte';
     import Tooltip from '../components/shared/Tooltip.svelte';
@@ -189,6 +190,7 @@
                 positionSize={$tradeStore.positionSize}
                 netLoss={$tradeStore.netLoss}
                 requiredMargin={$tradeStore.requiredMargin}
+                entryFee={$tradeStore.entryFee}
                 liquidationPrice={$tradeStore.liquidationPrice}
                 breakEvenPrice={$tradeStore.breakEvenPrice}
                 on:toggleLock={() => app.togglePositionSizeLock()}
@@ -210,11 +212,12 @@
             {#each $tradeStore.calculatedTpDetails as tpDetail: IndividualTpResult}
                 <div class="result-group !mt-0 md:!mt-6">
                     <h2 class="section-header">{$_('dashboard.takeProfit')} {(tpDetail as IndividualTpResult).index + 1} ({(tpDetail as IndividualTpResult).percentSold.toFixed(0)}%)</h2>
-                    <div class="result-item"><span class="result-label">{$_('dashboard.riskRewardRatio')}</span><span class="result-value {tpDetail.riskRewardRatio.gte(2) ? 'text-green-400' : tpDetail.riskRewardRatio.gte(1.5) ? 'text-yellow-400' : 'text-red-400'}">{tpDetail.riskRewardRatio.toFixed(2)}</span></div>
-                    <div class="result-item"><span class="result-label">{$_('dashboard.netProfit')}<Tooltip text={$_('dashboard.netProfitTooltip')} /></span><span class="result-value text-green-400">+{tpDetail.netProfit.toFixed(2)}</span></div>
-                    <div class="result-item"><span class="result-label">{$_('dashboard.priceChange')}<Tooltip text={$_('dashboard.priceChangeTooltip')} /></span><span class="result-value {tpDetail.priceChangePercent.gt(0) ? 'text-green-400' : tpDetail.priceChangePercent.lt(0) ? 'text-red-400' : ''}">{tpDetail.priceChangePercent.toFixed(2)}%</span></div>
-                    <div class="result-item"><span class="result-label">{$_('dashboard.returnOnCapital')}<Tooltip text={$_('dashboard.returnOnCapitalTooltip')} /></span><span class="result-value {tpDetail.returnOnCapital.gt(0) ? 'text-green-400' : tpDetail.returnOnCapital.lt(0) ? 'text-red-400' : ''}">{tpDetail.returnOnCapital.toFixed(2)}%</span></div>
-                    <div class="result-item"><span class="result-label">{$_('dashboard.partialVolume')}<Tooltip text={$_('dashboard.partialVolumeTooltip')} /></span><span class="result-value">{tpDetail.partialVolume.toFixed(4)}</span></div>
+                    <div class="result-item"><span class="result-label">{$_('dashboard.riskRewardRatio')}</span><span class="result-value {tpDetail.riskRewardRatio.gte(2) ? 'text-green-400' : tpDetail.riskRewardRatio.gte(1.5) ? 'text-yellow-400' : 'text-red-400'}">{formatDynamicDecimal(tpDetail.riskRewardRatio, 2)}</span></div>
+                    <div class="result-item"><span class="result-label">{$_('dashboard.netProfit')}<Tooltip text={$_('dashboard.netProfitTooltip')} /></span><span class="result-value text-green-400">+{formatDynamicDecimal(tpDetail.netProfit, 2)}</span></div>
+                    <div class="result-item"><span class="result-label">{$_('dashboard.priceChange')}<Tooltip text={$_('dashboard.priceChangeTooltip')} /></span><span class="result-value {tpDetail.priceChangePercent.gt(0) ? 'text-green-400' : tpDetail.priceChangePercent.lt(0) ? 'text-red-400' : ''}">{formatDynamicDecimal(tpDetail.priceChangePercent, 2)}%</span></div>
+                    <div class="result-item"><span class="result-label">{$_('dashboard.returnOnCapital')}<Tooltip text={$_('dashboard.returnOnCapitalTooltip')} /></span><span class="result-value {tpDetail.returnOnCapital.gt(0) ? 'text-green-400' : tpDetail.returnOnCapital.lt(0) ? 'text-red-400' : ''}">{formatDynamicDecimal(tpDetail.returnOnCapital, 2)}%</span></div>
+                    <div class="result-item"><span class="result-label">{$_('dashboard.partialVolume')}<Tooltip text={$_('dashboard.partialVolumeTooltip')} /></span><span class="result-value">{formatDynamicDecimal(tpDetail.partialVolume, 4)}</span></div>
+                    <div class="result-item"><span class="result-label">{$_('dashboard.exitFeeLabel')}</span><span class="result-value">{formatDynamicDecimal(tpDetail.exitFee, 4)}</span></div>
                 </div>
             {/each}
         </div>
@@ -296,11 +299,11 @@
                 </tbody>
             </table>
         </div>
-         <div class="flex items-center gap-4 mt-4">
-            <button id="export-csv-btn" class="bg-green-700 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2" title="{$_('journal.exportCsvTitle')}" on:click={app.exportToCSV}>{@html icons.export}<span>{$_('journal.export')}</span></button>
+         <div class="flex flex-wrap items-center gap-4 mt-4">
+            <button id="export-csv-btn" class="bg-green-700 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2" title="{$_('journal.exportCsvTitle')}" on:click={app.exportToCSV}>{@html icons.export}<span class="hidden sm:inline">{$_('journal.export')}</span></button>
             <input type="file" id="import-csv-input" accept=".csv" class="hidden" on:change={handleImportCsv}/>
-            <button id="import-csv-btn" class="bg-blue-700 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2" on:click={() => document.getElementById('import-csv-input')?.click()}>{@html icons.import}<span>{$_('journal.import')}</span></button>
-            <button id="clear-journal-btn" class="bg-red-800 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2" title="{$_('journal.clearJournalTitle')}" on:click={app.clearJournal}>{@html icons.delete}<span>{$_('journal.clearAll')}</span></button>
+            <button id="import-csv-btn" class="bg-blue-700 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2" on:click={() => document.getElementById('import-csv-input')?.click()}>{@html icons.import}<span class="hidden sm:inline">{$_('journal.import')}</span></button>
+            <button id="clear-journal-btn" class="bg-red-800 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2" title="{$_('journal.clearJournalTitle')}" on:click={app.clearJournal}>{@html icons.delete}<span class="hidden sm:inline">{$_('journal.clearAll')}</span></button>
              <button id="show-journal-readme-btn" class="bg-slate-600 hover:bg-slate-500 text-white font-bold p-2.5 rounded-lg" title="{$_('journal.showJournalInstructionsTitle')}" aria-label="{$_('journal.showJournalInstructionsAriaLabel')}" on:click={() => app.uiManager.showReadme('journal')}>{@html icons.book}</button>
         </div>
     </div>

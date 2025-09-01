@@ -15,3 +15,21 @@ export function parseDecimal(value: string | number | null | undefined): Decimal
     if (isNaN(stringValue as any) || stringValue.trim() === '') return new Decimal(0);
     return new Decimal(stringValue);
 }
+
+export function formatDynamicDecimal(value: Decimal | string | number | null | undefined, maxPlaces = 4): string {
+    if (value === null || value === undefined) return '-';
+
+    const dec = new Decimal(value);
+    if (dec.isNaN()) return '-';
+
+    // Format to a fixed number of decimal places, then remove trailing zeros
+    const formatted = dec.toFixed(maxPlaces);
+
+    // If it's a whole number after formatting, return it without decimals.
+    if (new Decimal(formatted).isInteger()) {
+        return new Decimal(formatted).toFixed(0);
+    }
+
+    // Otherwise, remove only the trailing zeros and the decimal point if it's the last char
+    return formatted.replace(/0+$/, '').replace(/\.$/, '');
+}

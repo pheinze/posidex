@@ -56,7 +56,30 @@ export function numberInput(node: HTMLInputElement, options: { decimalPlaces?: n
         }
     }
 
+    function handleKeyDown(event: KeyboardEvent) {
+        if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+            event.preventDefault();
+
+            const currentValue = parseFloat(node.value.replace(',', '.')) || 0;
+            const step = event.shiftKey ? 10 : (event.ctrlKey ? 0.1 : 1);
+            let newValue: number;
+
+            if (event.key === 'ArrowUp') {
+                newValue = currentValue + step;
+            } else { // ArrowDown
+                newValue = currentValue - step;
+            }
+
+            // Ensure the new value respects the options
+            let formattedNewValue = formatValue(newValue.toString());
+
+            node.value = formattedNewValue;
+            node.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+    }
+
     node.addEventListener('input', handleInput);
+    node.addEventListener('keydown', handleKeyDown);
 
     return {
         update(newOptions: { decimalPlaces?: number, isPercentage?: boolean, noDecimals?: boolean, maxValue?: number }) {
@@ -69,6 +92,7 @@ export function numberInput(node: HTMLInputElement, options: { decimalPlaces?: n
         },
         destroy() {
             node.removeEventListener('input', handleInput);
+            node.removeEventListener('keydown', handleKeyDown);
         }
     };
 }

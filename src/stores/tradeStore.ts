@@ -26,6 +26,7 @@ export const initialAppState: Omit<AppState, 'currentTheme' | 'showJournalModal'
     positionSize: '-',
     requiredMargin: '-',
     netLoss: '-',
+    entryFee: '-',
     liquidationPrice: '-',
     breakEvenPrice: '-',
     totalRR: '-',

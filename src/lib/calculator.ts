@@ -1,48 +1,6 @@
 import { Decimal } from 'decimal.js';
 import { CONSTANTS } from './constants';
-
-export interface TradeValues {
-    accountSize: Decimal;
-    riskPercentage: Decimal;
-    entryPrice: Decimal;
-    leverage: Decimal;
-    fees: Decimal;
-    symbol: string;
-    useAtrSl: boolean;
-    atrValue: Decimal;
-    atrMultiplier: Decimal;
-    stopLossPrice: Decimal;
-    targets: Array<{ price: Decimal; percent: Decimal; isLocked: boolean; }>;
-    totalPercentSold: Decimal;
-}
-
-interface BaseMetrics {
-    positionSize: Decimal;
-    requiredMargin: Decimal;
-    netLoss: Decimal;
-    breakEvenPrice: Decimal;
-    liquidationPrice: Decimal;
-    entryFee: Decimal;
-    riskAmount: Decimal;
-}
-
-export interface IndividualTpResult {
-    netProfit: Decimal;
-    riskRewardRatio: Decimal;
-    priceChangePercent: Decimal;
-    returnOnCapital: Decimal;
-    partialVolume: Decimal;
-    index: number;
-    percentSold: Decimal;
-}
-
-interface TotalMetrics {
-    totalNetProfit: Decimal;
-    totalRR: Decimal;
-    totalFees: Decimal;
-    maxPotentialProfit: Decimal;
-    riskAmount: Decimal;
-}
+import type { TradeValues, BaseMetrics, IndividualTpResult, TotalMetrics } from '../stores/types';
 
 export const calculator = {
     calculateBaseMetrics(values: TradeValues, tradeType: string): BaseMetrics | null {
@@ -73,14 +31,14 @@ export const calculator = {
         const gainPerUnit = tpPrice.minus(values.entryPrice).abs();
         const positionPart = positionSize.times(currentTpPercent.div(100));
         const grossProfitPart = gainPerUnit.times(positionPart);
-        const tpExitFeePart = positionPart.times(tpPrice).times(values.fees.div(100));
+        const exitFee = positionPart.times(tpPrice).times(values.fees.div(100));
         const entryFeePart = positionPart.times(values.entryPrice).times(values.fees.div(100));
-        const netProfit = grossProfitPart.minus(entryFeePart).minus(tpExitFeePart);
+        const netProfit = grossProfitPart.minus(entryFeePart).minus(exitFee);
         const riskForPart = riskAmount.times(currentTpPercent.div(100)); // Annahme: targets[0] ist der aktuelle TP
         const riskRewardRatio = riskForPart.gt(0) ? netProfit.div(riskForPart) : new Decimal(0);
         const priceChangePercent = values.entryPrice.gt(0) ? tpPrice.minus(values.entryPrice).div(values.entryPrice).times(100) : new Decimal(0);
         const returnOnCapital = requiredMargin.gt(0) && currentTpPercent.gt(0) ? netProfit.div(requiredMargin.times(currentTpPercent.div(100))).times(100) : new Decimal(0);
-        return { netProfit, riskRewardRatio, priceChangePercent, returnOnCapital, partialVolume: positionPart, index: index, percentSold: new Decimal(0) };
+        return { netProfit, riskRewardRatio, priceChangePercent, returnOnCapital, partialVolume: positionPart, exitFee, index: index, percentSold: new Decimal(0) };
     },
     calculateTotalMetrics(targets: Array<{ price: Decimal; percent: Decimal; }>, baseMetrics: BaseMetrics, values: TradeValues, tradeType: string): TotalMetrics {
         const { positionSize, entryFee, riskAmount } = baseMetrics;

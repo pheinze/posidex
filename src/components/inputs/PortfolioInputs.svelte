@@ -15,7 +15,7 @@
         </div>
         <div>
             <label for="risk-percentage" class="input-label">{$_('dashboard.portfolioInputs.riskPerTradeLabel')}</label>
-            <input id="risk-percentage" type="text" inputmode="decimal" use:numberInput={{ decimalPlaces: 2, isPercentage: true }} bind:value={riskPercentage} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.portfolioInputs.riskPerTradePlaceholder')}">
+            <input id="risk-percentage" type="text" inputmode="decimal" use:numberInput={{ decimalPlaces: 2, isPercentage: true, maxValue: 100 }} bind:value={riskPercentage} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.portfolioInputs.riskPerTradePlaceholder')}">
         </div>
     </div>
 </div>

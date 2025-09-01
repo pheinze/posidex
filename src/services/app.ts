@@ -1,5 +1,5 @@
 import { get } from 'svelte/store';
-import { debounce, parseDecimal } from '../utils/utils';
+import { debounce, parseDecimal, formatDynamicDecimal } from '../utils/utils';
 import { CONSTANTS, themes } from '../lib/constants';
 import { apiService } from './apiService';
 import { modalManager } from './modalManager';
@@ -9,8 +9,7 @@ import { tradeStore, updateTradeStore, clearResults, resetAllInputs, toggleAtrIn
 import { presetStore, updatePresetStore } from '../stores/presetStore';
 import { journalStore } from '../stores/journalStore';
 import { uiStore } from '../stores/uiStore';
-import type { TradeValues, IndividualTpResult } from '../lib/calculator';
-import type { AppState, JournalEntry } from '../stores/types';
+import type { AppState, JournalEntry, TradeValues, IndividualTpResult } from '../stores/types';
 import { Decimal } from 'decimal.js';
 import { browser } from '$app/environment';
 
@@ -197,15 +196,16 @@ export const app = {
         }
 
         const liquidationPriceDisplay = values.leverage.gt(1)
-            ? baseMetrics.liquidationPrice.toFixed(values.entryPrice.decimalPlaces())
+            ? formatDynamicDecimal(baseMetrics.liquidationPrice)
             : 'N/A';
 
         updateTradeStore(state => ({ ...state,
-            positionSize: baseMetrics.positionSize.toFixed(4),
-            requiredMargin: baseMetrics.requiredMargin.toFixed(2),
-            netLoss: `-${baseMetrics.netLoss.toFixed(2)}`,
+            positionSize: formatDynamicDecimal(baseMetrics.positionSize, 4),
+            requiredMargin: formatDynamicDecimal(baseMetrics.requiredMargin, 2),
+            netLoss: `-${formatDynamicDecimal(baseMetrics.netLoss, 2)}`,
             liquidationPrice: liquidationPriceDisplay,
-            breakEvenPrice: baseMetrics.breakEvenPrice.toFixed(values.entryPrice.decimalPlaces()),
+            breakEvenPrice: formatDynamicDecimal(baseMetrics.breakEvenPrice),
+            entryFee: formatDynamicDecimal(baseMetrics.entryFee, 4)
         }));
 
         const calculatedTpDetails: IndividualTpResult[] = [];
@@ -222,12 +222,12 @@ export const app = {
         const totalMetrics = calculator.calculateTotalMetrics(values.targets, baseMetrics, values, currentAppState.tradeType);
         if (values.totalPercentSold.gt(0)) {
             updateTradeStore(state => ({ ...state,
-                totalRR: totalMetrics.totalRR.toFixed(2),
-                totalNetProfit: `+${totalMetrics.totalNetProfit.toFixed(2)}`,
-                totalPercentSold: `${values.totalPercentSold}%`,
-                riskAmountCurrency: `-${totalMetrics.riskAmount.toFixed(2)}`,
-                totalFees: totalMetrics.totalFees.toFixed(2),
-                maxPotentialProfit: `+${totalMetrics.maxPotentialProfit.toFixed(2)}`,
+                totalRR: formatDynamicDecimal(totalMetrics.totalRR, 2),
+                totalNetProfit: `+${formatDynamicDecimal(totalMetrics.totalNetProfit, 2)}`,
+                totalPercentSold: `${formatDynamicDecimal(values.totalPercentSold, 0)}%`,
+                riskAmountCurrency: `-${formatDynamicDecimal(totalMetrics.riskAmount, 2)}`,
+                totalFees: formatDynamicDecimal(totalMetrics.totalFees, 2),
+                maxPotentialProfit: `+${formatDynamicDecimal(totalMetrics.maxPotentialProfit, 2)}`,
                 showTotalMetricsGroup: true,
             }));
         } else {
