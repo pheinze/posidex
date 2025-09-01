@@ -56,46 +56,6 @@
     --toggle-bg-off: #94a3b8; --toggle-bg-on: #38bdf8; --toggle-circle-bg: var(--text-primary);
     --overlay-color: rgba(255, 255, 255, 0.7);
 }
-.theme-meteor {
-    /* Hintergrund- und Textfarben basierend auf Purple Dark/Light */
-    --bg-primary: radial-gradient(farthest-side at top, #2b1f99, #0c082f);
-    --bg-secondary: #1a154a; /* Abgeleitete Zwischenfarbe */
-    --bg-tertiary: #2b1f99;
-    --text-primary: #ede8fd;
-    --text-secondary: #c2befa;
-    --border-color: #433f65; /* Meteorite als Rahmenfarbe */
-
-    /* Akzentfarbe basierend auf Blue PRO */
-    --accent-color: #334eff;
-    --accent-color-hover: #5a71ff; /* Etwas aufgehellt für Hover */
-
-    /* Standard-UI-Feedback-Farben */
-    --success-color: #0da49a; /* Green Free */
-    --danger-color: #ee485f;  /* Red Insights */
-    --warning-color: #fa9de7; /* Red Insights Highlight */
-
-    /* Standard-Button basierend auf Meteorite */
-    --btn-default-bg: #433f65;
-    --btn-default-hover-bg: #5b587d;
-    --btn-default-text: #ede8fd;
-
-    /* Danger-Button basierend auf Red Insights */
-    --btn-danger-bg: #ee485f;
-    --btn-danger-hover-bg: #f06075;
-    --btn-danger-text: #ffffff;
-
-    /* Akzent-Button basierend auf Blue PRO */
-    --btn-accent-bg: #334eff;
-    --btn-accent-hover-bg: #5a71ff;
-    --btn-accent-text: #ffffff;
-
-    /* Toggle-Switch */
-    --toggle-bg-off: #433f65; /* Meteorite */
-    --toggle-bg-on: #334eff;  /* Blue PRO */
-    --toggle-circle-bg: var(--text-primary);
-
-    --overlay-color: rgba(12, 8, 47, 0.7); /* Basierend auf --bg-primary */
-}
 
 .theme-meteorite {
     /* --- Core Palette --- */
@@ -144,9 +104,9 @@
     --text-secondary: var(--highlight-purple-alt);
     --border-color: var(--core-meteorite);
 
-    /* Accent color based on Purple */
-    --accent-color: var(--core-purple);
-    --accent-color-hover: #714deb; /* Button hover color */
+    /* Accent color based on Blue PRO */
+    --accent-color: var(--core-blue-pro);
+    --accent-color-hover: #5c71ff; /* Blue Button hover color */
 
     /* UI Feedback Colors */
     --success-color: var(--core-green-free);
@@ -162,8 +122,8 @@
     --btn-danger-hover-bg: #f46d7e;
     --btn-danger-text: #ffffff;
 
-    --btn-accent-bg: var(--core-purple);
-    --btn-accent-hover-bg: #714deb;
+    --btn-accent-bg: var(--core-blue-pro);
+    --btn-accent-hover-bg: #5c71ff;
     --btn-accent-text: #ffffff;
 
     --btn-success-bg: var(--core-green-free);
@@ -172,7 +132,7 @@
 
     /* Toggle Switch */
     --toggle-bg-off: var(--core-meteorite);
-    --toggle-bg-on: var(--core-purple);
+    --toggle-bg-on: var(--core-blue-pro);
     --toggle-circle-bg: var(--text-primary);
 
     --overlay-color: rgba(12, 8, 47, 0.7); /* Based on purple-dark */
