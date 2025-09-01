@@ -21,6 +21,7 @@
     import SummaryResults from '../components/results/SummaryResults.svelte';
     import LanguageSwitcher from '../components/shared/LanguageSwitcher.svelte';
     import Tooltip from '../components/shared/Tooltip.svelte';
+    import JournalView from '../components/shared/JournalView.svelte';
 
     let changelogContent = '';
 
@@ -102,13 +103,6 @@
     function handlePresetLoad(event: Event) {
         const selectedPreset = (event.target as HTMLSelectElement).value;
         app.loadPreset(selectedPreset);
-    }
-
-    function handleImportCsv(event: Event) {
-        const file = (event.target as HTMLInputElement).files?.[0];
-        if (file) {
-            app.importFromCSV(file);
-        }
     }
 
 </script>
@@ -246,68 +240,7 @@
     Version 0.92b - <button class="text-link" on:click={() => uiStore.toggleChangelogModal(true)}>Changelog</button>
 </footer>
 
-<div id="journal-modal" class="modal-overlay" class:visible={$uiStore.showJournalModal} class:opacity-100={$uiStore.showJournalModal}>
-    <div class="modal-content w-full h-full max-w-6xl">
-         <div class="flex justify-between items-center mb-4"><h2 class="text-2xl font-bold">{$_('journal.title')}</h2><button id="close-journal-btn" class="text-3xl" aria-label="{$_('journal.closeJournalAriaLabel')}" on:click={() => uiStore.toggleJournalModal(false)}>&times;</button></div>
-         <div id="journal-stats" class="journal-stats"></div>
-         <div class="flex gap-4 my-4"><input type="text" id="journal-search" class="input-field w-full px-3 py-2 rounded-md" placeholder="{$_('journal.searchSymbolPlaceholder')}" bind:value={$tradeStore.journalSearchQuery}><select id="journal-filter" class="input-field px-3 py-2 rounded-md" bind:value={$tradeStore.journalFilterStatus}><option value="all">{$_('journal.filterAll')}</option><option value="Open">{$_('journal.filterOpen')}</option><option value="Won">{$_('journal.filterWon')}</option><option value="Lost">{$_('journal.filterLost')}</option></select></div>
-        <div class="max-h-[calc(100vh-20rem)] overflow-auto">
-            <table class="journal-table">
-                <thead><tr><th>{$_('journal.date')}</th><th>{$_('journal.symbol')}</th><th>{$_('journal.type')}</th><th>{$_('journal.entry')}</th><th>{$_('journal.sl')}</th><th>{$_('journal.rr')}</th><th>{$_('journal.status')}</th><th>{$_('journal.notes')}</th><th>{$_('journal.action')}</th></tr></thead>
-                <tbody>
-                    {#each $journalStore.filter(trade => trade.symbol.toLowerCase().includes($tradeStore.journalSearchQuery.toLowerCase()) && ($tradeStore.journalFilterStatus === 'all' || trade.status === $tradeStore.journalFilterStatus)) as trade}
-                        <tr>
-                            <td>{new Date(trade.date).toLocaleString($locale || undefined, {day:'2-digit', month: '2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit'})}</td>
-                            <td>{trade.symbol || '-'}</td>
-                            <td class="{trade.tradeType === CONSTANTS.TRADE_TYPE_LONG ? 'text-green-400' : 'text-red-400'}">{trade.tradeType.charAt(0).toUpperCase() + trade.tradeType.slice(1)}</td>
-                            <td>{trade.entryPrice.toFixed(4)}</td>
-                            <td>{trade.stopLossPrice.toFixed(4)}</td>
-                            <td class="{trade.totalRR.gte(2) ? 'text-green-400' : trade.totalRR.gte(1.5) ? 'text-yellow-400' : 'text-red-400'}">{trade.totalRR.toFixed(2)}</td>
-                            <td>
-                                <select class="status-select input-field p-1" data-id="{trade.id}" on:change={(e) => app.updateTradeStatus(trade.id, (e.target as HTMLSelectElement).value)}>
-                                    <option value="Open" selected={trade.status === 'Open'}>{$_('journal.filterOpen')}</option>
-                                    <option value="Won" selected={trade.status === 'Won'}>{$_('journal.filterWon')}</option>
-                                    <option value="Lost" selected={trade.status === 'Lost'}>{$_('journal.filterLost')}</option>
-                                </select>
-                            </td>
-                            <td class="notes-cell" title="{$_('journal.clickToExpand')}" on:click={(e) => (e.target as HTMLElement).classList.toggle('expanded')}>{trade.notes || ''}</td>
-                            <td class="text-center"><button class="delete-trade-btn text-red-500 hover:text-red-400 p-1 rounded-full" data-id="{trade.id}" title="{$_('journal.delete')}" on:click={() => app.deleteTrade(trade.id)}>{@html icons.delete}</button></td>
-                        </tr>
-                    {/each}
-                    {#if $journalStore.filter(trade => trade.symbol.toLowerCase().includes($tradeStore.journalSearchQuery.toLowerCase()) && ($tradeStore.journalFilterStatus === 'all' || trade.status === $tradeStore.journalFilterStatus)).length === 0}
-                        <tr><td colspan="9" class="text-center text-slate-500 py-8">{$_('journal.noTradesYet')}</td></tr>
-                    {/if}
-                </tbody>
-            </table>
-        </div>
-        <h3 class="text-xl font-bold mt-6 mb-4">{$_('journal.performancePerSymbol')}</h3>
-        <div id="symbol-performance-stats" class="max-h-48 overflow-y-auto border border-[var(--border-color)] rounded-md p-2">
-            <table class="journal-table w-full">
-                <thead><tr><th>{$_('journal.symbol')}</th><th>{$_('journal.trades')}</th><th>{$_('journal.profitPercent')}</th><th>{$_('journal.totalPL')}</th></tr></thead>
-                <tbody id="symbol-performance-table-body">
-                    {#each Object.entries(app.calculator.calculateSymbolPerformance($journalStore)) as [symbol, data]}
-                        <tr>
-                            <td>{symbol}</td>
-                            <td>{data.totalTrades}</td>
-                            <td>{(data.totalTrades > 0 ? (data.wonTrades / data.totalTrades) * 100 : 0).toFixed(1)}%</td>
-                            <td class="{data.totalProfitLoss.gt(0) ? 'text-green-400' : data.totalProfitLoss.lt(0) ? 'text-red-400' : ''}">{data.totalProfitLoss.toFixed(2)}</td>
-                        </tr>
-                    {/each}
-                    {#if Object.keys(app.calculator.calculateSymbolPerformance($journalStore)).length === 0}
-                        <tr><td colspan="4" class="text-center text-slate-500 py-4">{$_('journal.noData')}</td></tr>
-                    {/if}
-                </tbody>
-            </table>
-        </div>
-         <div class="flex flex-wrap items-center gap-4 mt-4">
-            <button id="export-csv-btn" class="bg-green-700 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2" title="{$_('journal.exportCsvTitle')}" on:click={app.exportToCSV}>{@html icons.export}<span class="hidden sm:inline">{$_('journal.export')}</span></button>
-            <input type="file" id="import-csv-input" accept=".csv" class="hidden" on:change={handleImportCsv}/>
-            <button id="import-csv-btn" class="bg-blue-700 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2" on:click={() => document.getElementById('import-csv-input')?.click()}>{@html icons.import}<span class="hidden sm:inline">{$_('journal.import')}</span></button>
-            <button id="clear-journal-btn" class="bg-red-800 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2" title="{$_('journal.clearJournalTitle')}" on:click={app.clearJournal}>{@html icons.delete}<span class="hidden sm:inline">{$_('journal.clearAll')}</span></button>
-             <button id="show-journal-readme-btn" class="bg-slate-600 hover:bg-slate-500 text-white font-bold p-2.5 rounded-lg" title="{$_('journal.showJournalInstructionsTitle')}" aria-label="{$_('journal.showJournalInstructionsAriaLabel')}" on:click={() => app.uiManager.showReadme('journal')}>{@html icons.book}</button>
-        </div>
-    </div>
-</div>
+<JournalView />
 
 <CustomModal />
 
