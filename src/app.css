@@ -407,3 +407,30 @@ input[type="checkbox"]:checked + .atr-toggle-track::after { transform: translate
 .text-link:hover {
   text-decoration: underline;
 }
+
+/* Accessibility fix for button contrast */
+
+/* VIP Theme: Use light text on green 'Long' button */
+.theme-vip .trade-type-switch button.long.active {
+    color: #ffffff;
+}
+
+/* Dracula Theme: Use dark text on bright 'Long' and 'Short' buttons */
+.theme-dracula .trade-type-switch button.long.active,
+.theme-dracula .trade-type-switch button.short.active {
+    color: #282a36;
+}
+
+/* Solarized Light Theme: Use very dark/light text for contrast */
+.theme-solarized-light .trade-type-switch button.long.active {
+    color: #002b36; /* Use dark color for contrast on olive */
+}
+.theme-solarized-light .trade-type-switch button.short.active {
+    color: #ffffff; /* Use white for better contrast on red */
+}
+
+/* Nord Theme: Use dark text on light 'Long' and 'Short' buttons */
+.theme-nord .trade-type-switch button.long.active,
+.theme-nord .trade-type-switch button.short.active {
+    color: #2e3440;
+}
