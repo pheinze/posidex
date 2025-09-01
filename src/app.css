@@ -38,7 +38,8 @@
     --shadow-tooltip: 0 30px 90px -20px rgba(0, 0, 0, 0.3);
     --btn-default-bg: #475569; --btn-default-hover-bg: #64748b; --btn-default-text: #e2e8f0;
     --btn-danger-bg: #991b1b; --btn-danger-hover-bg: #b91c1c; --btn-danger-text: #e2e8f0;
-    --btn-accent-bg: #0ea5e9; --btn-accent-hover: #0284c7; --btn-accent-text: #e2e8f0;
+    --btn-accent-bg: #0ea5e9; --btn-accent-hover-bg: #0284c7; --btn-accent-text: #e2e8f0;
+    --btn-success-bg: #22c55e; --btn-success-hover-bg: #16a34a; --btn-success-text: #e2e8f0;
     --toggle-bg-off: #475569; --toggle-bg-on: #0ea5e9; --toggle-circle-bg: var(--text-primary);
     --overlay-color: rgba(0, 0, 0, 0.7);
 }
@@ -50,7 +51,8 @@
     --shadow-tooltip: 0 30px 90px -20px rgba(0, 0, 0, 0.1);
     --btn-default-bg: #94a3b8; --btn-default-hover-bg: #cbd5e1; --btn-default-text: #1e293b;
     --btn-danger-bg: #ef4444; --btn-danger-hover-bg: #dc2626; --btn-danger-text: #ffffff;
-    --btn-accent-bg: #38bdf8; --btn-accent-hover: #0ea5e9; --btn-accent-text: #ffffff;
+    --btn-accent-bg: #38bdf8; --btn-accent-hover-bg: #0ea5e9; --btn-accent-text: #ffffff;
+    --btn-success-bg: #16a34a; --btn-success-hover-bg: #15803d; --btn-success-text: #ffffff;
     --toggle-bg-off: #94a3b8; --toggle-bg-on: #38bdf8; --toggle-circle-bg: var(--text-primary);
     --overlay-color: rgba(255, 255, 255, 0.7);
 }
@@ -85,7 +87,6 @@
     /* Akzent-Button basierend auf Blue PRO */
     --btn-accent-bg: #334eff;
     --btn-accent-hover: #5a71ff;
-    --btn-accent-hover-bg: var(--accent-color-hover);
     --btn-accent-text: #ffffff;
 
     /* Toggle-Switch */
@@ -125,9 +126,9 @@
 
     /* Akzent-Button mit der neuen Akzentfarbe */
     --btn-accent-bg: #e2ff00;
-    --btn-accent-hover: #cde200;
-    --btn-accent-hover-bg: var(--accent-color-hover);
+    --btn-accent-hover-bg: #cde200;
     --btn-accent-text: #121212; /* Dunkler Text für besseren Kontrast */
+    --btn-success-bg: #4caf50; --btn-success-hover-bg: #43a047; --btn-success-text: #ffffff;
 
     /* Toggle-Switch mit der neuen Akzentfarbe */
     --toggle-bg-off: #444;
@@ -155,8 +156,9 @@
     --btn-danger-bg: #990000;
     --btn-danger-hover-bg: #cc0000;
     --btn-danger-text: #000000;
-    --btn-accent-bg: #00ff41; --btn-accent-hover: #00e639; --btn-accent-hover-bg: var(--accent-color-hover);
+    --btn-accent-bg: #00ff41; --btn-accent-hover-bg: #00e639;
     --btn-accent-text: #000000;
+    --btn-success-bg: #00ff41; --btn-success-hover-bg: #00e639; --btn-success-text: #000000;
     --toggle-bg-off: #00802b;
     --toggle-bg-on: #00ff41;
     --toggle-circle-bg: var(--text-primary);
@@ -169,7 +171,8 @@
     --success-color: #50fa7b; --danger-color: #ff5555; --warning-color: #f1fa8c;
     --btn-default-bg: #44475a; --btn-default-hover-bg: #6272a4; --btn-default-text: #f8f8f2;
     --btn-danger-bg: #ff5555; --btn-danger-hover-bg: #ff6e6e; --btn-danger-text: #282a36;
-    --btn-accent-bg: #ff79c6; --btn-accent-hover: #ff92d0; --btn-accent-hover-bg: var(--accent-color-hover); --btn-accent-text: #282a36;
+    --btn-accent-bg: #ff79c6; --btn-accent-hover-bg: #ff92d0; --btn-accent-text: #282a36;
+    --btn-success-bg: #50fa7b; --btn-success-hover-bg: #62faa4; --btn-success-text: #282a36;
     --toggle-bg-off: #44475a; --toggle-bg-on: #bd93f9; --toggle-circle-bg: var(--text-primary);
     --overlay-color: rgba(0, 0, 0, 0.7);
 }
@@ -180,7 +183,8 @@
     --success-color: #859900; --danger-color: #dc322f; --warning-color: #b58900;
     --btn-default-bg: #93a1a1; --btn-default-hover-bg: #839496; --btn-default-text: #fdf6e3;
     --btn-danger-bg: #dc322f; --btn-danger-hover-bg: #cb4b16; --btn-danger-text: #fdf6e3;
-    --btn-accent-bg: #268bd2; --btn-accent-hover: #1e6a9e; --btn-accent-text: #fdf6e3;
+    --btn-accent-bg: #268bd2; --btn-accent-hover-bg: #1e6a9e; --btn-accent-text: #fdf6e3;
+    --btn-success-bg: #859900; --btn-success-hover-bg: #728300; --btn-success-text: #fdf6e3;
     --toggle-bg-off: #93a1a1; --toggle-bg-on: #268bd2; --toggle-circle-bg: #fdf6e3;
     --overlay-color: rgba(255, 255, 255, 0.7);
 }
@@ -191,7 +195,8 @@
     --success-color: #a3be8c; --danger-color: #bf616a; --warning-color: #ebcb8b;
     --btn-default-bg: #434c5e; --btn-default-hover-bg: #4c566a; --btn-default-text: #d8dee9;
     --btn-danger-bg: #bf616a; --btn-danger-hover-bg: #d08770; --btn-danger-text: #2e3440;
-    --btn-accent-bg: #88c0d0; --btn-accent-hover: #8fbcbb; --btn-accent-hover-bg: var(--accent-color-hover); --btn-accent-text: #2e3440;
+    --btn-accent-bg: #88c0d0; --btn-accent-hover-bg: #8fbcbb; --btn-accent-text: #2e3440;
+    --btn-success-bg: #a3be8c; --btn-success-hover-bg: #99b57e; --btn-success-text: #2e3440;
     --toggle-bg-off: #434c5e; --toggle-bg-on: #88c0d0; --toggle-circle-bg: #d8dee9;
     --overlay-color: rgba(0, 0, 0, 0.7);
 }
