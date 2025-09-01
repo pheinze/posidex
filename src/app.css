@@ -85,6 +85,7 @@
     /* Akzent-Button basierend auf Blue PRO */
     --btn-accent-bg: #334eff;
     --btn-accent-hover: #5a71ff;
+    --btn-accent-hover-bg: var(--accent-color-hover);
     --btn-accent-text: #ffffff;
 
     /* Toggle-Switch */
@@ -125,6 +126,7 @@
     /* Akzent-Button mit der neuen Akzentfarbe */
     --btn-accent-bg: #e2ff00;
     --btn-accent-hover: #cde200;
+    --btn-accent-hover-bg: var(--accent-color-hover);
     --btn-accent-text: #121212; /* Dunkler Text für besseren Kontrast */
 
     /* Toggle-Switch mit der neuen Akzentfarbe */
@@ -153,7 +155,7 @@
     --btn-danger-bg: #990000;
     --btn-danger-hover-bg: #cc0000;
     --btn-danger-text: #000000;
-    --btn-accent-bg: #00ff41; --btn-accent-hover: #00e639;
+    --btn-accent-bg: #00ff41; --btn-accent-hover: #00e639; --btn-accent-hover-bg: var(--accent-color-hover);
     --btn-accent-text: #000000;
     --toggle-bg-off: #00802b;
     --toggle-bg-on: #00ff41;
@@ -167,7 +169,7 @@
     --success-color: #50fa7b; --danger-color: #ff5555; --warning-color: #f1fa8c;
     --btn-default-bg: #44475a; --btn-default-hover-bg: #6272a4; --btn-default-text: #f8f8f2;
     --btn-danger-bg: #ff5555; --btn-danger-hover-bg: #ff6e6e; --btn-danger-text: #282a36;
-    --btn-accent-bg: #ff79c6; --btn-accent-hover: #ff92d0; --btn-accent-text: #282a36;
+    --btn-accent-bg: #ff79c6; --btn-accent-hover: #ff92d0; --btn-accent-hover-bg: var(--accent-color-hover); --btn-accent-text: #282a36;
     --toggle-bg-off: #44475a; --toggle-bg-on: #bd93f9; --toggle-circle-bg: var(--text-primary);
     --overlay-color: rgba(0, 0, 0, 0.7);
 }
@@ -189,7 +191,7 @@
     --success-color: #a3be8c; --danger-color: #bf616a; --warning-color: #ebcb8b;
     --btn-default-bg: #434c5e; --btn-default-hover-bg: #4c566a; --btn-default-text: #d8dee9;
     --btn-danger-bg: #bf616a; --btn-danger-hover-bg: #d08770; --btn-danger-text: #2e3440;
-    --btn-accent-bg: #88c0d0; --btn-accent-hover: #8fbcbb; --btn-accent-text: #2e3440;
+    --btn-accent-bg: #88c0d0; --btn-accent-hover: #8fbcbb; --btn-accent-hover-bg: var(--accent-color-hover); --btn-accent-text: #2e3440;
     --toggle-bg-off: #434c5e; --toggle-bg-on: #88c0d0; --toggle-circle-bg: #d8dee9;
     --overlay-color: rgba(0, 0, 0, 0.7);
 }
