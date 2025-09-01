@@ -181,7 +181,7 @@
     /* Backgrounds and Text based on Blue */
     --bg-primary: radial-gradient(farthest-side at top, var(--gradient-blue-light), var(--gradient-blue-dark));
     --bg-secondary: #1a2a6c; /* Derived intermediate color */
-    --bg-tertiary: var(--gradient-blue-light);
+    --bg-tertiary: #283a80; /* Custom derived color for better contrast */
     --text-primary: var(--blue-pro-light);
     --text-secondary: var(--highlight-blue-alt);
     --border-color: var(--core-meteorite); /* Using Meteorite for borders as a neutral choice */
