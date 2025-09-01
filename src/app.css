@@ -178,6 +178,88 @@
     --overlay-color: rgba(12, 8, 47, 0.7); /* Based on purple-dark */
 }
 
+.theme-steel {
+    /* Using the same full palette definition for completeness */
+    /* --- Core Palette --- */
+    --core-purple: #4e21e7;
+    --core-meteorite: #433f65;
+    --core-green-free: #0da49a;
+    --core-blue-pro: #334eff;
+    --core-red-insights: #ee485f;
+
+    /* --- Light & Dark Shades --- */
+    --purple-light: #ede8fd;
+    --purple-dark: #0c082f;
+    --green-free-light: #e6f6f5;
+    --green-free-dark: #002039;
+    --blue-pro-light: #eaedff;
+    --blue-pro-dark: #08103f;
+    --red-insights-light: #feecef;
+    --red-insights-dark: #0f0523;
+
+    /* --- Gradients --- */
+    --gradient-purple-light: #2b1f99;
+    --gradient-purple-dark: #0c082f;
+    --gradient-green-light: #3c8499;
+    --gradient-green-dark: #002039;
+    --gradient-blue-light: #3c6e99;
+    --gradient-blue-dark: #08103f;
+    --gradient-red-light: #6d2954;
+    --gradient-red-dark: #0f0523;
+
+    /* --- Highlighting Colors --- */
+    --highlight-purple: #7383f5;
+    --highlight-purple-alt: #c2befa;
+    --highlight-green: #48b082;
+    --highlight-green-alt: #7fb5a8;
+    --highlight-blue: #80b8f2;
+    --highlight-blue-alt: #c2cfed;
+    --highlight-red: #fa9de7;
+    --highlight-red-alt: #ffe0ee;
+
+    /* --- Theming Variables (Steel) --- */
+    /* Backgrounds and Text based on Blue */
+    --bg-primary: radial-gradient(farthest-side at top, var(--gradient-blue-light), var(--gradient-blue-dark));
+    --bg-secondary: #1a2a6c; /* Derived intermediate color */
+    --bg-tertiary: var(--gradient-blue-light);
+    --text-primary: var(--blue-pro-light);
+    --text-secondary: var(--highlight-blue-alt);
+    --border-color: var(--core-meteorite); /* Using Meteorite for borders as a neutral choice */
+
+    /* Accent color based on Blue PRO */
+    --accent-color: var(--core-blue-pro);
+    --accent-color-hover: #5c71ff; /* Button hover color */
+
+    /* UI Feedback Colors */
+    --success-color: var(--core-green-free);
+    --danger-color: var(--core-red-insights);
+    --warning-color: var(--highlight-red);
+
+    /* Button Colors */
+    --btn-default-bg: var(--core-meteorite);
+    --btn-default-hover-bg: #5b587d;
+    --btn-default-text: var(--blue-pro-light);
+
+    --btn-danger-bg: var(--core-red-insights);
+    --btn-danger-hover-bg: #f46d7e;
+    --btn-danger-text: #ffffff;
+
+    --btn-accent-bg: var(--core-blue-pro);
+    --btn-accent-hover-bg: #5c71ff;
+    --btn-accent-text: #ffffff;
+
+    --btn-success-bg: var(--core-green-free);
+    --btn-success-hover-bg: #3db6af;
+    --btn-success-text: #ffffff;
+
+    /* Toggle Switch */
+    --toggle-bg-off: var(--core-meteorite);
+    --toggle-bg-on: var(--core-blue-pro);
+    --toggle-circle-bg: var(--text-primary);
+
+    --overlay-color: rgba(8, 16, 63, 0.7); /* Based on blue-pro-dark */
+}
+
 
 .theme-VIP {
     --bg-primary: #121212;
