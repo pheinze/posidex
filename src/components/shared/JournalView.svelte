@@ -19,6 +19,11 @@
         return () => unsubscribe();
     });
 
+    $: filteredTrades = $journalStore.filter(trade =>
+        trade.symbol.toLowerCase().includes(currentAppState.journalSearchQuery.toLowerCase()) &&
+        (currentAppState.journalFilterStatus === 'all' || trade.status === currentAppState.journalFilterStatus)
+    );
+
     function handleImportCsv(event: Event) {
         if (browser) { // Added browser check
             const file = (event.target as HTMLInputElement).files?.[0];
@@ -38,33 +43,75 @@
      <div id="journal-stats" class="journal-stats"></div>
      <div class="flex gap-4 my-4"><input type="text" id="journal-search" class="input-field w-full px-3 py-2 rounded-md" placeholder="{$_('journal.searchSymbolPlaceholder')}" bind:value={currentAppState.journalSearchQuery}><select id="journal-filter" class="input-field px-3 py-2 rounded-md" bind:value={currentAppState.journalFilterStatus}><option value="all">{$_('journal.filterAll')}</option><option value="Open">{$_('journal.filterOpen')}</option><option value="Won">{$_('journal.filterWon')}</option><option value="Lost">{$_('journal.filterLost')}</option></select></div>
     <div class="max-h-[calc(100vh-20rem)] overflow-auto">
-        <table class="journal-table">
-            <thead><tr><th>{$_('journal.date')}</th><th>{$_('journal.symbol')}</th><th>{$_('journal.type')}</th><th>{$_('journal.entry')}</th><th>{$_('journal.sl')}</th><th>{$_('journal.rr')}</th><th>{$_('journal.status')}</th><th>{$_('journal.notes')}</th><th>{$_('journal.action')}</th></tr></thead>
-            <tbody>
-                {#each $journalStore.filter(trade => trade.symbol.toLowerCase().includes(currentAppState.journalSearchQuery.toLowerCase()) && (currentAppState.journalFilterStatus === 'all' || trade.status === currentAppState.journalFilterStatus)) as trade}
-                    <tr>
-                        <td>{new Date(trade.date).toLocaleString('de-DE', {day:'2-digit', month: '2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit'})}</td>
-                        <td>{trade.symbol || '-'}</td>
-                        <td class="{trade.tradeType === CONSTANTS.TRADE_TYPE_LONG ? 'text-green-400' : 'text-red-400'}">{trade.tradeType.charAt(0).toUpperCase() + trade.tradeType.slice(1)}</td>
-                        <td>{trade.entryPrice.toFixed(4)}</td>
-                        <td>{trade.stopLossPrice.toFixed(4)}</td>
-                        <td class="{trade.totalRR.gte(2) ? 'text-green-400' : trade.totalRR.gte(1.5) ? 'text-yellow-400' : ''}">{trade.totalRR.toFixed(2)}</td>
-                        <td>
-                            <select class="status-select input-field p-1" data-id="{trade.id}" on:change={(e) => app.updateTradeStatus(trade.id, (e.target as HTMLSelectElement).value)}>
+        <!-- Desktop Table -->
+        <div class="hidden md:block">
+            <table class="journal-table w-full">
+                <thead><tr><th>{$_('journal.date')}</th><th>{$_('journal.symbol')}</th><th>{$_('journal.type')}</th><th>{$_('journal.entry')}</th><th>{$_('journal.sl')}</th><th>P/L</th><th>{$_('journal.rr')}</th><th>{$_('journal.status')}</th><th>{$_('journal.notes')}</th><th>{$_('journal.action')}</th></tr></thead>
+                <tbody>
+                    <!-- Desktop Rows -->
+                    {#each filteredTrades as trade}
+                        <tr>
+                            <td>{new Date(trade.date).toLocaleString('de-DE', {day:'2-digit', month: '2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit'})}</td>
+                            <td>{trade.symbol || '-'}</td>
+                            <td class="{trade.tradeType === CONSTANTS.TRADE_TYPE_LONG ? 'text-green-400' : 'text-red-400'}">{trade.tradeType.charAt(0).toUpperCase() + trade.tradeType.slice(1)}</td>
+                            <td>{trade.entryPrice.toFixed(4)}</td>
+                            <td>{trade.stopLossPrice.toFixed(4)}</td>
+                            <td class="{trade.totalNetProfit.gt(0) ? 'text-green-400' : trade.totalNetProfit.lt(0) ? 'text-red-400' : ''}">{trade.totalNetProfit.toFixed(2)}</td>
+                            <td class="{trade.totalRR.gte(2) ? 'text-green-400' : trade.totalRR.gte(1.5) ? 'text-yellow-400' : ''}">{trade.totalRR.toFixed(2)}</td>
+                            <td>
+                                <select class="status-select input-field p-1" data-id="{trade.id}" on:change={(e) => app.updateTradeStatus(trade.id, (e.target as HTMLSelectElement).value)}>
+                                    <option value="Open" selected={trade.status === 'Open'}>{$_('journal.filterOpen')}</option>
+                                    <option value="Won" selected={trade.status === 'Won'}>{$_('journal.filterWon')}</option>
+                                    <option value="Lost" selected={trade.status === 'Lost'}>{$_('journal.filterLost')}</option>
+                                </select>
+                            </td>
+                            <td class="notes-cell" title="{$_('journal.clickToExpand')}" on:click={(e) => (e.target as HTMLElement).classList.toggle('expanded')}>{trade.notes || ''}</td>
+                            <td class="text-center"><button class="delete-trade-btn text-red-500 hover:text-red-400 p-1 rounded-full cursor-pointer" data-id="{trade.id}" title="{$_('journal.delete')}" on:click={() => app.deleteTrade(trade.id)}>{@html icons.delete}</button></td>
+                        </tr>
+                    {/each}
+                    {#if filteredTrades.length === 0}
+                        <tr><td colspan="10" class="text-center text-slate-500 py-8">{$_('journal.noTradesYet')}</td></tr>
+                    {/if}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Mobile Card Layout -->
+        <div class="md:hidden space-y-4">
+            {#each filteredTrades as trade}
+                <div class="bg-slate-800 p-4 rounded-lg shadow-md border border-slate-700">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <div class="text-lg font-bold">{trade.symbol || '-'}</div>
+                            <div class="text-sm {trade.tradeType === CONSTANTS.TRADE_TYPE_LONG ? 'text-green-400' : 'text-red-400'}">{trade.tradeType.charAt(0).toUpperCase() + trade.tradeType.slice(1)}</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-lg font-bold {trade.totalNetProfit.gt(0) ? 'text-green-400' : trade.totalNetProfit.lt(0) ? 'text-red-400' : ''}">
+                                {trade.totalNetProfit.toFixed(2)}
+                            </div>
+                            <div class="text-xs text-slate-400">P/L</div>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex justify-between items-center">
+                        <div>
+                            <div class="text-sm">Status</div>
+                            <select class="status-select input-field p-1 mt-1" data-id="{trade.id}" on:change={(e) => app.updateTradeStatus(trade.id, (e.target as HTMLSelectElement).value)}>
                                 <option value="Open" selected={trade.status === 'Open'}>{$_('journal.filterOpen')}</option>
                                 <option value="Won" selected={trade.status === 'Won'}>{$_('journal.filterWon')}</option>
                                 <option value="Lost" selected={trade.status === 'Lost'}>{$_('journal.filterLost')}</option>
                             </select>
-                        </td>
-                        <td class="notes-cell" title="{$_('journal.clickToExpand')}" on:click={(e) => (e.target as HTMLElement).classList.toggle('expanded')}>{trade.notes || ''}</td>
-                        <td class="text-center"><button class="delete-trade-btn text-red-500 hover:text-red-400 p-1 rounded-full cursor-pointer" data-id="{trade.id}" title="{$_('journal.delete')}" on:click={() => app.deleteTrade(trade.id)}>{@html icons.delete}</button></td>
-                    </tr>
-                {/each}
-                {#if $journalStore.filter(trade => trade.symbol.toLowerCase().includes(currentAppState.journalSearchQuery.toLowerCase()) && (currentAppState.journalFilterStatus === 'all' || trade.status === currentAppState.journalFilterStatus)).length === 0}
-                    <tr><td colspan="9" class="text-center text-slate-500 py-8">{$_('journal.noTradesYet')}</td></tr>
-                {/if}
-            </tbody>
-        </table>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-sm text-slate-400">{new Date(trade.date).toLocaleString('de-DE', {day:'2-digit', month: '2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit'})}</div>
+                            <button class="delete-trade-btn text-red-500 hover:text-red-400 p-1 rounded-full cursor-pointer mt-1" data-id="{trade.id}" title="{$_('journal.delete')}" on:click={() => app.deleteTrade(trade.id)}>{@html icons.delete}</button>
+                        </div>
+                    </div>
+                </div>
+            {/each}
+            {#if filteredTrades.length === 0}
+                <div class="text-center text-slate-500 py-8">{$_('journal.noTradesYet')}</div>
+            {/if}
+        </div>
     </div>
     <h3 class="text-xl font-bold mt-6 mb-4">{$_('journal.performancePerSymbol')}</h3>
     <div id="symbol-performance-stats" class="max-h-48 overflow-y-auto border border-[var(--border-color)] rounded-md p-2">
