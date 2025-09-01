@@ -86,7 +86,7 @@
 
     /* Akzent-Button basierend auf Blue PRO */
     --btn-accent-bg: #334eff;
-    --btn-accent-hover: #5a71ff;
+    --btn-accent-hover-bg: #5a71ff;
     --btn-accent-text: #ffffff;
 
     /* Toggle-Switch */
