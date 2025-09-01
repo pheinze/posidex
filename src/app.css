@@ -441,3 +441,8 @@ input[type="checkbox"]:checked + .atr-toggle-track::after { transform: translate
 .theme-matrix .trade-type-switch button.short.active {
     color: #ffffff; /* Use light text color as requested */
 }
+
+/* --- Accessibility fix for 'Clear Journal' button in Matrix theme --- */
+.theme-matrix #clear-journal-btn {
+    color: var(--text-primary);
+}
