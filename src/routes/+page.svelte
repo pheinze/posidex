@@ -22,7 +22,7 @@
     import LanguageSwitcher from '../components/shared/LanguageSwitcher.svelte';
     import Tooltip from '../components/shared/Tooltip.svelte';
     import JournalView from '../components/shared/JournalView.svelte';
-    import favicon from '../assets/favicon.svg';
+    import CachyIcon from '../components/shared/CachyIcon.svelte';
 
     let changelogContent = '';
 
@@ -112,8 +112,8 @@
 
     <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
         <div class="flex justify-between items-center w-full md:w-auto">
-            <div class="flex items-center gap-3">
-                <img src={favicon} alt="Cachy Icon" class="h-8 w-8" />
+            <div class="flex items-center gap-3 text-[var(--text-primary)]">
+                <CachyIcon class="h-8 w-8" />
                 <h1 class="text-2xl sm:text-3xl font-bold">{$_('app.title')}</h1>
             </div>
             <button id="view-journal-btn-mobile" class="text-sm md:hidden bg-[var(--btn-accent-bg)] hover:bg-[var(--btn-accent-hover-bg)] text-[var(--btn-accent-text)] font-bold py-2 px-4 rounded-lg" title="{$_('app.journalButtonTitle')}" on:click={() => uiStore.toggleJournalModal(true)}>{$_('app.journalButton')}</button>
