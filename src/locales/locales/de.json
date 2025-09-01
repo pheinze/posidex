@@ -2,6 +2,7 @@
   "app": {
     "title": "Posidex",
     "journalButton": "Journal",
+    "journalButtonTitle": "Trade Journal öffnen",
     "changelogTitle": "Changelog",
     "closeChangelogAriaLabel": "Changelog schließen"
   },
@@ -11,6 +12,7 @@
     "savePresetAriaLabel": "Preset speichern",
     "deletePresetTitle": "Ausgewähltes Preset löschen",
     "resetButton": "Zurücksetzen",
+    "resetButtonTitle": "Alle Eingaben zurücksetzen",
     "themeSwitcherAriaLabel": "Theme wechseln",
     "totalTradeMetrics": "Gesamt-Trade Metriken",
     "totalTradeMetricsTooltip": "Übersicht über die wichtigsten Kennzahlen für den gesamten Trade.",
@@ -137,6 +139,7 @@
     "totalPL": "Gesamt P/L",
     "noData": "Keine Daten",
     "exportCsvTitle": "Als CSV exportieren",
+    "importCsvTitle": "Trades aus CSV-Datei importieren",
     "export": "Exportieren",
     "import": "Importieren",
     "clearJournalTitle": "Ganzes Journal leeren",
