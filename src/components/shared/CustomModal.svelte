@@ -28,8 +28,8 @@
             {/if}
             <div class="flex justify-end gap-4">
                 {#if modalState.type === 'confirm'}
-                    <button class="bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-4 rounded-lg" on:click={() => handleConfirm(true)}>{$_('dashboard.customModal.yesButton')}</button>
-                    <button class="bg-slate-600 hover:bg-slate-500 text-white font-bold py-2 px-4 rounded-lg" on:click={() => handleConfirm(false)}>{$_('dashboard.customModal.noButton')}</button>
+                    <button class="font-bold py-2 px-4 rounded-lg bg-[var(--btn-danger-bg)] hover:bg-[var(--btn-danger-hover-bg)] text-[var(--btn-danger-text)]" on:click={() => handleConfirm(true)}>{$_('dashboard.customModal.yesButton')}</button>
+                    <button class="font-bold py-2 px-4 rounded-lg bg-[var(--btn-default-bg)] hover:bg-[var(--btn-default-hover-bg)] text-[var(--btn-default-text)]" on:click={() => handleConfirm(false)}>{$_('dashboard.customModal.noButton')}</button>
                 {:else}
                     <button class="btn-modal-ok font-bold py-2 px-4 rounded-lg" on:click={() => handleConfirm(modalState.type === 'prompt' ? modalState.defaultValue : true)}>{$_('dashboard.customModal.okButton')}</button>
                 {/if}

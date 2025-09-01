@@ -28,11 +28,11 @@
 <div class="tp-row flex items-center gap-2 p-2 rounded-lg" style="background-color: var(--bg-tertiary);">
     <div class="flex-grow">
         <div class="flex justify-between items-center mb-1">
-            <label class="tp-label text-xs text-slate-400" for="tp-price-{index}">TP {index + 1}</label>
+            <label class="tp-label text-xs text-[var(--text-secondary)]" for="tp-price-{index}">TP {index + 1}</label>
             {#if tpDetail}
-                <div class="text-xs text-slate-500 text-right">
-                    <span class="mr-2">{$_('dashboard.takeProfitRow.winLabel')} <span class="text-green-400">+${tpDetail.netProfit.toFixed(2)}</span></span>
-                    <span>{$_('dashboard.takeProfitRow.rrLabel')} <span class="{tpDetail.riskRewardRatio.gte(2) ? 'text-green-400' : tpDetail.riskRewardRatio.gte(1.5) ? 'text-yellow-400' : 'text-red-400'}">{tpDetail.riskRewardRatio.toFixed(2)}</span></span>
+                <div class="text-xs text-[var(--text-secondary)] text-right">
+                    <span class="mr-2">{$_('dashboard.takeProfitRow.winLabel')} <span class="text-[var(--success-color)]">+${tpDetail.netProfit.toFixed(2)}</span></span>
+                    <span>{$_('dashboard.takeProfitRow.rrLabel')} <span class="{tpDetail.riskRewardRatio.gte(2) ? 'text-[var(--success-color)]' : tpDetail.riskRewardRatio.gte(1.5) ? 'text-[var(--warning-color)]' : 'text-[var(--danger-color)]'}">{tpDetail.riskRewardRatio.toFixed(2)}</span></span>
                 </div>
             {/if}
         </div>
@@ -59,7 +59,7 @@
             {@html icons.lockOpen}
         {/if}
     </button>
-    <button class="remove-tp-btn text-red-500 hover:text-red-400 p-1 self-center" title="{$_('dashboard.takeProfitRow.removeButtonTitle')}" tabindex="-1" on:click={removeRow}>
+    <button class="remove-tp-btn text-[var(--danger-color)] hover:opacity-80 p-1 self-center" title="{$_('dashboard.takeProfitRow.removeButtonTitle')}" tabindex="-1" on:click={removeRow}>
         {@html icons.remove}
     </button>
 </div>

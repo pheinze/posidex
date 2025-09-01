@@ -37,11 +37,11 @@
                             <tr>
                                 <td>{new Date(trade.date).toLocaleString($locale || undefined, {day:'2-digit', month: '2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit'})}</td>
                                 <td>{trade.symbol || '-'}</td>
-                                <td class="{trade.tradeType === CONSTANTS.TRADE_TYPE_LONG ? 'text-green-400' : 'text-red-400'}">{trade.tradeType.charAt(0).toUpperCase() + trade.tradeType.slice(1)}</td>
+                                <td class="{trade.tradeType === CONSTANTS.TRADE_TYPE_LONG ? 'text-[var(--success-color)]' : 'text-[var(--danger-color)]'}">{trade.tradeType.charAt(0).toUpperCase() + trade.tradeType.slice(1)}</td>
                                 <td>{trade.entryPrice.toFixed(4)}</td>
                                 <td>{trade.stopLossPrice.toFixed(4)}</td>
-                                <td class="{trade.totalNetProfit.gt(0) ? 'text-green-400' : trade.totalNetProfit.lt(0) ? 'text-red-400' : ''}">{trade.totalNetProfit.toFixed(2)}</td>
-                                <td class="{trade.totalRR.gte(2) ? 'text-green-400' : trade.totalRR.gte(1.5) ? 'text-yellow-400' : 'text-red-400'}">{trade.totalRR.toFixed(2)}</td>
+                                <td class="{trade.totalNetProfit.gt(0) ? 'text-[var(--success-color)]' : trade.totalNetProfit.lt(0) ? 'text-[var(--danger-color)]' : ''}">{trade.totalNetProfit.toFixed(2)}</td>
+                                <td class="{trade.totalRR.gte(2) ? 'text-[var(--success-color)]' : trade.totalRR.gte(1.5) ? 'text-[var(--warning-color)]' : 'text-[var(--danger-color)]'}">{trade.totalRR.toFixed(2)}</td>
                                 <td>
                                     <select class="status-select input-field p-1" data-id="{trade.id}" on:change={(e) => app.updateTradeStatus(trade.id, (e.target as HTMLSelectElement).value)}>
                                         <option value="Open" selected={trade.status === 'Open'}>{$_('journal.filterOpen')}</option>
@@ -50,7 +50,7 @@
                                     </select>
                                 </td>
                                 <td class="notes-cell" title="{$_('journal.clickToExpand')}" on:click={(e) => (e.target as HTMLElement).classList.toggle('expanded')}>{trade.notes || ''}</td>
-                                <td class="text-center"><button class="delete-trade-btn text-red-500 hover:text-red-400 p-1 rounded-full" data-id="{trade.id}" title="{$_('journal.delete')}" on:click={() => app.deleteTrade(trade.id)}>{@html icons.delete}</button></td>
+                                <td class="text-center"><button class="delete-trade-btn text-[var(--danger-color)] hover:opacity-80 p-1 rounded-full" data-id="{trade.id}" title="{$_('journal.delete')}" on:click={() => app.deleteTrade(trade.id)}>{@html icons.delete}</button></td>
                             </tr>
                         {/each}
                         {#if filteredTrades.length === 0}
@@ -63,17 +63,17 @@
             <!-- Mobile Card Layout -->
             <div class="md:hidden space-y-4">
                 {#each filteredTrades as trade}
-                    <div class="bg-slate-800 p-4 rounded-lg shadow-md border border-slate-700">
+                    <div class="bg-[var(--bg-primary)] p-4 rounded-lg shadow-md border border-[var(--border-color)]">
                         <div class="flex justify-between items-start">
                             <div>
-                                <div class="text-lg font-bold">{trade.symbol || '-'}</div>
-                                <div class="text-sm {trade.tradeType === CONSTANTS.TRADE_TYPE_LONG ? 'text-green-400' : 'text-red-400'}">{trade.tradeType.charAt(0).toUpperCase() + trade.tradeType.slice(1)}</div>
+                                <div class="text-lg font-bold text-[var(--text-primary)]">{trade.symbol || '-'}</div>
+                                <div class="text-sm {trade.tradeType === CONSTANTS.TRADE_TYPE_LONG ? 'text-[var(--success-color)]' : 'text-[var(--danger-color)]'}">{trade.tradeType.charAt(0).toUpperCase() + trade.tradeType.slice(1)}</div>
                             </div>
                             <div class="text-right">
-                                <div class="text-lg font-bold {trade.totalNetProfit.gt(0) ? 'text-green-400' : trade.totalNetProfit.lt(0) ? 'text-red-400' : ''}">
+                                <div class="text-lg font-bold {trade.totalNetProfit.gt(0) ? 'text-[var(--success-color)]' : trade.totalNetProfit.lt(0) ? 'text-[var(--danger-color)]' : ''}">
                                     {trade.totalNetProfit.toFixed(2)}
                                 </div>
-                                <div class="text-xs text-slate-400">P/L</div>
+                                <div class="text-xs text-[var(--text-secondary)]">P/L</div>
                             </div>
                         </div>
                         <div class="mt-4 flex justify-between items-center">
@@ -87,7 +87,7 @@
                             </div>
                             <div class="text-right">
                                 <div class="text-sm text-slate-400">{new Date(trade.date).toLocaleString('de-DE', {day:'2-digit', month: '2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit'})}</div>
-                                <button class="delete-trade-btn text-red-500 hover:text-red-400 p-1 rounded-full cursor-pointer mt-1" data-id="{trade.id}" title="{$_('journal.delete')}" on:click={() => app.deleteTrade(trade.id)}>{@html icons.delete}</button>
+                                <button class="delete-trade-btn text-[var(--danger-color)] hover:opacity-80 p-1 rounded-full cursor-pointer mt-1" data-id="{trade.id}" title="{$_('journal.delete')}" on:click={() => app.deleteTrade(trade.id)}>{@html icons.delete}</button>
                             </div>
                         </div>
                     </div>
@@ -107,7 +107,7 @@
                             <td>{symbol}</td>
                             <td>{data.totalTrades}</td>
                             <td>{(data.totalTrades > 0 ? (data.wonTrades / data.totalTrades) * 100 : 0).toFixed(1)}%</td>
-                            <td class="{data.totalProfitLoss.gt(0) ? 'text-green-400' : data.totalProfitLoss.lt(0) ? 'text-red-400' : ''}">{data.totalProfitLoss.toFixed(2)}</td>
+                            <td class="{data.totalProfitLoss.gt(0) ? 'text-[var(--success-color)]' : data.totalProfitLoss.lt(0) ? 'text-[var(--danger-color)]' : ''}">{data.totalProfitLoss.toFixed(2)}</td>
                         </tr>
                     {/each}
                     {#if Object.keys(app.calculator.calculateSymbolPerformance($journalStore)).length === 0}
@@ -117,11 +117,11 @@
             </table>
         </div>
          <div class="flex flex-wrap items-center gap-4 mt-4">
-            <button id="export-csv-btn" class="bg-green-700 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2" title="{$_('journal.exportCsvTitle')}" on:click={app.exportToCSV}>{@html icons.export}<span class="hidden sm:inline">{$_('journal.export')}</span></button>
+            <button id="export-csv-btn" class="font-bold py-2 px-4 rounded-lg flex items-center gap-2 bg-[var(--success-color)] hover:opacity-80 text-white" title="{$_('journal.exportCsvTitle')}" on:click={app.exportToCSV}>{@html icons.export}<span class="hidden sm:inline">{$_('journal.export')}</span></button>
             <input type="file" id="import-csv-input" accept=".csv" class="hidden" on:change={handleImportCsv}/>
-            <button id="import-csv-btn" class="bg-blue-700 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2" on:click={() => document.getElementById('import-csv-input')?.click()}>{@html icons.import}<span class="hidden sm:inline">{$_('journal.import')}</span></button>
-            <button id="clear-journal-btn" class="bg-red-800 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2" title="{$_('journal.clearJournalTitle')}" on:click={() => { if (browser) app.clearJournal() }}>{@html icons.delete}<span class="hidden sm:inline">{$_('journal.clearAll')}</span></button>
-             <button id="show-journal-readme-btn" class="bg-slate-600 hover:bg-slate-500 text-white font-bold p-2.5 rounded-lg" title="{$_('journal.showJournalInstructionsTitle')}" aria-label="{$_('journal.showJournalInstructionsAriaLabel')}" on:click={() => app.uiManager.showReadme('journal')}>{@html icons.book}</button>
+            <button id="import-csv-btn" class="font-bold py-2 px-4 rounded-lg flex items-center gap-2 bg-[var(--btn-accent-bg)] hover:bg-[var(--btn-accent-hover-bg)] text-[var(--btn-accent-text)]" on:click={() => document.getElementById('import-csv-input')?.click()}>{@html icons.import}<span class="hidden sm:inline">{$_('journal.import')}</span></button>
+            <button id="clear-journal-btn" class="font-bold py-2 px-4 rounded-lg flex items-center gap-2 bg-[var(--btn-danger-bg)] hover:bg-[var(--btn-danger-hover-bg)] text-[var(--btn-danger-text)]" title="{$_('journal.clearJournalTitle')}" on:click={() => { if (browser) app.clearJournal() }}>{@html icons.delete}<span class="hidden sm:inline">{$_('journal.clearAll')}</span></button>
+             <button id="show-journal-readme-btn" class="font-bold p-2.5 rounded-lg bg-[var(--btn-default-bg)] hover:bg-[var(--btn-default-hover-bg)] text-[var(--btn-default-text)]" title="{$_('journal.showJournalInstructionsTitle')}" aria-label="{$_('journal.showJournalInstructionsAriaLabel')}" on:click={() => app.uiManager.showReadme('journal')}>{@html icons.book}</button>
         </div>
     </div>
 </div>
