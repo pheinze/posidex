@@ -16,7 +16,7 @@ export const CONSTANTS = {
 
 export const themes = ['dark', 'meteorite', 'steel', 'light', 'VIP', 'matrix', 'dracula', 'solarized-light', 'nord'];
 export const themeIcons = {
-    dark: '🌙', light: '☀️', meteorite: '☄️', steel: '🛡️', VIP: '💎', matrix: '💻', dracula: '🧛', 'solarized-light': '📜', nord: '🏔️'
+    dark: '🌙', light: '☀️', meteorite: '☄️', steel: '🛡️', VIP: '🦆', matrix: '💻', dracula: '🧛', 'solarized-light': '📜', nord: '🏔️'
 };
 
 export const icons = {

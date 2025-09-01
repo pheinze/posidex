@@ -80,7 +80,7 @@
     --gradient-purple-dark: #0c082f;
     --gradient-green-light: #3c8499;
     --gradient-green-dark: #002039;
-    --gradient-blue-light: #3c6e99;
+    --gradient-blue-light: #283a80; /* Custom derived color */
     --gradient-blue-dark: #08103f;
     --gradient-red-light: #6d2954;
     --gradient-red-dark: #0f0523;
@@ -181,7 +181,7 @@
     /* Backgrounds and Text based on Blue */
     --bg-primary: radial-gradient(farthest-side at top, var(--gradient-blue-light), var(--gradient-blue-dark));
     --bg-secondary: #1a2a6c; /* Derived intermediate color */
-    --bg-tertiary: #283a80; /* Custom derived color for better contrast */
+    --bg-tertiary: var(--gradient-blue-light);
     --text-primary: var(--blue-pro-light);
     --text-secondary: var(--highlight-blue-alt);
     --border-color: var(--core-meteorite); /* Using Meteorite for borders as a neutral choice */
