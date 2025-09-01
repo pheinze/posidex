@@ -393,7 +393,7 @@ input[type="checkbox"]:checked + .atr-toggle-track::after { transform: translate
     transition: background-color 0.2s;
 }
 .btn-primary-action:hover {
-    background-color: var(--btn-accent-hover);
+    background-color: var(--btn-accent-hover-bg);
 }
 
 .btn-secondary-action {
