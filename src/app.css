@@ -97,7 +97,7 @@
     --overlay-color: rgba(12, 8, 47, 0.7); /* Basierend auf --bg-primary */
 }
 
-.theme-vip {
+.theme-VIP {
     --bg-primary: #121212;
     --bg-secondary: #1e1e1e;
     --bg-tertiary: #2c2c2c;
@@ -411,7 +411,7 @@ input[type="checkbox"]:checked + .atr-toggle-track::after { transform: translate
 /* Accessibility fix for button contrast */
 
 /* VIP Theme: Use light text on green 'Long' button */
-.theme-vip .trade-type-switch button.long.active {
+.theme-VIP .trade-type-switch button.long.active {
     color: #ffffff;
 }
 
@@ -437,7 +437,7 @@ input[type="checkbox"]:checked + .atr-toggle-track::after { transform: translate
 
 /* User-requested color override for 'Short' button text */
 .theme-light .trade-type-switch button.short.active,
-.theme-vip .trade-type-switch button.short.active,
+.theme-VIP .trade-type-switch button.short.active,
 .theme-matrix .trade-type-switch button.short.active {
     color: #ffffff; /* Use light text color as requested */
 }
