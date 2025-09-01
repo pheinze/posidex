@@ -1,6 +1,6 @@
 {
   "app": {
-    "title": "Posidex",
+    "title": "Cachy",
     "journalButton": "Journal",
     "journalButtonTitle": "Open Trade Journal",
     "changelogTitle": "Changelog",
@@ -148,8 +148,8 @@
     "showJournalInstructionsAriaLabel": "Show Journal Instructions"
   },
   "seo": {
-    "title": "Posidex - Trading Position Size & Risk Calculator",
-    "description": "Posidex is a comprehensive trading calculator for position sizing, risk management, and take-profit targets. Optimize your trades with real-time calculations and visual analysis.",
+    "title": "Cachy - Trading Position Size & Risk Calculator",
+    "description": "Cachy is a comprehensive trading calculator for position sizing, risk management, and take-profit targets. Optimize your trades with real-time calculations and visual analysis.",
     "keywords": "trading calculator, position size, risk management, take profit, crypto trading, forex trading, stock trading, trading tools, financial calculator, trade optimizer"
   },
   "languages": {

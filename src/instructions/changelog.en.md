@@ -1,4 +1,4 @@
-*feedback@posidex.app*
+*feedback@cachy.app*
 
 **support&thanks**: bc1qgrm2kvs27rfkpwtgp5u7w0rlzkgwrxqtls2q4f
 
