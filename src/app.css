@@ -434,3 +434,10 @@ input[type="checkbox"]:checked + .atr-toggle-track::after { transform: translate
 .theme-nord .trade-type-switch button.short.active {
     color: #2e3440;
 }
+
+/* User-requested color override for 'Short' button text */
+.theme-light .trade-type-switch button.short.active,
+.theme-vip .trade-type-switch button.short.active,
+.theme-matrix .trade-type-switch button.short.active {
+    color: #ffffff; /* Use light text color as requested */
+}
