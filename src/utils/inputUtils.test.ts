@@ -98,4 +98,16 @@ describe('numberInput Svelte Action', () => {
         input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp' }));
         expect(input.value).toBe('3');
     });
+
+    it('should not decrease below minValue with arrow keys', () => {
+        const { input } = setupTest('0', { minValue: 0 });
+        input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
+        expect(input.value).toBe('0');
+    });
+
+    it('should not increase above maxValue with arrow keys', () => {
+        const { input } = setupTest('100', { maxValue: 100 });
+        input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp' }));
+        expect(input.value).toBe('100');
+    });
 });

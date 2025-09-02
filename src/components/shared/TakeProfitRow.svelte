@@ -70,7 +70,7 @@
             <input
                 type="text"
                 inputmode="decimal"
-                use:numberInput={{ noDecimals: true, isPercentage: true }}
+                use:numberInput={{ noDecimals: true, isPercentage: true, minValue: 0, maxValue: 100 }}
                 bind:value={percent}
                 bind:this={percentInput}
                 on:input={handleInput}
