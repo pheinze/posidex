@@ -591,8 +591,6 @@ export const app = {
         const unlockedIndices = targets.map((t, i) => t.isLocked ? -1 : i).filter(i => i !== -1);
         if (unlockedIndices.length < 2) return;
 
-        const lastUnlockedIndex = unlockedIndices[unlockedIndices.length - 1];
-
         let sumOfLocked = new Decimal(0);
         targets.forEach(t => {
             if (t.isLocked) sumOfLocked = sumOfLocked.plus(parseDecimal(t.percent));
@@ -605,49 +603,41 @@ export const app = {
 
         const maxUnlockedSum = ONE_HUNDRED.minus(sumOfLocked);
 
-        // Case 1: User edits the last unlocked field. Adjust preceding fields.
-        if (changedIndex === lastUnlockedIndex) {
-            let sumOfOthers = new Decimal(0);
-            unlockedIndices.forEach(i => {
-                if(i !== lastUnlockedIndex) sumOfOthers = sumOfOthers.plus(parseDecimal(targets[i].percent));
-            });
+        // --- Capping the user's input value ---
+        let totalSum = new Decimal(0);
+        unlockedIndices.forEach(i => totalSum = totalSum.plus(parseDecimal(targets[i].percent)));
+        if (totalSum.gt(maxUnlockedSum)) {
+            const overage = totalSum.minus(maxUnlockedSum);
+            targets[changedIndex].percent = parseDecimal(targets[changedIndex].percent).minus(overage).toFixed(0);
+        }
 
-            const maxForLast = maxUnlockedSum.minus(sumOfOthers);
-            let changedValue = parseDecimal(targets[changedIndex].percent);
-            if (changedValue.gt(maxForLast)) {
-                targets[changedIndex].percent = maxForLast.toFixed(0);
-            }
+        // --- Distributing the remainder to maintain 100% ---
+        totalSum = new Decimal(0);
+        unlockedIndices.forEach(i => totalSum = totalSum.plus(parseDecimal(targets[i].percent)));
+        let diff = maxUnlockedSum.minus(totalSum);
 
-            // Recalculate sum of all unlocked fields and distribute the difference backwards
-            let totalUnlockedSum = new Decimal(0);
-            unlockedIndices.forEach(i => totalUnlockedSum = totalUnlockedSum.plus(parseDecimal(targets[i].percent)));
+        const changedPos = unlockedIndices.indexOf(changedIndex);
 
-            let diff = totalUnlockedSum.minus(maxUnlockedSum);
+        // Kaskade vorwärts
+        for (let i = changedPos + 1; i < unlockedIndices.length; i++) {
+            if (diff.isZero()) break;
+            const currentIndex = unlockedIndices[i];
+            const currentValue = parseDecimal(targets[currentIndex].percent);
+            const adjustment = diff.gt(0) ? diff : Decimal.max(diff, currentValue.negated());
+            targets[currentIndex].percent = currentValue.plus(adjustment).toFixed(0);
+            diff = diff.minus(adjustment);
+        }
 
-            for (let i = unlockedIndices.length - 2; i >= 0; i--) {
+        // Kaskade rückwärts, wenn am Ende noch eine Differenz besteht
+        if (!diff.isZero()) {
+            for (let i = changedPos - 1; i >= 0; i--) {
                 if (diff.isZero()) break;
                 const currentIndex = unlockedIndices[i];
                 const currentValue = parseDecimal(targets[currentIndex].percent);
-                const reduction = Decimal.min(currentValue, diff);
-                targets[currentIndex].percent = currentValue.minus(reduction).toFixed(0);
-                diff = diff.minus(reduction);
+                const adjustment = diff.gt(0) ? diff : Decimal.max(diff, currentValue.negated());
+                targets[currentIndex].percent = currentValue.plus(adjustment).toFixed(0);
+                diff = diff.minus(adjustment);
             }
-        }
-        // Case 2: User edits a primary (not last) unlocked field. Adjust the last one.
-        else {
-            let sumOfPrimaries = new Decimal(0);
-            unlockedIndices.forEach(i => {
-                if (i !== lastUnlockedIndex) sumOfPrimaries = sumOfPrimaries.plus(parseDecimal(targets[i].percent));
-            });
-
-            if (sumOfPrimaries.gt(maxUnlockedSum)) {
-                const overage = sumOfPrimaries.minus(maxUnlockedSum);
-                targets[changedIndex].percent = parseDecimal(targets[changedIndex].percent).minus(overage).toFixed(0);
-                sumOfPrimaries = maxUnlockedSum;
-            }
-
-            const lastValue = maxUnlockedSum.minus(sumOfPrimaries);
-            targets[lastUnlockedIndex].percent = lastValue.toFixed(0);
         }
 
         updateTradeStore(state => ({ ...state, targets: targets }));

@@ -38,22 +38,27 @@ describe('numberInput Svelte Action', () => {
     });
 
     it('should handle empty input by starting at 1 on ArrowUp', () => {
-        const { input } = setupTest('');
+        const { input } = setupTest('', { minValue: 0 });
         input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp' }));
         expect(input.value).toBe('1');
     });
 
     it('should handle empty input by starting at 0 on ArrowDown', () => {
-        const { input } = setupTest('');
+        const { input } = setupTest('', { minValue: 0 });
         input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
         expect(input.value).toBe('0');
     });
 
-    it('should respect minValue', () => {
-        const { input } = setupTest('0');
-        input.selectionStart = 1;
+    it('should respect minValue on ArrowDown', () => {
+        const { input } = setupTest('1', { minValue: 1 });
         input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
-        expect(input.value).toBe('0');
+        expect(input.value).toBe('1');
+    });
+
+    it('should respect minValue on ArrowUp from empty', () => {
+        const { input } = setupTest('', { minValue: 1 });
+        input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp' }));
+        expect(input.value).toBe('1');
     });
 
     it('should use "sticky precision" based on initial value', () => {

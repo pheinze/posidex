@@ -61,7 +61,12 @@ export function numberInput(node: HTMLInputElement, options: NumberInputOptions)
         const cursorPosition = node.selectionStart ?? rawValue.length;
 
         if (rawValue.trim() === '' || isNaN(parseFloat(rawValue))) {
-            let newValue = operation === 'add' ? new Decimal(1) : new Decimal(0);
+            let startValue = 1;
+            if(minValue !== undefined && startValue < minValue) {
+                startValue = minValue;
+            }
+            let newValue = operation === 'add' ? new Decimal(startValue) : new Decimal(minValue !== undefined ? minValue : 0);
+
             if (minValue !== undefined && newValue.lessThan(minValue)) {
                 newValue = new Decimal(minValue);
             }
