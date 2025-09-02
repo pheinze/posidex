@@ -40,7 +40,6 @@ export function numberInput(node: HTMLInputElement, options: { decimalPlaces?: n
     }
 
     function handleKeyDown(event: KeyboardEvent) {
-        console.log(`handleKeyDown triggered for key: ${event.key} at ${new Date().toISOString()}`);
         if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') {
             return;
         }
