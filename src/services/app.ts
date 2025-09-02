@@ -581,57 +581,79 @@ export const app = {
             targets: [...state.targets, { price, percent, isLocked }]
         }));
     },
-    adjustTpPercentages: (changedIndex: number | null) => {
+    adjustTpPercentages: (changedIndex: number) => {
         const currentAppState = get(tradeStore);
-        const targets = [...currentAppState.targets];
+        // Deep clone to avoid direct state mutation before the final update
+        const targets = JSON.parse(JSON.stringify(currentAppState.targets));
         const ONE_HUNDRED = new Decimal(100);
         const ZERO = new Decimal(0);
 
-        if (changedIndex === null || targets[changedIndex].isLocked) return;
+        const decTargets = targets.map((t: any) => ({
+            ...t,
+            percent: parseDecimal(t.percent)
+        }));
 
-        const unlockedIndices = targets.map((t, i) => t.isLocked ? -1 : i).filter(i => i !== -1);
-        if (unlockedIndices.length < 2) return;
+        const totalSum = decTargets.reduce((sum: Decimal, t: any) => sum.plus(t.percent), ZERO);
 
-        let sumOfLocked = new Decimal(0);
-        targets.forEach(t => {
-            if (t.isLocked) sumOfLocked = sumOfLocked.plus(parseDecimal(t.percent));
-        });
+        if (totalSum.lte(ONE_HUNDRED)) {
+            return; // Nothing to do
+        }
 
-        if (sumOfLocked.gt(ONE_HUNDRED)) {
-            uiStore.showError("Gesperrter Prozentsatz übersteigt 100%.");
+        let excess = totalSum.minus(ONE_HUNDRED);
+        const changedTarget = decTargets[changedIndex];
+
+        // Do not adjust if the field that was changed is locked
+        if (changedTarget.isLocked) {
+            // This case should ideally be prevented by the UI, but as a safeguard:
+            uiStore.showError("Gesperrte Werte dürfen nicht geändert werden, wenn die Summe 100% übersteigt.");
+            // Revert the change to the locked field
+            const originalTarget = get(tradeStore).targets[changedIndex];
+            changedTarget.percent = parseDecimal(originalTarget.percent);
+            updateTradeStore(state => ({ ...state, targets: targets.map((t:any, i:number) => ({...t, percent: decTargets[i].percent.toFixed(0)})) }));
             return;
         }
 
-        const maxUnlockedSum = ONE_HUNDRED.minus(sumOfLocked);
-        let changedValue = parseDecimal(targets[changedIndex].percent);
+        // --- Proportional Reduction ---
+        const adjustableTargets = decTargets.filter((t: any, i: number) => !t.isLocked && i !== changedIndex);
+        let adjustableSum = adjustableTargets.reduce((sum: Decimal, t: any) => sum.plus(t.percent), ZERO);
 
-        // Cap the changed value
-        if (changedValue.gt(maxUnlockedSum)) {
-            changedValue = maxUnlockedSum;
-            targets[changedIndex].percent = changedValue.toFixed(0);
-        }
-        if (changedValue.lt(ZERO)) {
-            changedValue = ZERO;
-            targets[changedIndex].percent = changedValue.toFixed(0);
-        }
+        if (adjustableSum.gt(ZERO)) {
+            const originalExcess = excess;
+            let distributedReduction = ZERO;
 
-        const otherUnlockedIndices = unlockedIndices.filter(i => i !== changedIndex);
-        const sumToDistribute = maxUnlockedSum.minus(changedValue);
+            for (const target of adjustableTargets) {
+                const proportion = target.percent.div(adjustableSum);
+                const reduction = originalExcess.times(proportion);
 
-        if (otherUnlockedIndices.length > 0) {
-            const evenSplit = sumToDistribute.div(otherUnlockedIndices.length);
-            let remainder = sumToDistribute.mod(otherUnlockedIndices.length);
-
-            otherUnlockedIndices.forEach(idx => {
-                let value = evenSplit.toDecimalPlaces(0, Decimal.ROUND_FLOOR);
-                if (remainder.gt(0)) {
-                    value = value.plus(1);
-                    remainder = remainder.minus(1);
+                if (target.percent.gte(reduction)) {
+                    target.percent = target.percent.minus(reduction);
+                    distributedReduction = distributedReduction.plus(reduction);
+                } else {
+                    distributedReduction = distributedReduction.plus(target.percent);
+                    target.percent = ZERO;
                 }
-                targets[idx].percent = value.toFixed(0);
-            });
+            }
+            excess = excess.minus(distributedReduction);
         }
 
-        updateTradeStore(state => ({ ...state, targets: targets }));
+        // --- Capping ---
+        // If there's still excess, it means other fields couldn't be reduced enough.
+        // The excess must be removed from the field the user just changed.
+        if (excess.gt(ZERO)) {
+            if (changedTarget.percent.gte(excess)) {
+                changedTarget.percent = changedTarget.percent.minus(excess);
+            } else {
+                changedTarget.percent = ZERO; // Should not happen if logic is correct
+            }
+        }
+
+        // --- Final Formatting ---
+        // Convert back to strings with 0 decimal places for the store
+        const finalTargets = decTargets.map((t: any) => ({
+            ...t,
+            percent: t.percent.toDecimalPlaces(0).toFixed(0)
+        }));
+
+        updateTradeStore(state => ({ ...state, targets: finalTargets }));
     },
 };

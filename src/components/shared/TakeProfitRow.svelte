@@ -1,8 +1,10 @@
 <script lang="ts">
     import { icons } from '../../lib/constants';
-    import { createEventDispatcher } from 'svelte';
-    import { numberInput } from '../../utils/inputUtils'; // Import the action
+    import { createEventDispatcher, onMount } from 'svelte';
+    import { numberInput } from '../../utils/inputUtils';
     import { _ } from '../../locales/i18n';
+    import { tweened } from 'svelte/motion';
+    import { cubicOut } from 'svelte/easing';
 
     const dispatch = createEventDispatcher();
 
@@ -11,6 +13,24 @@
     export let percent: string;
     export let isLocked: boolean;
     export let tpDetail: any | undefined = undefined;
+
+    let previousPercent: string;
+    let percentInput: HTMLInputElement;
+
+    onMount(() => {
+        previousPercent = percent;
+    });
+
+    $: if (percent !== previousPercent && percentInput) {
+        // Value was changed externally
+        if (document.activeElement !== percentInput) {
+            percentInput.classList.add('highlight');
+            setTimeout(() => {
+                percentInput.classList.remove('highlight');
+            }, 500);
+        }
+        previousPercent = percent;
+    }
 
     function toggleLock() {
         dispatch('lockToggle', { index, isLocked: !isLocked });
@@ -21,9 +41,27 @@
     }
 
     function handleInput() {
+        previousPercent = percent; // Update previousPercent on user input
         dispatch('input', { index, price, percent, isLocked });
     }
 </script>
+
+<style>
+    .highlight {
+        animation: flash 0.5s ease-out;
+    }
+
+    @keyframes flash {
+        0% {
+            background-color: var(--accent-color);
+            opacity: 0.7;
+        }
+        100% {
+            background-color: var(--input-bg);
+            opacity: 1;
+        }
+    }
+</style>
 
 <div class="tp-row flex items-center gap-2 p-2 rounded-lg" style="background-color: var(--bg-tertiary);">
     <div class="flex-grow">
@@ -43,6 +81,7 @@
                 inputmode="decimal"
                 use:numberInput={{ noDecimals: true, isPercentage: true }}
                 bind:value={percent}
+                bind:this={percentInput}
                 on:input={handleInput}
                 class="tp-percent input-field w-full px-4 py-2 rounded-md"
                 class:locked-input={isLocked}
