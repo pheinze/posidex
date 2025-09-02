@@ -584,54 +584,69 @@ export const app = {
     adjustTpPercentages: (changedIndex: number | null) => {
         const currentAppState = get(tradeStore);
         const targets = [...currentAppState.targets];
+        const ONE_HUNDRED = new Decimal(100);
+
+        if (changedIndex === null) return; // Nothing to do if no specific field was changed
+
+        const unlockedIndices = targets.map((t, i) => t.isLocked ? -1 : i).filter(i => i !== -1);
+        if (unlockedIndices.length < 2) return; // Cannot adjust if less than two fields are unlocked
+
+        const lastUnlockedIndex = unlockedIndices[unlockedIndices.length - 1];
 
         let sumOfLocked = new Decimal(0);
-        const unlockedIndices: number[] = [];
-
-        targets.forEach((target, i) => {
-            if (target.isLocked) {
-                sumOfLocked = sumOfLocked.plus(parseDecimal(target.percent));
-            } else {
-                unlockedIndices.push(i);
+        targets.forEach(t => {
+            if (t.isLocked) {
+                sumOfLocked = sumOfLocked.plus(parseDecimal(t.percent));
             }
         });
 
-        let remainingPercent = new Decimal(100).minus(sumOfLocked);
-
-        if (remainingPercent.lt(0)) {
-            uiStore.showError("Gesperrter Prozentsatz übersteigt 100%. Bitte anpassen.");
+        if (sumOfLocked.gt(ONE_HUNDRED)) {
+            uiStore.showError("Gesperrter Prozentsatz übersteigt 100%.");
             return;
         }
 
-        if (unlockedIndices.length > 0 && changedIndex !== null && !targets[changedIndex].isLocked) {
-            let changedValue = parseDecimal(targets[changedIndex].percent);
+        const maxUnlockedSum = ONE_HUNDRED.minus(sumOfLocked);
+        let changedValue = parseDecimal(targets[changedIndex].percent);
 
-            if (changedValue.gt(remainingPercent)) {
-                changedValue = remainingPercent;
-                targets[changedIndex].percent = changedValue.toFixed(0);
-            }
+        // Cap the changed value to not exceed the available unlocked percentage
+        if (changedValue.gt(maxUnlockedSum)) {
+            changedValue = maxUnlockedSum;
+            targets[changedIndex].percent = changedValue.toFixed(0);
+        }
 
-            const otherUnlocked = unlockedIndices.filter(i => i !== changedIndex);
-
-            if (otherUnlocked.length > 0) {
-                const sumToDistribute = remainingPercent.minus(changedValue);
-
-                let sumOfOthers = otherUnlocked.reduce((acc, idx) => acc.plus(parseDecimal(targets[idx].percent)), new Decimal(0));
-
-                if (sumOfOthers.isZero()) {
-                    const evenSplit = sumToDistribute.div(unlockedIndices.length - 1);
-                    otherUnlocked.forEach(idx => targets[idx].percent = evenSplit.toFixed(0));
-                } else {
-                    otherUnlocked.forEach(idx => {
-                        const currentVal = parseDecimal(targets[idx].percent);
-                        const proportion = currentVal.div(sumOfOthers);
-                        targets[idx].percent = sumToDistribute.times(proportion).toFixed(0);
-                    });
+        // The user is editing the last unlocked field, so we just need to cap it.
+        // No other fields should be adjusted.
+        if (changedIndex === lastUnlockedIndex) {
+            let sumOfOtherUnlocked = new Decimal(0);
+            unlockedIndices.forEach(i => {
+                if (i !== lastUnlockedIndex) {
+                    sumOfOtherUnlocked = sumOfOtherUnlocked.plus(parseDecimal(targets[i].percent));
                 }
+            });
+            const maxSumForLast = maxUnlockedSum.minus(sumOfOtherUnlocked);
+            if (changedValue.gt(maxSumForLast)) {
+                targets[changedIndex].percent = maxSumForLast.toFixed(0);
             }
-        } else if (unlockedIndices.length > 0) { // Distribute remaining evenly among all unlocked if no specific input was changed or if it was locked
-            const evenSplit = remainingPercent.div(unlockedIndices.length);
-            unlockedIndices.forEach(i => targets[i].percent = evenSplit.toFixed(0));
+        }
+        // The user is editing a field that is NOT the last one, so adjust the last one.
+        else {
+            let sumOfPrimaryUnlocked = new Decimal(0);
+            unlockedIndices.forEach(i => {
+                if (i !== lastUnlockedIndex) {
+                    sumOfPrimaryUnlocked = sumOfPrimaryUnlocked.plus(parseDecimal(targets[i].percent));
+                }
+            });
+
+            // Cap the sum of primary unlocked fields
+            if (sumOfPrimaryUnlocked.gt(maxUnlockedSum)) {
+                const overage = sumOfPrimaryUnlocked.minus(maxUnlockedSum);
+                const originalChangedValue = parseDecimal(targets[changedIndex].percent);
+                targets[changedIndex].percent = originalChangedValue.minus(overage).toFixed(0);
+                sumOfPrimaryUnlocked = maxUnlockedSum;
+            }
+
+            const lastUnlockedValue = maxUnlockedSum.minus(sumOfPrimaryUnlocked);
+            targets[lastUnlockedIndex].percent = lastUnlockedValue.toFixed(0);
         }
 
         updateTradeStore(state => ({ ...state, targets: targets }));
