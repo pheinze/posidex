@@ -9,7 +9,7 @@ type NumberInputOptions = {
 };
 
 export function numberInput(node: HTMLInputElement, options: NumberInputOptions) {
-    let { decimalPlaces, isPercentage = false, noDecimals = false, maxValue, minValue } = options;
+    let { decimalPlaces = undefined, isPercentage = false, noDecimals = false, maxValue, minValue } = options;
     let stickyDecimalPlaces: number | null = null;
 
     const getDecimalPlaces = (value: string): number => {
@@ -210,19 +210,13 @@ export function numberInput(node: HTMLInputElement, options: NumberInputOptions)
             return value.toFixed(decimalPlaces);
         }
 
-        // Dynamic/sticky mode
-        if (stickyDecimalPlaces !== null) {
-            // Use toFixed to preserve trailing zeros during arrow key operations
-            return value.toFixed(stickyDecimalPlaces);
-        }
-
-        // Fallback for initial state or empty values
+        // For dynamic/sticky mode, toString() correctly removes trailing zeros.
         return value.toString();
     }
 
     function updateNodeValue(finalValueString: string, newCursorPosition: number) {
         node.value = finalValueString;
-        updateStickyPrecision(finalValueString);
+        // DO NOT update sticky precision here. It should only be updated on user input.
         node.dispatchEvent(new Event('input', { bubbles: true }));
         node.setSelectionRange(newCursorPosition, newCursorPosition);
     }
