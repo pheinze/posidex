@@ -11,7 +11,7 @@
     <div class="grid grid-cols-2 gap-4">
         <div>
             <label for="account-size" class="input-label">{$_('dashboard.portfolioInputs.accountSizeLabel')}</label>
-            <input id="account-size" type="text" inputmode="decimal" use:numberInput={{}} bind:value={accountSize} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.portfolioInputs.accountSizePlaceholder')}">
+            <input id="account-size" type="text" inputmode="decimal" use:numberInput={{ decimalPlaces: 4 }} bind:value={accountSize} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.portfolioInputs.accountSizePlaceholder')}">
         </div>
         <div>
             <label for="risk-percentage" class="input-label">{$_('dashboard.portfolioInputs.riskPerTradeLabel')}</label>

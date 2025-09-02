@@ -585,6 +585,7 @@ export const app = {
         const currentAppState = get(tradeStore);
         const targets = [...currentAppState.targets];
         const ONE_HUNDRED = new Decimal(100);
+        const ZERO = new Decimal(0);
 
         if (changedIndex === null || targets[changedIndex].isLocked) return;
 
@@ -602,42 +603,58 @@ export const app = {
         }
 
         const maxUnlockedSum = ONE_HUNDRED.minus(sumOfLocked);
+        let changedValue = parseDecimal(targets[changedIndex].percent);
 
-        // --- Capping the user's input value ---
-        let totalSum = new Decimal(0);
-        unlockedIndices.forEach(i => totalSum = totalSum.plus(parseDecimal(targets[i].percent)));
-        if (totalSum.gt(maxUnlockedSum)) {
-            const overage = totalSum.minus(maxUnlockedSum);
-            targets[changedIndex].percent = parseDecimal(targets[changedIndex].percent).minus(overage).toFixed(0);
+        // Cap the changed value
+        if (changedValue.gt(maxUnlockedSum)) {
+            changedValue = maxUnlockedSum;
+            targets[changedIndex].percent = changedValue.toFixed(0);
+        }
+        if (changedValue.lt(ZERO)) {
+            changedValue = ZERO;
+            targets[changedIndex].percent = changedValue.toFixed(0);
         }
 
-        // --- Distributing the remainder to maintain 100% ---
-        totalSum = new Decimal(0);
-        unlockedIndices.forEach(i => totalSum = totalSum.plus(parseDecimal(targets[i].percent)));
-        let diff = maxUnlockedSum.minus(totalSum);
+        const otherUnlockedIndices = unlockedIndices.filter(i => i !== changedIndex);
+        const sumToDistribute = maxUnlockedSum.minus(changedValue);
 
-        const changedPos = unlockedIndices.indexOf(changedIndex);
+        if (otherUnlockedIndices.length > 0) {
+            const evenSplit = sumToDistribute.div(otherUnlockedIndices.length);
 
-        // Kaskade vorwärts
-        for (let i = changedPos + 1; i < unlockedIndices.length; i++) {
-            if (diff.isZero()) break;
-            const currentIndex = unlockedIndices[i];
-            const currentValue = parseDecimal(targets[currentIndex].percent);
-            const adjustment = diff.gt(0) ? diff : Decimal.max(diff, currentValue.negated());
-            targets[currentIndex].percent = currentValue.plus(adjustment).toFixed(0);
-            diff = diff.minus(adjustment);
+            otherUnlockedIndices.forEach((idx, i) => {
+                // For the last field, assign the remainder to avoid rounding errors
+                if (i === otherUnlockedIndices.length - 1) {
+                    let sumOfPrevious = new Decimal(0);
+                    otherUnlockedIndices.slice(0, -1).forEach(prevIdx => {
+                        sumOfPrevious = sumOfPrevious.plus(parseDecimal(targets[prevIdx].percent));
+                    });
+                    targets[idx].percent = sumToDistribute.minus(sumOfPrevious).toFixed(0);
+                } else {
+                    targets[idx].percent = evenSplit.toDecimalPlaces(0, Decimal.ROUND_FLOOR).toFixed(0);
+                }
+            });
         }
 
-        // Kaskade rückwärts, wenn am Ende noch eine Differenz besteht
-        if (!diff.isZero()) {
-            for (let i = changedPos - 1; i >= 0; i--) {
-                if (diff.isZero()) break;
-                const currentIndex = unlockedIndices[i];
-                const currentValue = parseDecimal(targets[currentIndex].percent);
-                const adjustment = diff.gt(0) ? diff : Decimal.max(diff, currentValue.negated());
-                targets[currentIndex].percent = currentValue.plus(adjustment).toFixed(0);
-                diff = diff.minus(adjustment);
+        // Final check to ensure sum is exactly 100
+        let finalSum = sumOfLocked;
+        targets.forEach((t, i) => {
+            if(!t.isLocked) {
+                let val = parseDecimal(t.percent);
+                if(val.lt(ZERO)) {
+                    targets[i].percent = ZERO.toFixed(0);
+                }
+                finalSum = finalSum.plus(parseDecimal(targets[i].percent));
             }
+        });
+
+        // Final correction pass if sum is not exactly 100
+        const finalDiff = ONE_HUNDRED.minus(finalSum);
+        if (!finalDiff.isZero() && unlockedIndices.length > 0) {
+            // Add any remainder to the field that was changed by the user to reflect their input most accurately
+            const changedValDecimal = parseDecimal(targets[changedIndex].percent);
+            const finalChangedVal = changedValDecimal.plus(finalDiff);
+            // Ensure the changed field itself does not go below zero
+            targets[changedIndex].percent = Decimal.max(finalChangedVal, ZERO).toFixed(0);
         }
 
         updateTradeStore(state => ({ ...state, targets: targets }));

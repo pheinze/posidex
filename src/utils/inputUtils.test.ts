@@ -102,10 +102,10 @@ describe('numberInput Svelte Action', () => {
     });
 
     it('should respect `decimalPlaces` option when provided', () => {
-        const { input } = setupTest('1.234', { decimalPlaces: 2 });
-        input.selectionStart = 5;
+        const { input } = setupTest('1.23456', { decimalPlaces: 4 });
+        input.selectionStart = 7;
         input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp' }));
-        expect(input.value).toBe('1.24');
+        expect(input.value).toBe('1.2346');
     });
 
     it('should go from a decimal to an integer correctly', () => {

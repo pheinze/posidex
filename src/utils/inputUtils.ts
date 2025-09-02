@@ -9,7 +9,7 @@ type NumberInputOptions = {
 };
 
 export function numberInput(node: HTMLInputElement, options: NumberInputOptions) {
-    let { decimalPlaces, isPercentage = false, noDecimals = false, maxValue, minValue = 0 } = options;
+    let { decimalPlaces, isPercentage = false, noDecimals = false, maxValue, minValue } = options;
     let stickyDecimalPlaces: number | null = null;
 
     const getDecimalPlaces = (value: string): number => {
@@ -145,7 +145,7 @@ export function numberInput(node: HTMLInputElement, options: NumberInputOptions)
             isPercentage = newOptions.isPercentage ?? isPercentage;
             noDecimals = newOptions.noDecimals ?? noDecimals;
             maxValue = newOptions.maxValue;
-            minValue = newOptions.minValue ?? 0;
+            minValue = newOptions.minValue;
             updateStickyPrecision(node.value);
         },
         destroy() {
