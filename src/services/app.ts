@@ -620,41 +620,16 @@ export const app = {
 
         if (otherUnlockedIndices.length > 0) {
             const evenSplit = sumToDistribute.div(otherUnlockedIndices.length);
+            let remainder = sumToDistribute.mod(otherUnlockedIndices.length);
 
-            otherUnlockedIndices.forEach((idx, i) => {
-                // For the last field, assign the remainder to avoid rounding errors
-                if (i === otherUnlockedIndices.length - 1) {
-                    let sumOfPrevious = new Decimal(0);
-                    otherUnlockedIndices.slice(0, -1).forEach(prevIdx => {
-                        sumOfPrevious = sumOfPrevious.plus(parseDecimal(targets[prevIdx].percent));
-                    });
-                    targets[idx].percent = sumToDistribute.minus(sumOfPrevious).toFixed(0);
-                } else {
-                    targets[idx].percent = evenSplit.toDecimalPlaces(0, Decimal.ROUND_FLOOR).toFixed(0);
+            otherUnlockedIndices.forEach(idx => {
+                let value = evenSplit.toDecimalPlaces(0, Decimal.ROUND_FLOOR);
+                if (remainder.gt(0)) {
+                    value = value.plus(1);
+                    remainder = remainder.minus(1);
                 }
+                targets[idx].percent = value.toFixed(0);
             });
-        }
-
-        // Final check to ensure sum is exactly 100
-        let finalSum = sumOfLocked;
-        targets.forEach((t, i) => {
-            if(!t.isLocked) {
-                let val = parseDecimal(t.percent);
-                if(val.lt(ZERO)) {
-                    targets[i].percent = ZERO.toFixed(0);
-                }
-                finalSum = finalSum.plus(parseDecimal(targets[i].percent));
-            }
-        });
-
-        // Final correction pass if sum is not exactly 100
-        const finalDiff = ONE_HUNDRED.minus(finalSum);
-        if (!finalDiff.isZero() && unlockedIndices.length > 0) {
-            // Add any remainder to the field that was changed by the user to reflect their input most accurately
-            const changedValDecimal = parseDecimal(targets[changedIndex].percent);
-            const finalChangedVal = changedValDecimal.plus(finalDiff);
-            // Ensure the changed field itself does not go below zero
-            targets[changedIndex].percent = Decimal.max(finalChangedVal, ZERO).toFixed(0);
         }
 
         updateTradeStore(state => ({ ...state, targets: targets }));

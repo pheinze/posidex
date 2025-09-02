@@ -101,11 +101,20 @@ describe('numberInput Svelte Action', () => {
         expect(input.value).toBe('3');
     });
 
-    it('should respect `decimalPlaces` option when provided', () => {
-        const { input } = setupTest('1.23456', { decimalPlaces: 4 });
-        input.selectionStart = 7;
+    it('should respect `decimalPlaces` option when provided for stepping', () => {
+        const { input } = setupTest('1.2345', { decimalPlaces: 4 });
+        input.selectionStart = 6;
         input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp' }));
         expect(input.value).toBe('1.2346');
+    });
+
+    it('should prevent typing more decimal places than allowed', () => {
+        const { input } = setupTest('1.2345', { decimalPlaces: 4 });
+        const event = new KeyboardEvent('keydown', { key: '6', cancelable: true });
+        const preventDefaultSpy = vi.spyOn(event, 'preventDefault');
+        input.selectionStart = 6;
+        input.dispatchEvent(event);
+        expect(preventDefaultSpy).toHaveBeenCalled();
     });
 
     it('should go from a decimal to an integer correctly', () => {

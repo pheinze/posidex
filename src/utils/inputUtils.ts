@@ -49,7 +49,28 @@ export function numberInput(node: HTMLInputElement, options: NumberInputOptions)
     }
 
     function handleKeyDown(event: KeyboardEvent) {
-        if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') {
+        const isArrowKey = event.key === 'ArrowUp' || event.key === 'ArrowDown';
+        const isDigit = /^[0-9]$/.test(event.key);
+
+        // --- Live validation to PREVENT typing more than allowed decimal places ---
+        if (decimalPlaces !== undefined && isDigit) {
+            const value = node.value;
+            const selectionStart = node.selectionStart ?? 0;
+            const selectionEnd = node.selectionEnd ?? 0;
+            const decimalPointIndex = value.indexOf('.');
+
+            // Only act if there's a decimal point and the cursor is after it
+            if (decimalPointIndex !== -1 && selectionStart > decimalPointIndex) {
+                // Prevent typing if the number of decimal digits is already at the limit
+                // and the user is not replacing a selection
+                if (getDecimalPlaces(value) >= decimalPlaces && selectionStart === selectionEnd) {
+                     event.preventDefault();
+                     return;
+                }
+            }
+        }
+
+        if (!isArrowKey) {
             return;
         }
         event.preventDefault();
