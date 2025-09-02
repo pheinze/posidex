@@ -3,8 +3,6 @@
     import { createEventDispatcher, onMount } from 'svelte';
     import { numberInput } from '../../utils/inputUtils';
     import { _ } from '../../locales/i18n';
-    import { tweened } from 'svelte/motion';
-    import { cubicOut } from 'svelte/easing';
 
     const dispatch = createEventDispatcher();
 
@@ -22,7 +20,6 @@
     });
 
     $: if (percent !== previousPercent && percentInput) {
-        // Value was changed externally
         if (document.activeElement !== percentInput) {
             percentInput.classList.add('highlight');
             setTimeout(() => {
@@ -41,7 +38,7 @@
     }
 
     function handleInput() {
-        previousPercent = percent; // Update previousPercent on user input
+        previousPercent = percent;
         dispatch('input', { index, price, percent, isLocked });
     }
 </script>
@@ -52,14 +49,8 @@
     }
 
     @keyframes flash {
-        0% {
-            background-color: var(--accent-color);
-            opacity: 0.7;
-        }
-        100% {
-            background-color: var(--input-bg);
-            opacity: 1;
-        }
+        0% { background-color: var(--accent-color); opacity: 0.7; }
+        100% { background-color: var(--input-bg); opacity: 1; }
     }
 </style>
 
