@@ -157,7 +157,7 @@ export function numberInput(node: HTMLInputElement, options: NumberInputOptions)
         newValue = clampValue(newValue);
 
         const originalLength = node.value.length;
-        const finalValueString = formatNewValue(newValue);
+        const finalValueString = formatNewValue(newValue, operation);
 
         const lengthDifference = finalValueString.length - originalLength;
         const newCursorPosition = cursorPosition + lengthDifference;
@@ -200,7 +200,7 @@ export function numberInput(node: HTMLInputElement, options: NumberInputOptions)
         return value;
     }
 
-    function formatNewValue(value: Decimal): string {
+    function formatNewValue(value: Decimal, operation: 'add' | 'sub'): string {
         if (noDecimals) {
             return value.toFixed(0);
         }
@@ -210,7 +210,18 @@ export function numberInput(node: HTMLInputElement, options: NumberInputOptions)
             return value.toFixed(decimalPlaces);
         }
 
-        // For dynamic/sticky mode, toString() correctly removes trailing zeros.
+        // Dynamic/sticky mode with conditional formatting
+        if (stickyDecimalPlaces !== null) {
+            if (operation === 'add') {
+                // Preserve trailing zeros on increment to maintain step precision
+                return value.toFixed(stickyDecimalPlaces);
+            } else {
+                // Remove trailing zeros on decrement
+                return value.toString();
+            }
+        }
+
+        // Fallback for initial state or empty values
         return value.toString();
     }
 
