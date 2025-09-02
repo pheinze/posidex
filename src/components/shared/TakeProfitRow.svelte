@@ -37,7 +37,7 @@
             {/if}
         </div>
         <div class="grid grid-cols-2 gap-2">
-            <input type="text" inputmode="decimal" use:numberInput={{}} bind:value={price} on:input={handleInput} class="tp-price input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.takeProfitRow.pricePlaceholder')}" id="tp-price-{index}">
+            <input type="text" inputmode="decimal" use:numberInput={{ decimalPlaces: 4 }} bind:value={price} on:input={handleInput} class="tp-price input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.takeProfitRow.pricePlaceholder')}" id="tp-price-{index}">
             <input
                 type="text"
                 inputmode="decimal"

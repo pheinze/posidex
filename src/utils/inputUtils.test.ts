@@ -132,4 +132,46 @@ describe('numberInput Svelte Action', () => {
         input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
         expect(input.value).toBe('0.9');
     });
+
+    it('should replace comma with a period on input', () => {
+        const { input } = setupTest('1,23');
+        input.dispatchEvent(new Event('input'));
+        expect(input.value).toBe('1.23');
+    });
+
+    it('should remove non-numeric characters on input', () => {
+        const { input } = setupTest('a1b2c.3d');
+        input.dispatchEvent(new Event('input'));
+        expect(input.value).toBe('12.3');
+    });
+
+    it('should allow only one decimal point on input', () => {
+        const { input } = setupTest('1.2.3');
+        input.dispatchEvent(new Event('input'));
+        expect(input.value).toBe('1.23');
+    });
+
+    it('should prevent typing non-numeric keys', () => {
+        const { input } = setupTest('123');
+        const event = new KeyboardEvent('keydown', { key: 'a', cancelable: true });
+        const preventDefaultSpy = vi.spyOn(event, 'preventDefault');
+        input.dispatchEvent(event);
+        expect(preventDefaultSpy).toHaveBeenCalled();
+    });
+
+    it('should prevent typing a second decimal point', () => {
+        const { input } = setupTest('1.23');
+        const event = new KeyboardEvent('keydown', { key: '.', cancelable: true });
+        const preventDefaultSpy = vi.spyOn(event, 'preventDefault');
+        input.dispatchEvent(event);
+        expect(preventDefaultSpy).toHaveBeenCalled();
+    });
+
+    it('should prevent typing a decimal point when noDecimals is true', () => {
+        const { input } = setupTest('123', { noDecimals: true });
+        const event = new KeyboardEvent('keydown', { key: '.', cancelable: true });
+        const preventDefaultSpy = vi.spyOn(event, 'preventDefault');
+        input.dispatchEvent(event);
+        expect(preventDefaultSpy).toHaveBeenCalled();
+    });
 });

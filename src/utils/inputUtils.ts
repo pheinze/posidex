@@ -32,6 +32,35 @@ export function numberInput(node: HTMLInputElement, options: NumberInputOptions)
 
     function handleInput(event: Event) {
         const inputElement = event.target as HTMLInputElement;
+        let value = inputElement.value;
+        const originalValue = value;
+        const cursorPosition = inputElement.selectionStart;
+
+        // Replace comma with a period
+        value = value.replace(/,/g, '.');
+
+        // Remove non-numeric characters
+        let sanitizedValue = '';
+        let hasDecimal = false;
+        for (const char of value) {
+            if (/\d/.test(char)) {
+                sanitizedValue += char;
+            } else if (char === '.' && !hasDecimal) {
+                sanitizedValue += char;
+                hasDecimal = true;
+            }
+        }
+        value = sanitizedValue;
+
+        if (value !== originalValue) {
+            const diff = value.length - originalValue.length;
+            inputElement.value = value;
+            if (cursorPosition) {
+                const newCursorPosition = Math.max(0, cursorPosition + diff);
+                inputElement.setSelectionRange(newCursorPosition, newCursorPosition);
+            }
+        }
+
         updateStickyPrecision(inputElement.value);
     }
 
@@ -49,8 +78,30 @@ export function numberInput(node: HTMLInputElement, options: NumberInputOptions)
     }
 
     function handleKeyDown(event: KeyboardEvent) {
-        const isArrowKey = event.key === 'ArrowUp' || event.key === 'ArrowDown';
+        const allowedKeys = [
+            'Backspace', 'Delete', 'Tab', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'
+        ];
+        const isShortcut = event.ctrlKey || event.metaKey;
+        const isAllowedKey = allowedKeys.includes(event.key);
+        const isDecimalSeparator = event.key === '.' || event.key === ',';
         const isDigit = /^[0-9]$/.test(event.key);
+
+        if (noDecimals && isDecimalSeparator) {
+            event.preventDefault();
+            return;
+        }
+
+        if (isDecimalSeparator && node.value.includes('.')) {
+            event.preventDefault();
+            return;
+        }
+
+        if (!isDigit && !isAllowedKey && !isShortcut && !isDecimalSeparator) {
+            event.preventDefault();
+            return;
+        }
+
+        const isArrowKey = event.key === 'ArrowUp' || event.key === 'ArrowDown';
 
         // --- Live validation to PREVENT typing more than allowed decimal places ---
         if (decimalPlaces !== undefined && isDigit) {

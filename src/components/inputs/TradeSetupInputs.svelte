@@ -94,7 +94,7 @@
             </div>
         {/if}
     </div>
-    <input type="text" inputmode="decimal" use:numberInput={{}} bind:value={entryPrice} class="input-field w-full px-4 py-2 rounded-md mb-4" placeholder="{$_('dashboard.tradeSetupInputs.entryPricePlaceholder')}">
+    <input type="text" inputmode="decimal" use:numberInput={{ decimalPlaces: 4 }} bind:value={entryPrice} class="input-field w-full px-4 py-2 rounded-md mb-4" placeholder="{$_('dashboard.tradeSetupInputs.entryPricePlaceholder')}">
 
     <div class="p-2 rounded-lg mb-4" style="background-color: var(--bg-tertiary);">
         <div class="flex justify-end mb-2">
@@ -106,12 +106,12 @@
         </div>
         {#if !useAtrSl}
             <div>
-                <input type="text" inputmode="decimal" use:numberInput={{}} bind:value={stopLossPrice} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.tradeSetupInputs.manualStopLossPlaceholder')}">
+                <input type="text" inputmode="decimal" use:numberInput={{ decimalPlaces: 4 }} bind:value={stopLossPrice} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.tradeSetupInputs.manualStopLossPlaceholder')}">
             </div>
         {:else}
             <div class="grid grid-cols-2 gap-2">
-                <input type="text" inputmode="decimal" use:numberInput={{}} bind:value={atrValue} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.tradeSetupInputs.atrValuePlaceholder')}">
-                <input type="text" inputmode="decimal" use:numberInput={{}} bind:value={atrMultiplier} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.tradeSetupInputs.multiplierPlaceholder')}">
+                <input type="text" inputmode="decimal" use:numberInput={{ decimalPlaces: 4 }} bind:value={atrValue} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.tradeSetupInputs.atrValuePlaceholder')}">
+                <input type="text" inputmode="decimal" use:numberInput={{ decimalPlaces: 4 }} bind:value={atrMultiplier} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.tradeSetupInputs.multiplierPlaceholder')}">
             </div>
             {#if showAtrFormulaDisplay}
                 <div class="text-center text-xs text-sky-300 mt-2">{atrFormulaDisplay}</div>
