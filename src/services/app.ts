@@ -583,6 +583,12 @@ export const app = {
     },
     adjustTpPercentages: (changedIndex: number) => {
         const currentAppState = get(tradeStore);
+
+        // Guard clause: If the target that triggered the change is locked, do nothing.
+        if (currentAppState.targets[changedIndex].isLocked) {
+            return;
+        }
+
         const targets = JSON.parse(JSON.stringify(currentAppState.targets));
         const ONE_HUNDRED = new Decimal(100);
         const ZERO = new Decimal(0);
@@ -598,26 +604,27 @@ export const app = {
 
         if (diff.isZero()) return;
 
+        const otherUnlocked = decTargets.filter((t: any) => !t.isLocked && t.originalIndex !== changedIndex);
+
+        // Edge Case: No other fields to adjust, so revert the change on the current field.
+        if (otherUnlocked.length === 0) {
+            decTargets[changedIndex].percent = decTargets[changedIndex].percent.plus(diff);
+        }
         // --- Handle Surplus (diff > 0): A value was decreased ---
-        if (diff.gt(ZERO)) {
+        else if (diff.gt(ZERO)) {
             const tp1 = decTargets[0];
             if (tp1 && !tp1.isLocked && changedIndex !== 0) {
                 tp1.percent = tp1.percent.plus(diff);
             } else {
-                const otherUnlocked = decTargets.filter((t: any) => !t.isLocked && t.originalIndex !== changedIndex);
-                if (otherUnlocked.length > 0) {
-                    const share = diff.div(otherUnlocked.length);
-                    otherUnlocked.forEach((t: any) => {
-                        decTargets[t.originalIndex].percent = decTargets[t.originalIndex].percent.plus(share);
-                    });
-                }
+                const share = diff.div(otherUnlocked.length);
+                otherUnlocked.forEach((t: any) => {
+                    decTargets[t.originalIndex].percent = decTargets[t.originalIndex].percent.plus(share);
+                });
             }
         }
         // --- Handle Deficit (diff < 0): A value was increased ---
         else {
             let deficit = diff.abs();
-            const otherUnlocked = decTargets.filter((t: any) => !t.isLocked && t.originalIndex !== changedIndex);
-
             for (let i = otherUnlocked.length - 1; i >= 0; i--) {
                 if (deficit.isZero()) break;
                 const target = otherUnlocked[i];

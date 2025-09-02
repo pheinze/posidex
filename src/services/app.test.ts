@@ -87,4 +87,87 @@ describe('app service - adjustTpPercentages (Prioritized Logic)', () => {
         expect(targets[1].percent).toBe('5');
         expect(targets[2].percent).toBe('20'); // Locked
     });
+
+    // --- EDGE CASE TESTS ---
+    it('should revert change if only one unlocked TP is edited (increase)', () => {
+        updateTradeStore(state => ({
+            ...state,
+            targets: [
+                { price: '110', percent: '50', isLocked: true },
+                { price: '120', percent: '30', isLocked: true },
+                { price: '130', percent: '20', isLocked: false },
+            ]
+        }));
+        // User tries to increase the only unlocked TP. Should be reverted.
+        get(tradeStore).targets[2].percent = '30';
+        app.adjustTpPercentages(2);
+
+        const targets = get(tradeStore).targets;
+        expect(targets[2].percent).toBe('20');
+    });
+
+    it('should revert change if only one unlocked TP is edited (decrease)', () => {
+        updateTradeStore(state => ({
+            ...state,
+            targets: [
+                { price: '110', percent: '50', isLocked: true },
+                { price: '120', percent: '30', isLocked: true },
+                { price: '130', percent: '20', isLocked: false },
+            ]
+        }));
+        // User tries to decrease the only unlocked TP. Should be reverted.
+        get(tradeStore).targets[2].percent = '10';
+        app.adjustTpPercentages(2);
+
+        const targets = get(tradeStore).targets;
+        expect(targets[2].percent).toBe('20');
+    });
+
+    it('should ignore changes to a locked field', () => {
+        // This test ensures that if the UI somehow allows a change to a disabled
+        // field, the logic doesn't process it.
+        updateTradeStore(state => {
+            state.targets[0].isLocked = true;
+            return state;
+        });
+
+        // This simulates the user somehow changing the value, which updates the store
+        updateTradeStore(state => {
+            state.targets[0].percent = '99';
+            return state;
+        });
+
+        app.adjustTpPercentages(0);
+
+        const targets = get(tradeStore).targets;
+        // The logic should simply RETURN and not process the change.
+        // The "dirty" value of 99 will remain in the store, but this is expected
+        // as the UI's `disabled` attribute is the primary guard. The logic is just a safeguard.
+        expect(targets[0].percent).toBe('99');
+        expect(targets[1].percent).toBe('30'); // Unchanged
+        expect(targets[2].percent).toBe('20'); // Unchanged
+    });
+
+    it('should re-balance correctly when a lock is released', () => {
+        // Setup an invalid state created by locking
+        updateTradeStore(state => ({
+            ...state,
+            targets: [
+                { price: '110', percent: '60', isLocked: true },
+                { price: '120', percent: '60', isLocked: true },
+                { price: '130', percent: '0', isLocked: false },
+            ]
+        }));
+        // User unlocks TP2. The app should see the total is 120 and fix it.
+        // The `adjustTpPercentages` is called from the UI on lock toggle.
+        get(tradeStore).targets[1].isLocked = false;
+        app.adjustTpPercentages(1); // The changedIndex is the one unlocked
+
+        const targets = get(tradeStore).targets;
+        const total = targets.reduce((sum, t) => sum + parseInt(t.percent, 10), 0);
+        expect(total).toBe(100);
+        expect(targets[0].percent).toBe('60'); // Locked, unchanged
+        // The unlocked TPs (TP2 and TP3) should share the remaining 40%
+        expect(targets[1].percent).toBe('40'); // Or some other distribution, but sum must be 100
+    });
 });
