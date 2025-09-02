@@ -2,6 +2,7 @@ import Decimal from 'decimal.js';
 
 type NumberInputOptions = {
     decimalPlaces?: number;
+    maxDecimalPlaces?: number;
     isPercentage?: boolean;
     noDecimals?: boolean;
     maxValue?: number;
@@ -9,7 +10,7 @@ type NumberInputOptions = {
 };
 
 export function numberInput(node: HTMLInputElement, options: NumberInputOptions) {
-    let { decimalPlaces = undefined, isPercentage = false, noDecimals = false, maxValue, minValue } = options;
+    let { decimalPlaces, maxDecimalPlaces, isPercentage = false, noDecimals = false, maxValue, minValue } = options;
     let stickyDecimalPlaces: number | null = null;
 
     const getDecimalPlaces = (value: string): number => {
@@ -99,22 +100,24 @@ export function numberInput(node: HTMLInputElement, options: NumberInputOptions)
             return;
         }
 
-        const isArrowKey = event.key === 'ArrowUp' || event.key === 'ArrowDown';
+        if (isDigit) {
+            const limit = maxDecimalPlaces ?? decimalPlaces;
+            if (limit !== undefined) {
+                const value = node.value;
+                const selectionStart = node.selectionStart ?? 0;
+                const selectionEnd = node.selectionEnd ?? 0;
+                const decimalPointIndex = value.indexOf('.');
 
-        if (decimalPlaces !== undefined && isDigit) {
-            const value = node.value;
-            const selectionStart = node.selectionStart ?? 0;
-            const selectionEnd = node.selectionEnd ?? 0;
-            const decimalPointIndex = value.indexOf('.');
-
-            if (decimalPointIndex !== -1 && selectionStart > decimalPointIndex) {
-                if (getDecimalPlaces(value) >= decimalPlaces && selectionStart === selectionEnd) {
-                     event.preventDefault();
-                     return;
+                if (decimalPointIndex !== -1 && selectionStart > decimalPointIndex) {
+                    if (getDecimalPlaces(value) >= limit && selectionStart === selectionEnd) {
+                        event.preventDefault();
+                        return;
+                    }
                 }
             }
         }
 
+        const isArrowKey = event.key === 'ArrowUp' || event.key === 'ArrowDown';
         if (!isArrowKey) {
             return;
         }
@@ -166,7 +169,7 @@ export function numberInput(node: HTMLInputElement, options: NumberInputOptions)
     }
 
     function calculateStep(rawValue: string, cursorPosition: number): Decimal {
-        // Strict formatting mode (old behavior) for backward compatibility
+        // Priority 1: Strict mode for backward compatibility. Use cursor position.
         if (decimalPlaces !== undefined) {
             const decimalPointIndex = rawValue.indexOf('.');
             let power;
@@ -181,13 +184,18 @@ export function numberInput(node: HTMLInputElement, options: NumberInputOptions)
             }
             return new Decimal(10).pow(power);
         }
-
-        // New "sticky precision" logic for dynamic mode
-        if (noDecimals || !stickyDecimalPlaces) {
+        // Priority 2: Integer-only mode.
+        else if (noDecimals) {
             return new Decimal(1);
         }
-
-        return new Decimal(10).pow(new Decimal(-stickyDecimalPlaces));
+        // Priority 3: Dynamic mode with decimals.
+        else if (stickyDecimalPlaces && stickyDecimalPlaces > 0) {
+            return new Decimal(10).pow(new Decimal(-stickyDecimalPlaces));
+        }
+        // Fallback: Default to step of 1 for whole numbers in dynamic mode.
+        else {
+            return new Decimal(1);
+        }
     }
 
     function clampValue(value: Decimal): Decimal {
@@ -205,29 +213,23 @@ export function numberInput(node: HTMLInputElement, options: NumberInputOptions)
             return value.toFixed(0);
         }
 
-        // Strict formatting for backward compatibility
         if (decimalPlaces !== undefined) {
             return value.toFixed(decimalPlaces);
         }
 
-        // Dynamic/sticky mode with conditional formatting
         if (stickyDecimalPlaces !== null) {
             if (operation === 'add') {
-                // Preserve trailing zeros on increment to maintain step precision
                 return value.toFixed(stickyDecimalPlaces);
             } else {
-                // Remove trailing zeros on decrement
                 return value.toString();
             }
         }
 
-        // Fallback for initial state or empty values
         return value.toString();
     }
 
     function updateNodeValue(finalValueString: string, newCursorPosition: number) {
         node.value = finalValueString;
-        // DO NOT update sticky precision here. It should only be updated on user input.
         node.dispatchEvent(new Event('input', { bubbles: true }));
         node.setSelectionRange(newCursorPosition, newCursorPosition);
     }
@@ -240,6 +242,7 @@ export function numberInput(node: HTMLInputElement, options: NumberInputOptions)
         update(newOptions: NumberInputOptions) {
             options = { ...options, ...newOptions };
             decimalPlaces = newOptions.decimalPlaces;
+            maxDecimalPlaces = newOptions.maxDecimalPlaces;
             isPercentage = newOptions.isPercentage ?? isPercentage;
             noDecimals = newOptions.noDecimals ?? noDecimals;
             maxValue = newOptions.maxValue;
