@@ -62,3 +62,30 @@ Das Löschen von Code ist eine kritische Operation und unterliegt strengen Regel
 * **Fehlerkultur:** Bei Fehlern wird nicht entschuldigt, sondern direkt korrigiert.  
 * **Präzision:** Antworten sind kurz, präzise und haben eine hohe Informationsdichte.  
 * **Nutzerkontext:** Auf bereits bekannte Informationen des Users (Interessen, etc.) wird in den Antworten nicht erneut eingegangen.
+
+## 5. Umgebung für UI-Verifizierung (Playwright)
+
+Um die Zuverlässigkeit von automatisierten UI-Tests mit Playwright zu gewährleisten und die aufgetretenen Probleme zu vermeiden, sind folgende Konventionen zu beachten:
+
+1.  **Playwright `webServer` Konfiguration verwenden:** Für jede Aufgabe, die eine UI-Verifizierung erfordert, **muss** Playwright so konfiguriert werden, dass es den Entwicklungsserver automatisch verwaltet.
+    *   **Aktion:** Erstellen oder bearbeiten Sie die Konfigurationsdatei `playwright.config.ts` im Stammverzeichnis.
+    *   **Inhalt:** Fügen Sie eine `webServer`-Konfiguration hinzu. Diese startet den `npm run dev`-Befehl, wartet, bis die URL erreichbar ist, und beendet den Server nach den Tests automatisch.
+    *   **Beispiel-Konfiguration:**
+        ```typescript
+        import { defineConfig } from '@playwright/test';
+
+        export default defineConfig({
+          webServer: {
+            command: 'npm run dev',
+            url: 'http://localhost:5173',
+            reuseExistingServer: !process.env.CI,
+          },
+          testDir: './tests/e2e', // Beispiel für Testverzeichnis
+        });
+        ```
+
+2.  **Zuverlässige Installation mit `npm ci`:** In automatisierten Testläufen oder zur Sicherstellung einer konsistenten Umgebung sollte `npm ci` anstelle von `npm install` verwendet werden. Dies verhindert "zufällige" Fehler durch inkonsistente Abhängigkeiten.
+
+3.  **Robuste Test-Skripte:**
+    *   Verwenden Sie `click()` auf ein Element, um den `:focus`-Zustand zu simulieren, anstatt sich auf `:hover` zu verlassen, da dies in Testumgebungen zuverlässiger ist.
+    *   Verwenden Sie `expect(locator).toBeVisible()` und andere Web-First-Assertions, um explizit auf das Erscheinen von Elementen zu warten, anstatt manuelle `waitForTimeout`-Verzögerungen zu nutzen.

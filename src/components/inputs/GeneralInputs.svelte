@@ -8,9 +8,6 @@
     export let leverage: string;
     export let fees: string;
 
-    let leverageInputNode: HTMLInputElement;
-    let feesInputNode: HTMLInputElement;
-
     function setTradeType(type: string) {
         updateTradeStore(s => ({ ...s, tradeType: type }));
     }
@@ -36,32 +33,8 @@
             >{$_('dashboard.generalInputs.shortButton')}</button>
         </div>
         <div class="grid grid-cols-2 gap-4">
-            <div class="input-container">
-                <input bind:this={leverageInputNode} type="text" inputmode="decimal" use:numberInput={{ noDecimals: true, maxValue: 125 }} bind:value={leverage} class="input-field w-full h-full px-4 py-2 rounded-md pr-10" placeholder="{$_('dashboard.generalInputs.leveragePlaceholder')}">
-                <div class="stepper-buttons">
-                    <button tabindex="-1" on:click={() => {
-                        leverageInputNode?.focus();
-                        leverageInputNode?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true }));
-                    }}>▲</button>
-                    <button tabindex="-1" on:click={() => {
-                        leverageInputNode?.focus();
-                        leverageInputNode?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
-                    }}>▼</button>
-                </div>
-            </div>
-            <div class="input-container">
-                <input bind:this={feesInputNode} type="text" inputmode="decimal" use:numberInput={{ decimalPlaces: 4, isPercentage: true }} bind:value={fees} class="input-field w-full px-4 py-2 rounded-md pr-10" placeholder="{$_('dashboard.generalInputs.feesPlaceholder')}">
-                 <div class="stepper-buttons">
-                    <button tabindex="-1" on:click={() => {
-                        feesInputNode?.focus();
-                        feesInputNode?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true }));
-                    }}>▲</button>
-                    <button tabindex="-1" on:click={() => {
-                        feesInputNode?.focus();
-                        feesInputNode?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
-                    }}>▼</button>
-                </div>
-            </div>
+            <input type="text" inputmode="decimal" use:numberInput={{ noDecimals: true, maxValue: 125 }} bind:value={leverage} class="input-field w-full h-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.generalInputs.leveragePlaceholder')}">
+            <input type="text" inputmode="decimal" use:numberInput={{ decimalPlaces: 4, isPercentage: true }} bind:value={fees} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.generalInputs.feesPlaceholder')}">
         </div>
     </div>
 </div>

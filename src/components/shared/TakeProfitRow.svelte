@@ -37,49 +37,19 @@
             {/if}
         </div>
         <div class="grid grid-cols-2 gap-2">
-            <div class="input-container">
-                <input type="text" inputmode="decimal" use:numberInput={{ decimalPlaces: 4 }} bind:value={price} on:input={handleInput} class="tp-price input-field w-full px-4 py-2 rounded-md pr-10" placeholder="{$_('dashboard.takeProfitRow.pricePlaceholder')}" id="tp-price-{index}">
-                <div class="stepper-buttons">
-                    <button tabindex="-1" on:click={() => {
-                        const input = document.getElementById(`tp-price-${index}`);
-                        input?.focus();
-                        input?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true }));
-                    }}>▲</button>
-                    <button tabindex="-1" on:click={() => {
-                        const input = document.getElementById(`tp-price-${index}`);
-                        input?.focus();
-                        input?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
-                    }}>▼</button>
-                </div>
-            </div>
-            <div class="input-container">
-                <input
-                    type="text"
-                    inputmode="decimal"
-                    use:numberInput={{ decimalPlaces: 2, isPercentage: true }}
-                    bind:value={percent}
-                    on:input={handleInput}
-                    class="tp-percent input-field w-full px-4 py-2 rounded-md pr-10"
-                    class:locked-input={isLocked}
-                    disabled={isLocked}
-                    placeholder="%"
-                    id="tp-percent-{index}"
-                >
-                {#if !isLocked}
-                    <div class="stepper-buttons">
-                        <button tabindex="-1" on:click={() => {
-                            const input = document.getElementById(`tp-percent-${index}`);
-                            input?.focus();
-                            input?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true }));
-                        }}>▲</button>
-                        <button tabindex="-1" on:click={() => {
-                            const input = document.getElementById(`tp-percent-${index}`);
-                            input?.focus();
-                            input?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
-                        }}>▼</button>
-                    </div>
-                {/if}
-            </div>
+            <input type="text" inputmode="decimal" use:numberInput={{ decimalPlaces: 4 }} bind:value={price} on:input={handleInput} class="tp-price input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.takeProfitRow.pricePlaceholder')}" id="tp-price-{index}">
+            <input
+                type="text"
+                inputmode="decimal"
+                use:numberInput={{ decimalPlaces: 2, isPercentage: true }}
+                bind:value={percent}
+                on:input={handleInput}
+                class="tp-percent input-field w-full px-4 py-2 rounded-md"
+                class:locked-input={isLocked}
+                disabled={isLocked}
+                placeholder="%"
+                id="tp-percent-{index}"
+            >
         </div>
     </div>
     <button class="lock-tp-btn btn-lock-icon p-1 self-center" title="{$_('dashboard.takeProfitRow.lockButtonTitle')}" tabindex="-1" on:click={toggleLock}>

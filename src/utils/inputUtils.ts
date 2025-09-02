@@ -4,37 +4,22 @@ export function numberInput(node: HTMLInputElement, options: { decimalPlaces?: n
     let { decimalPlaces, isPercentage = false, noDecimals = false, maxValue, minValue = 0 } = options;
 
     function formatValue(value: string): string {
-        // 1. Komma zu Punkt konvertieren
+        // This function remains mostly for the live input formatting, not for the keydown logic
         let formattedValue = value.replace(/,/g, '.');
-
-        // 2. Nur Zahlen und (optional) einen Punkt zulassen
         if (noDecimals) {
-            formattedValue = formattedValue.replace(/[^0-9]/g, ''); // Nur Ziffern
+            formattedValue = formattedValue.replace(/[^0-9-]/g, '');
         } else {
-            formattedValue = formattedValue.replace(/[^0-9.]/g, ''); // Ziffern und Punkt
+            formattedValue = formattedValue.replace(/[^0-9.-]/g, '');
         }
-
-        // 3. Mehrere Punkte verhindern
         const parts = formattedValue.split('.');
         if (parts.length > 2) {
             formattedValue = parts[0] + '.' + parts.slice(1).join('');
         }
-
-        // 4. Dezimalstellen begrenzen (wenn nicht noDecimals)
-        if (!noDecimals && decimalPlaces !== undefined && formattedValue.includes('.')) {
-            const decimalPart = formattedValue.split('.')[1];
-            if (decimalPart && decimalPart.length > decimalPlaces) {
-                formattedValue = formattedValue.substring(0, formattedValue.indexOf('.') + decimalPlaces + 1);
-            }
+        const minusParts = formattedValue.split('-');
+        if (minusParts.length > 2 || (minusParts.length === 2 && minusParts[0] !== '')) {
+            // Invalid use of '-', remove all but the first character if it's a minus
+            formattedValue = formattedValue.replace(/-/g, (match, offset) => (offset > 0 ? '' : match));
         }
-
-        // 5. Maximalwert prüfen
-        if (maxValue !== undefined) {
-            if (parseFloat(formattedValue) > maxValue) {
-                formattedValue = maxValue.toString();
-            }
-        }
-
         return formattedValue;
     }
 
@@ -43,22 +28,19 @@ export function numberInput(node: HTMLInputElement, options: { decimalPlaces?: n
         const start = inputElement.selectionStart;
         const end = inputElement.selectionEnd;
         const oldValue = inputElement.value;
-
         const newValue = formatValue(oldValue);
-
         if (newValue !== oldValue) {
             inputElement.value = newValue;
-            // Restore cursor position
             const newLengthDiff = newValue.length - oldValue.length;
             if (start !== null && end !== null) {
                 inputElement.setSelectionRange(start + newLengthDiff, end + newLengthDiff);
             }
-            // Dispatch a new input event so bind:value works correctly
             node.dispatchEvent(new Event('input', { bubbles: true }));
         }
     }
 
     function handleKeyDown(event: KeyboardEvent) {
+        console.log(`handleKeyDown triggered for key: ${event.key} at ${new Date().toISOString()}`);
         if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') {
             return;
         }
@@ -71,7 +53,7 @@ export function numberInput(node: HTMLInputElement, options: { decimalPlaces?: n
         const cursorPosition = node.selectionStart ?? rawValue.length;
 
         if (rawValue.trim() === '' || isNaN(parseFloat(rawValue))) {
-            let newValue = operation === 'add' ? new Decimal(1) : new Decimal(-1);
+            let newValue = operation === 'add' ? new Decimal(1) : new Decimal(0);
             if (minValue !== undefined && newValue.lessThan(minValue)) {
                 newValue = new Decimal(minValue);
             }
@@ -143,7 +125,7 @@ export function numberInput(node: HTMLInputElement, options: { decimalPlaces?: n
             isPercentage = newOptions.isPercentage ?? isPercentage;
             noDecimals = newOptions.noDecimals ?? noDecimals;
             maxValue = newOptions.maxValue;
-            minValue = newOptions.minValue;
+            minValue = newOptions.minValue ?? 0;
         },
         destroy() {
             node.removeEventListener('input', handleInput);
