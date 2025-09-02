@@ -94,7 +94,21 @@
             </div>
         {/if}
     </div>
-    <input type="text" inputmode="decimal" use:numberInput={{ decimalPlaces: 4 }} bind:value={entryPrice} class="input-field w-full px-4 py-2 rounded-md mb-4" placeholder="{$_('dashboard.tradeSetupInputs.entryPricePlaceholder')}">
+    <div class="input-container mb-4">
+        <input id="entry-price-input" type="text" inputmode="decimal" use:numberInput={{ decimalPlaces: 4 }} bind:value={entryPrice} class="input-field w-full px-4 py-2 rounded-md pr-10" placeholder="{$_('dashboard.tradeSetupInputs.entryPricePlaceholder')}">
+        <div class="stepper-buttons">
+            <button tabindex="-1" on:click={() => {
+                const input = document.getElementById('entry-price-input');
+                input?.focus();
+                input?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true }));
+            }}>▲</button>
+            <button tabindex="-1" on:click={() => {
+                const input = document.getElementById('entry-price-input');
+                input?.focus();
+                input?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+            }}>▼</button>
+        </div>
+    </div>
 
     <div class="p-2 rounded-lg mb-4" style="background-color: var(--bg-tertiary);">
         <div class="flex justify-end mb-2">
@@ -105,13 +119,53 @@
             </label>
         </div>
         {#if !useAtrSl}
-            <div>
-                <input type="text" inputmode="decimal" use:numberInput={{ decimalPlaces: 4 }} bind:value={stopLossPrice} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.tradeSetupInputs.manualStopLossPlaceholder')}">
+            <div class="input-container">
+                <input id="stop-loss-input" type="text" inputmode="decimal" use:numberInput={{ decimalPlaces: 4 }} bind:value={stopLossPrice} class="input-field w-full px-4 py-2 rounded-md pr-10" placeholder="{$_('dashboard.tradeSetupInputs.manualStopLossPlaceholder')}">
+                <div class="stepper-buttons">
+                    <button tabindex="-1" on:click={() => {
+                        const input = document.getElementById('stop-loss-input');
+                        input?.focus();
+                        input?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true }));
+                    }}>▲</button>
+                    <button tabindex="-1" on:click={() => {
+                        const input = document.getElementById('stop-loss-input');
+                        input?.focus();
+                        input?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+                    }}>▼</button>
+                </div>
             </div>
         {:else}
             <div class="grid grid-cols-2 gap-2">
-                <input type="text" inputmode="decimal" use:numberInput={{ decimalPlaces: 4 }} bind:value={atrValue} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.tradeSetupInputs.atrValuePlaceholder')}">
-                <input type="text" inputmode="decimal" use:numberInput={{ decimalPlaces: 4 }} bind:value={atrMultiplier} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.tradeSetupInputs.multiplierPlaceholder')}">
+                <div class="input-container">
+                    <input id="atr-value-input" type="text" inputmode="decimal" use:numberInput={{ decimalPlaces: 4 }} bind:value={atrValue} class="input-field w-full px-4 py-2 rounded-md pr-10" placeholder="{$_('dashboard.tradeSetupInputs.atrValuePlaceholder')}">
+                    <div class="stepper-buttons">
+                        <button tabindex="-1" on:click={() => {
+                            const input = document.getElementById('atr-value-input');
+                            input?.focus();
+                            input?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true }));
+                        }}>▲</button>
+                        <button tabindex="-1" on:click={() => {
+                            const input = document.getElementById('atr-value-input');
+                            input?.focus();
+                            input?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+                        }}>▼</button>
+                    </div>
+                </div>
+                <div class="input-container">
+                    <input id="atr-multiplier-input" type="text" inputmode="decimal" use:numberInput={{ decimalPlaces: 4 }} bind:value={atrMultiplier} class="input-field w-full px-4 py-2 rounded-md pr-10" placeholder="{$_('dashboard.tradeSetupInputs.multiplierPlaceholder')}">
+                     <div class="stepper-buttons">
+                        <button tabindex="-1" on:click={() => {
+                            const input = document.getElementById('atr-multiplier-input');
+                            input?.focus();
+                            input?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true }));
+                        }}>▲</button>
+                        <button tabindex="-1" on:click={() => {
+                            const input = document.getElementById('atr-multiplier-input');
+                            input?.focus();
+                            input?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+                        }}>▼</button>
+                    </div>
+                </div>
             </div>
             {#if showAtrFormulaDisplay}
                 <div class="text-center text-xs text-sky-300 mt-2">{atrFormulaDisplay}</div>
