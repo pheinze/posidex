@@ -1,41 +1,53 @@
 import Decimal from 'decimal.js';
 
-export function numberInput(node: HTMLInputElement, options: { decimalPlaces?: number, isPercentage?: boolean, noDecimals?: boolean, maxValue?: number, minValue?: number }) {
-    let { decimalPlaces, isPercentage = false, noDecimals = false, maxValue, minValue = 0 } = options;
+type NumberInputOptions = {
+    decimalPlaces?: number;
+    isPercentage?: boolean;
+    noDecimals?: boolean;
+    maxValue?: number;
+    minValue?: number;
+};
 
-    function formatValue(value: string): string {
-        // This function remains mostly for the live input formatting, not for the keydown logic
-        let formattedValue = value.replace(/,/g, '.');
-        if (noDecimals) {
-            formattedValue = formattedValue.replace(/[^0-9-]/g, '');
+export function numberInput(node: HTMLInputElement, options: NumberInputOptions) {
+    let { decimalPlaces, isPercentage = false, noDecimals = false, maxValue, minValue = 0 } = options;
+    let stickyDecimalPlaces: number | null = null;
+
+    const getDecimalPlaces = (value: string): number => {
+        if (value.includes('.')) {
+            return value.split('.')[1].length;
+        }
+        return 0;
+    };
+
+    const updateStickyPrecision = (value: string) => {
+        const cleanValue = value.replace(',', '.').trim();
+        if (cleanValue === '' || isNaN(parseFloat(cleanValue))) {
+            stickyDecimalPlaces = null;
         } else {
-            formattedValue = formattedValue.replace(/[^0-9.-]/g, '');
+            stickyDecimalPlaces = getDecimalPlaces(cleanValue);
         }
-        const parts = formattedValue.split('.');
-        if (parts.length > 2) {
-            formattedValue = parts[0] + '.' + parts.slice(1).join('');
-        }
-        const minusParts = formattedValue.split('-');
-        if (minusParts.length > 2 || (minusParts.length === 2 && minusParts[0] !== '')) {
-            // Invalid use of '-', remove all but the first character if it's a minus
-            formattedValue = formattedValue.replace(/-/g, (match, offset) => (offset > 0 ? '' : match));
-        }
-        return formattedValue;
-    }
+    };
+
+    // Initial precision check
+    updateStickyPrecision(node.value);
 
     function handleInput(event: Event) {
         const inputElement = event.target as HTMLInputElement;
-        const start = inputElement.selectionStart;
-        const end = inputElement.selectionEnd;
-        const oldValue = inputElement.value;
-        const newValue = formatValue(oldValue);
-        if (newValue !== oldValue) {
-            inputElement.value = newValue;
-            const newLengthDiff = newValue.length - oldValue.length;
-            if (start !== null && end !== null) {
-                inputElement.setSelectionRange(start + newLengthDiff, end + newLengthDiff);
+        updateStickyPrecision(inputElement.value);
+        // DO NOT dispatch another input event here, as it causes an infinite loop.
+        // The keydown handler is responsible for dispatching events after a value change.
+    }
+
+    function handleBlur(event: Event) {
+        const inputElement = event.target as HTMLInputElement;
+        const rawValue = inputElement.value.replace(',', '.');
+        try {
+            if (rawValue.trim() !== '') {
+                const val = new Decimal(rawValue);
+                inputElement.value = val.toString();
             }
-            node.dispatchEvent(new Event('input', { bubbles: true }));
+        } catch (e) {
+            // Ignore invalid numbers
         }
     }
 
@@ -61,6 +73,7 @@ export function numberInput(node: HTMLInputElement, options: { decimalPlaces?: n
             }
             const finalValueString = newValue.toString();
             node.value = finalValueString;
+            updateStickyPrecision(finalValueString);
             node.dispatchEvent(new Event('input', { bubbles: true }));
             node.setSelectionRange(finalValueString.length, finalValueString.length);
             return;
@@ -94,10 +107,15 @@ export function numberInput(node: HTMLInputElement, options: { decimalPlaces?: n
             const originalLength = node.value.length;
 
             let finalValueString: string;
+
             if (noDecimals) {
                 finalValueString = newValue.toFixed(0);
             } else if (decimalPlaces !== undefined) {
                 finalValueString = newValue.toFixed(decimalPlaces);
+            } else if (stickyDecimalPlaces !== null) {
+                // Use sticky precision, but convert back to Decimal to strip trailing zeros
+                const roundedValue = newValue.toDecimalPlaces(stickyDecimalPlaces);
+                finalValueString = roundedValue.toString();
             } else {
                 finalValueString = newValue.toString();
             }
@@ -106,6 +124,7 @@ export function numberInput(node: HTMLInputElement, options: { decimalPlaces?: n
             let newCursorPosition = cursorPosition + lengthDifference;
 
             node.value = finalValueString;
+            updateStickyPrecision(finalValueString);
             node.dispatchEvent(new Event('input', { bubbles: true }));
             node.setSelectionRange(newCursorPosition, newCursorPosition);
 
@@ -116,19 +135,23 @@ export function numberInput(node: HTMLInputElement, options: { decimalPlaces?: n
 
     node.addEventListener('input', handleInput);
     node.addEventListener('keydown', handleKeyDown);
+    node.addEventListener('blur', handleBlur);
 
     return {
-        update(newOptions: { decimalPlaces?: number, isPercentage?: boolean, noDecimals?: boolean, maxValue?: number, minValue?: number }) {
+        update(newOptions: NumberInputOptions) {
             options = { ...options, ...newOptions };
             decimalPlaces = newOptions.decimalPlaces;
             isPercentage = newOptions.isPercentage ?? isPercentage;
             noDecimals = newOptions.noDecimals ?? noDecimals;
             maxValue = newOptions.maxValue;
             minValue = newOptions.minValue ?? 0;
+            // Re-evaluate precision if options change
+            updateStickyPrecision(node.value);
         },
         destroy() {
             node.removeEventListener('input', handleInput);
             node.removeEventListener('keydown', handleKeyDown);
+            node.removeEventListener('blur', handleBlur);
         }
     };
 }

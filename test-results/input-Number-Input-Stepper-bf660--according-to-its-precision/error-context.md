@@ -1,0 +1,146 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - main [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e7]:
+        - img [ref=e8]
+        - heading "Cachy" [level=1] [ref=e16]
+      - generic [ref=e17]:
+        - generic [ref=e18]:
+          - combobox [ref=e19]:
+            - option "Load Preset..." [selected]
+          - button "Save Preset" [ref=e20] [cursor=pointer]:
+            - img
+          - button "Delete selected preset" [disabled] [ref=e21]:
+            - img
+          - button "Reset all inputs" [ref=e22] [cursor=pointer]:
+            - img [ref=e23] [cursor=pointer]
+          - button "Switch Theme" [ref=e25] [cursor=pointer]: 🌙
+        - button "Journal" [ref=e26] [cursor=pointer]
+    - generic [ref=e27]:
+      - generic [ref=e28]:
+        - generic [ref=e29]:
+          - heading "General" [level=2] [ref=e30]
+          - generic [ref=e31]:
+            - radiogroup "General" [ref=e32]:
+              - radio "Long" [checked] [ref=e33] [cursor=pointer]
+              - radio "Short" [ref=e34] [cursor=pointer]
+            - generic [ref=e35]:
+              - textbox "Leverage (e.g. 10x)" [ref=e36]: "1"
+              - textbox "Fees per Trade (%)" [ref=e37]: "0.1"
+        - generic [ref=e38]:
+          - heading "Portfolio" [level=2] [ref=e39]
+          - generic [ref=e40]:
+            - generic [ref=e41]:
+              - generic [ref=e42]: Account Size
+              - textbox "Account Size" [ref=e43]
+            - generic [ref=e44]:
+              - generic [ref=e45]: Risk per Trade (%)
+              - textbox "Risk per Trade (%)" [ref=e46]
+      - generic [ref=e47]:
+        - heading "Trade Setup" [level=2] [ref=e48]
+        - generic [ref=e49]:
+          - textbox "Symbol (e.g. BTCUSDT)" [ref=e50]
+          - button "Fetch Live Price" [ref=e51] [cursor=pointer]:
+            - img [ref=e52] [cursor=pointer]
+        - textbox "Entry Price" [ref=e55]
+        - generic [ref=e56]:
+          - generic [ref=e58] [cursor=pointer]:
+            - generic [ref=e59] [cursor=pointer]: ATR Stop-Loss
+            - switch "ATR Stop-Loss" [ref=e60]
+          - textbox "Manual Stop Loss" [ref=e63]
+    - generic [ref=e64]:
+      - heading "Take-Profit Targets (Partial) ?" [level=2] [ref=e65]:
+        - generic [ref=e66]: Take-Profit Targets (Partial)
+        - generic [ref=e67]:
+          - button "?" [ref=e69] [cursor=pointer]
+          - button "Add another target" [ref=e70] [cursor=pointer]:
+            - img [ref=e71] [cursor=pointer]
+      - generic [ref=e74]:
+        - generic [ref=e75]:
+          - generic [ref=e76]:
+            - generic [ref=e78]: TP 1
+            - generic [ref=e79]:
+              - textbox "TP 1" [active] [ref=e80]
+              - textbox "%" [ref=e81]
+          - button "Lock/Unlock Percentage" [ref=e82] [cursor=pointer]:
+            - img [ref=e83] [cursor=pointer]
+          - button "Remove this target" [ref=e85] [cursor=pointer]:
+            - img
+        - generic [ref=e86]:
+          - generic [ref=e87]:
+            - generic [ref=e89]: TP 2
+            - generic [ref=e90]:
+              - textbox "TP 2" [ref=e91]
+              - textbox "%" [ref=e92]
+          - button "Lock/Unlock Percentage" [ref=e93] [cursor=pointer]:
+            - img [ref=e94] [cursor=pointer]
+          - button "Remove this target" [ref=e96] [cursor=pointer]:
+            - img
+        - generic [ref=e97]:
+          - generic [ref=e98]:
+            - generic [ref=e100]: TP 3
+            - generic [ref=e101]:
+              - textbox "TP 3" [ref=e102]
+              - textbox "%" [ref=e103]
+          - button "Lock/Unlock Percentage" [ref=e104] [cursor=pointer]:
+            - img [ref=e105] [cursor=pointer]
+          - button "Remove this target" [ref=e107] [cursor=pointer]:
+            - img
+    - generic [ref=e108]: Please enter the required trade data to start the calculation.
+    - generic [ref=e109]:
+      - generic [ref=e111]:
+        - heading "Summary" [level=2] [ref=e112]
+        - generic [ref=e113]:
+          - generic [ref=e114]:
+            - text: Position Size
+            - button "Lock/Unlock Position Size" [ref=e115] [cursor=pointer]:
+              - img [ref=e116] [cursor=pointer]
+            - button "Copy Position Size" [ref=e118] [cursor=pointer]:
+              - img [ref=e119] [cursor=pointer]
+          - generic [ref=e122]: "-"
+        - generic [ref=e123]:
+          - generic [ref=e124]:
+            - text: Max. Net Loss
+            - button "?" [ref=e126] [cursor=pointer]
+          - generic [ref=e127]: "-"
+        - generic [ref=e128]:
+          - generic [ref=e129]:
+            - text: Required Margin
+            - button "?" [ref=e131] [cursor=pointer]
+          - generic [ref=e132]: "-"
+        - generic [ref=e133]:
+          - generic [ref=e134]: Entry Fee
+          - generic [ref=e135]: "-"
+        - generic [ref=e136]:
+          - generic [ref=e137]:
+            - text: Est. Liquidation Price
+            - button "?" [ref=e139] [cursor=pointer]
+          - generic [ref=e140]: "-"
+        - generic [ref=e141]:
+          - generic [ref=e142]:
+            - text: Break-Even Price
+            - button "?" [ref=e144] [cursor=pointer]
+          - generic [ref=e145]: "-"
+      - generic [ref=e147]:
+        - heading "Visual Analysis" [level=2] [ref=e148]
+        - img "Trade visualization bar" [ref=e149]
+      - generic [ref=e150]:
+        - textbox "Notes on the trade..." [ref=e151]
+        - generic [ref=e152]:
+          - button "Add Trade to Journal" [disabled] [ref=e153]
+          - button "Show Instructions" [ref=e154] [cursor=pointer]:
+            - img
+        - generic [ref=e156]:
+          - button "🇩🇪" [ref=e157] [cursor=pointer]
+          - button "🇬🇧" [ref=e158] [cursor=pointer]
+  - contentinfo [ref=e159]:
+    - text: Version 0.92b -
+    - button "Changelog" [ref=e160] [cursor=pointer]
+  - option "All" [selected]
+  - option "Open"
+  - option "Won"
+  - option "Lost"
+```

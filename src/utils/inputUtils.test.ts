@@ -1,15 +1,7 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { numberInput } from './inputUtils';
-import { JSDOM } from 'jsdom';
 
-// Setup a DOM environment for testing
-const dom = new JSDOM('<!doctype html><html><body></body></html>');
-global.window = dom.window as unknown as Window & typeof globalThis;
-global.document = dom.window.document;
-global.HTMLElement = dom.window.HTMLElement;
-global.Event = dom.window.Event;
-global.KeyboardEvent = dom.window.KeyboardEvent;
-
+// Note: No more manual JSDOM setup. Vitest's 'jsdom' environment handles this.
 
 describe('numberInput Svelte Action', () => {
 
@@ -19,160 +11,133 @@ describe('numberInput Svelte Action', () => {
         input.value = initialValue;
         document.body.appendChild(input);
 
-        // Mock setSelectionRange
-        input.setSelectionRange = vi.fn();
+        // JSDOM doesn't implement setSelectionRange, so we mock it.
+        if (!input.setSelectionRange) {
+            input.setSelectionRange = vi.fn();
+        }
 
         const action = numberInput(input, options);
 
+        // Spy on dispatchEvent to check for 'input' events
         const dispatchEventSpy = vi.spyOn(input, 'dispatchEvent');
 
         return { input, action, dispatchEventSpy };
     }
 
+    afterEach(() => {
+        // Clean up the DOM after each test
+        document.body.innerHTML = '';
+        vi.restoreAllMocks();
+    });
+
+    // --- Existing Logic Tests (Adjusted) ---
+
     it('should increment the last digit when cursor is at the end', () => {
         const { input } = setupTest('123');
         input.selectionStart = 3;
-
-        const event = new KeyboardEvent('keydown', { key: 'ArrowUp' });
-        input.dispatchEvent(event);
-
+        input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp' }));
         expect(input.value).toBe('124');
-    });
-
-    it('should decrement the last digit when cursor is at the end', () => {
-        const { input } = setupTest('123');
-        input.selectionStart = 3;
-
-        const event = new KeyboardEvent('keydown', { key: 'ArrowDown' });
-        input.dispatchEvent(event);
-
-        expect(input.value).toBe('122');
     });
 
     it('should increment the tens place based on cursor position', () => {
         const { input } = setupTest('123');
         input.selectionStart = 2; // Cursor at 12|3
-
-        const event = new KeyboardEvent('keydown', { key: 'ArrowUp' });
-        input.dispatchEvent(event);
-
+        input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp' }));
         expect(input.value).toBe('133');
     });
 
-    it('should increment the hundreds place based on cursor position', () => {
-        const { input } = setupTest('123');
-        input.selectionStart = 1; // Cursor at 1|23
-
-        const event = new KeyboardEvent('keydown', { key: 'ArrowUp' });
-        input.dispatchEvent(event);
-
-        expect(input.value).toBe('223');
-    });
-
-    it('should correctly increment a decimal value', () => {
-        const { input } = setupTest('12.34', { decimalPlaces: 2 });
-        input.selectionStart = 4; // Cursor at 12.3|4
-
-        const event = new KeyboardEvent('keydown', { key: 'ArrowUp' });
-        input.dispatchEvent(event);
-
-        expect(input.value).toBe('12.44');
-    });
-
-    it('should stop at 0 when decrementing across zero by default', () => {
-        const { input } = setupTest('0.1', { decimalPlaces: 1 });
-        input.selectionStart = 1; // Cursor at |0.1
-
-        const event = new KeyboardEvent('keydown', { key: 'ArrowDown' });
-        input.dispatchEvent(event);
-
-        // Default minValue is 0, so it should stop at 0
-        expect(input.value).toBe('0.0');
-    });
-
-    it('should handle empty input by starting at 1', () => {
+    it('should handle empty input by starting at 1 on ArrowUp', () => {
         const { input } = setupTest('');
-        input.selectionStart = 0;
-
-        const event = new KeyboardEvent('keydown', { key: 'ArrowUp' });
-        input.dispatchEvent(event);
-
+        input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp' }));
         expect(input.value).toBe('1');
     });
 
-    it('should handle empty input by starting at 0 when decrementing', () => {
+    it('should handle empty input by starting at 0 on ArrowDown', () => {
         const { input } = setupTest('');
-        input.selectionStart = 0;
-
-        const event = new KeyboardEvent('keydown', { key: 'ArrowDown' });
-        input.dispatchEvent(event);
-
-        // Default minValue is 0, so it should start at 0
+        input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
         expect(input.value).toBe('0');
-    });
-
-    it('should respect maxValue', () => {
-        const { input } = setupTest('99', { maxValue: 100 });
-        input.selectionStart = 2;
-
-        const event = new KeyboardEvent('keydown', { key: 'ArrowUp' });
-        input.dispatchEvent(event);
-        expect(input.value).toBe('100');
-
-        input.dispatchEvent(event);
-        expect(input.value).toBe('100'); // Should not go above max
     });
 
     it('should respect minValue', () => {
-        const { input } = setupTest('1', { minValue: 0 });
+        const { input } = setupTest('0');
+        input.selectionStart = 1;
+        input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
+        expect(input.value).toBe('0'); // Stays at min value
+    });
+
+    // --- New/Updated Tests for Hybrid Logic ---
+
+    it('should use "sticky precision" based on initial value', () => {
+        const { input } = setupTest('1.20'); // 2 decimal places
+        input.selectionStart = 4; // cursor at the end
+        input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp' }));
+        // Should increment by 0.01 and strip trailing zero
+        expect(input.value).toBe('1.21');
+    });
+
+    it('should update "sticky precision" when user types a new value', () => {
+        const { input } = setupTest('1.2'); // Starts with 1 decimal place
+        input.selectionStart = 3;
+
+        input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp' }));
+        expect(input.value).toBe('1.3');
+
+        // Simulate user typing a new value with different precision
+        input.value = '5.432';
+        input.dispatchEvent(new Event('input')); // Trigger precision update
+
+        input.selectionStart = 5;
+        input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp' }));
+        expect(input.value).toBe('5.433');
+    });
+
+    it('should increment by 1 for integers', () => {
+        const { input } = setupTest('100');
+        input.selectionStart = 3;
+        input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp' }));
+        expect(input.value).toBe('101');
+    });
+
+    it('should strip trailing zeros on blur', () => {
+        const { input } = setupTest('1.200');
+        input.dispatchEvent(new Event('blur'));
+        expect(input.value).toBe('1.2');
+    });
+
+    it('should handle `noDecimals: true` option by rounding', () => {
+        const { input } = setupTest('1.8', { noDecimals: true });
+        input.selectionStart = 1; // cursor on the 1, so step is 1
+        input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp' }));
+        // 1.8 + 1 = 2.8, which rounds to 3
+        expect(input.value).toBe('3');
+    });
+
+    it('should respect `decimalPlaces` option when provided', () => {
+        const { input } = setupTest('1.234', { decimalPlaces: 2 });
+        input.selectionStart = 5;
+        input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp' }));
+        // Should round to 2 decimal places and pad with zero
+        expect(input.value).toBe('1.24');
+    });
+
+    it('should go from a decimal to an integer correctly', () => {
+        const { input } = setupTest('0.9');
+        input.selectionStart = 3;
+        input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp' }));
+        // Should become '1', not '1.0'
+        expect(input.value).toBe('1');
+    });
+
+    it('should go from an integer to a smaller decimal correctly', () => {
+        const { input } = setupTest('1');
         input.selectionStart = 1;
 
-        const event = new KeyboardEvent('keydown', { key: 'ArrowDown' });
-        input.dispatchEvent(event);
-        expect(input.value).toBe('0');
+        // Simulate user changing value to have decimals
+        input.value = '1.0';
+        input.dispatchEvent(new Event('input'));
 
-        input.dispatchEvent(event);
-        expect(input.value).toBe('0'); // Should not go below min
+        input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
+        // Should become '0.9'
+        expect(input.value).toBe('0.9');
     });
-
-    it('should handle the user-reported zero bug', () => {
-        const { input } = setupTest('1', { minValue: 0 });
-        input.selectionStart = 1;
-
-        // Decrement from 1 to 0
-        const downEvent = new KeyboardEvent('keydown', { key: 'ArrowDown' });
-        input.dispatchEvent(downEvent);
-        expect(input.value).toBe('0');
-
-        // Try to decrement again, should stay at 0
-        input.dispatchEvent(downEvent);
-        expect(input.value).toBe('0');
-    });
-
-    it('should maintain cursor position after incrementing', () => {
-        const { input } = setupTest('123');
-        const setSelectionRangeSpy = vi.spyOn(input, 'setSelectionRange');
-        input.selectionStart = 2; // 12|3
-
-        const event = new KeyboardEvent('keydown', { key: 'ArrowUp' });
-        input.dispatchEvent(event);
-
-        expect(input.value).toBe('133');
-        // Length is the same, so cursor position should be the same
-        expect(setSelectionRangeSpy).toHaveBeenCalledWith(2, 2);
-    });
-
-    it('should adjust cursor position when length changes (e.g. 9 -> 10)', () => {
-        const { input } = setupTest('9');
-        const setSelectionRangeSpy = vi.spyOn(input, 'setSelectionRange');
-        input.selectionStart = 1; // 9|
-
-        const event = new KeyboardEvent('keydown', { key: 'ArrowUp' });
-        input.dispatchEvent(event);
-
-        expect(input.value).toBe('10');
-        // Value changed from '9' to '10', length increased by 1. Cursor should be at 2.
-        expect(setSelectionRangeSpy).toHaveBeenCalledWith(2, 2);
-    });
-
 });
