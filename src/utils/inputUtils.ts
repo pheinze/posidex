@@ -28,14 +28,11 @@ export function numberInput(node: HTMLInputElement, options: NumberInputOptions)
         }
     };
 
-    // Initial precision check
     updateStickyPrecision(node.value);
 
     function handleInput(event: Event) {
         const inputElement = event.target as HTMLInputElement;
         updateStickyPrecision(inputElement.value);
-        // DO NOT dispatch another input event here, as it causes an infinite loop.
-        // The keydown handler is responsible for dispatching events after a value change.
     }
 
     function handleBlur(event: Event) {
@@ -113,7 +110,6 @@ export function numberInput(node: HTMLInputElement, options: NumberInputOptions)
             } else if (decimalPlaces !== undefined) {
                 finalValueString = newValue.toFixed(decimalPlaces);
             } else if (stickyDecimalPlaces !== null) {
-                // Use sticky precision, but convert back to Decimal to strip trailing zeros
                 const roundedValue = newValue.toDecimalPlaces(stickyDecimalPlaces);
                 finalValueString = roundedValue.toString();
             } else {
@@ -145,7 +141,6 @@ export function numberInput(node: HTMLInputElement, options: NumberInputOptions)
             noDecimals = newOptions.noDecimals ?? noDecimals;
             maxValue = newOptions.maxValue;
             minValue = newOptions.minValue ?? 0;
-            // Re-evaluate precision if options change
             updateStickyPrecision(node.value);
         },
         destroy() {

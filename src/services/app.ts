@@ -586,10 +586,10 @@ export const app = {
         const targets = [...currentAppState.targets];
         const ONE_HUNDRED = new Decimal(100);
 
-        if (changedIndex === null) return; // Nothing to do if no specific field was changed
+        if (changedIndex === null) return;
 
         const unlockedIndices = targets.map((t, i) => t.isLocked ? -1 : i).filter(i => i !== -1);
-        if (unlockedIndices.length < 2) return; // Cannot adjust if less than two fields are unlocked
+        if (unlockedIndices.length < 2) return;
 
         const lastUnlockedIndex = unlockedIndices[unlockedIndices.length - 1];
 
@@ -606,16 +606,8 @@ export const app = {
         }
 
         const maxUnlockedSum = ONE_HUNDRED.minus(sumOfLocked);
-        let changedValue = parseDecimal(targets[changedIndex].percent);
 
-        // Cap the changed value to not exceed the available unlocked percentage
-        if (changedValue.gt(maxUnlockedSum)) {
-            changedValue = maxUnlockedSum;
-            targets[changedIndex].percent = changedValue.toFixed(0);
-        }
-
-        // The user is editing the last unlocked field, so we just need to cap it.
-        // No other fields should be adjusted.
+        // Handle the case where the user edits the last unlocked field
         if (changedIndex === lastUnlockedIndex) {
             let sumOfOtherUnlocked = new Decimal(0);
             unlockedIndices.forEach(i => {
@@ -624,11 +616,11 @@ export const app = {
                 }
             });
             const maxSumForLast = maxUnlockedSum.minus(sumOfOtherUnlocked);
-            if (changedValue.gt(maxSumForLast)) {
+            if (parseDecimal(targets[changedIndex].percent).gt(maxSumForLast)) {
                 targets[changedIndex].percent = maxSumForLast.toFixed(0);
             }
         }
-        // The user is editing a field that is NOT the last one, so adjust the last one.
+        // Handle the case where the user edits any other unlocked field
         else {
             let sumOfPrimaryUnlocked = new Decimal(0);
             unlockedIndices.forEach(i => {
@@ -637,7 +629,6 @@ export const app = {
                 }
             });
 
-            // Cap the sum of primary unlocked fields
             if (sumOfPrimaryUnlocked.gt(maxUnlockedSum)) {
                 const overage = sumOfPrimaryUnlocked.minus(maxUnlockedSum);
                 const originalChangedValue = parseDecimal(targets[changedIndex].percent);
