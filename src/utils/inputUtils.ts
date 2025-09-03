@@ -169,7 +169,7 @@ export function numberInput(node: HTMLInputElement, options: NumberInputOptions)
     }
 
     function calculateStep(rawValue: string, cursorPosition: number): Decimal {
-        // Priority 1: Strict mode for backward compatibility. Use cursor position.
+        // For strict mode, the original cursor-based logic is sufficient.
         if (decimalPlaces !== undefined) {
             const decimalPointIndex = rawValue.indexOf('.');
             let power;
@@ -184,18 +184,29 @@ export function numberInput(node: HTMLInputElement, options: NumberInputOptions)
             }
             return new Decimal(10).pow(power);
         }
-        // Priority 2: Integer-only mode.
-        else if (noDecimals) {
-            return new Decimal(1);
+
+        // For dynamic mode, combine cursor position and sticky precision.
+        // 1. Calculate step based on cursor position.
+        const decimalPointIndex = rawValue.indexOf('.');
+        let power;
+        if (decimalPointIndex === -1) {
+            power = rawValue.length - cursorPosition;
+        } else {
+            if (cursorPosition > decimalPointIndex) {
+                power = (decimalPointIndex + 1) - cursorPosition;
+            } else {
+                power = decimalPointIndex - cursorPosition;
+            }
         }
-        // Priority 3: Dynamic mode with decimals.
-        else if (stickyDecimalPlaces && stickyDecimalPlaces > 0) {
-            return new Decimal(10).pow(new Decimal(-stickyDecimalPlaces));
-        }
-        // Fallback: Default to step of 1 for whole numbers in dynamic mode.
-        else {
-            return new Decimal(1);
-        }
+        const cursorStep = new Decimal(10).pow(power);
+
+        // 2. Calculate minimum step based on sticky precision.
+        const minStep = (stickyDecimalPlaces && stickyDecimalPlaces > 0)
+            ? new Decimal(10).pow(new Decimal(-stickyDecimalPlaces))
+            : new Decimal(1);
+
+        // 3. Return the larger of the two.
+        return Decimal.max(cursorStep, minStep);
     }
 
     function clampValue(value: Decimal): Decimal {
