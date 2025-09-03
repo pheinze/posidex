@@ -29,13 +29,10 @@
         dispatch('fetchPrice');
     }
 
+    import { app } from '../../services/app';
+
     const handleSymbolInput = debounce(() => {
-        const query = symbol.toUpperCase().replace('/', '');
-        let filtered: string[] = [];
-        if (query) {
-            filtered = CONSTANTS.SUGGESTED_SYMBOLS.filter(s => s.startsWith(query));
-        }
-        dispatch('updateSymbolSuggestions', filtered);
+        app.updateSymbolSuggestions(symbol);
     }, 200);
 
     function selectSuggestion(s: string) {
@@ -51,7 +48,7 @@
     function handleClickOutside(event: MouseEvent) {
         const target = event.target as HTMLElement;
         if (!target.closest('.symbol-input-container')) {
-            dispatch('updateSymbolSuggestions', []); // Clear suggestions
+            app.updateSymbolSuggestions(''); // Clear suggestions
         }
     }
 </script>

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { tradeStore, updateTradeStore, initialAppState } from '../stores/tradeStore';
+import { tradeStore, updateTradeStore, initialTradeState } from '../stores/tradeStore';
 import { app } from './app';
 import { get } from 'svelte/store';
 
@@ -12,7 +12,7 @@ describe('app service - adjustTpPercentages (Prioritized Logic)', () => {
 
     beforeEach(() => {
         // Deep copy and set initial state for each test to ensure isolation
-        tradeStore.set(JSON.parse(JSON.stringify(initialAppState)));
+        tradeStore.set(JSON.parse(JSON.stringify(initialTradeState)));
         // Set up a standard 3-target scenario
         updateTradeStore(state => ({
             ...state,

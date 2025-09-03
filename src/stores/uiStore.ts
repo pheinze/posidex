@@ -10,6 +10,9 @@ interface UiState {
     showSaveFeedback: boolean;
     errorMessage: string;
     showErrorMessage: boolean;
+    isPriceFetching: boolean;
+    symbolSuggestions: string[];
+    showSymbolSuggestions: boolean;
 }
 
 const initialUiState: UiState = {
@@ -20,13 +23,18 @@ const initialUiState: UiState = {
     showSaveFeedback: false,
     errorMessage: '',
     showErrorMessage: false,
+    isPriceFetching: false,
+    symbolSuggestions: [],
+    showSymbolSuggestions: false,
 };
 
 function createUiStore() {
-    const { subscribe, update } = writable<UiState>(initialUiState);
+    const { subscribe, update, set } = writable<UiState>(initialUiState);
 
     return {
         subscribe,
+        update,
+        set,
         setTheme: (themeName: string) => {
             update(state => ({ ...state, currentTheme: themeName }));
             if (browser) {
