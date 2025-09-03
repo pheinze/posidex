@@ -1,10 +1,29 @@
 import { writable } from 'svelte/store';
-import { Decimal } from 'decimal.js';
 import { CONSTANTS } from '../lib/constants';
 import type { AppState } from './types';
+import { resultsStore, initialResultsState } from './resultsStore';
 import { uiStore } from './uiStore';
 
-export const initialAppState: Omit<AppState, 'currentTheme' | 'showJournalModal' | 'showChangelogModal' | 'showCopyFeedback' | 'showSaveFeedback' | 'errorMessage' | 'showErrorMessage'> = {
+export const initialTradeState: Pick<AppState,
+    'tradeType' |
+    'accountSize' |
+    'riskPercentage' |
+    'entryPrice' |
+    'stopLossPrice' |
+    'leverage' |
+    'fees' |
+    'symbol' |
+    'atrValue' |
+    'atrMultiplier' |
+    'useAtrSl' |
+    'tradeNotes' |
+    'targets' |
+    'isPositionSizeLocked' |
+    'lockedPositionSize' |
+    'journalSearchQuery' |
+    'journalFilterStatus' |
+    'currentTradeData'
+> = {
     tradeType: CONSTANTS.TRADE_TYPE_LONG,
     accountSize: '',
     riskPercentage: '',
@@ -22,75 +41,18 @@ export const initialAppState: Omit<AppState, 'currentTheme' | 'showJournalModal'
         { price: '', percent: '', isLocked: false },
         { price: '', percent: '', isLocked: false }
     ],
-
-    positionSize: '-',
-    requiredMargin: '-',
-    netLoss: '-',
-    entryFee: '-',
-    liquidationPrice: '-',
-    breakEvenPrice: '-',
-    totalRR: '-',
-    totalNetProfit: '-',
-    totalPercentSold: '-',
-    riskAmountCurrency: '-',
-    totalFees: '-',
-    maxPotentialProfit: '-',
-    calculatedTpDetails: [],
-
     isPositionSizeLocked: false,
     lockedPositionSize: null,
-    showTotalMetricsGroup: false,
-    showAtrFormulaDisplay: false,
-    atrFormulaText: '',
-    isPriceFetching: false,
-    symbolSuggestions: [],
-    showSymbolSuggestions: false,
     journalSearchQuery: '',
     journalFilterStatus: 'all',
     currentTradeData: {},
 };
 
-export const tradeStore = writable(initialAppState);
+export const tradeStore = writable(initialTradeState);
 
 // Helper function to update parts of the store
-export const updateTradeStore = (updater: (state: typeof initialAppState) => typeof initialAppState) => {
+export const updateTradeStore = (updater: (state: typeof initialTradeState) => typeof initialTradeState) => {
     tradeStore.update(updater);
-};
-
-// Helper function to reset results
-export const clearResults = (showGuidance = false) => {
-    updateTradeStore(state => ({
-        ...state,
-        positionSize: '-',
-        requiredMargin: '-',
-        netLoss: '-',
-        liquidationPrice: '-',
-        breakEvenPrice: '-',
-        totalRR: '-',
-        totalNetProfit: '-',
-        totalPercentSold: '-',
-        riskAmountCurrency: '-',
-        totalFees: '-',
-        maxPotentialProfit: '-',
-        calculatedTpDetails: [],
-        showTotalMetricsGroup: false,
-        showAtrFormulaDisplay: false,
-        atrFormulaText: '',
-    }));
-    if (showGuidance) {
-        uiStore.showError('dashboard.promptForData');
-    } else {
-        uiStore.hideError();
-    }
-};
-
-// Helper function to update symbol suggestions
-export const updateSymbolSuggestions = (suggestions: string[]) => {
-    updateTradeStore(state => ({
-        ...state,
-        symbolSuggestions: suggestions,
-        showSymbolSuggestions: suggestions.length > 0,
-    }));
 };
 
 // Helper function to toggle ATR inputs visibility
@@ -104,6 +66,7 @@ export const toggleAtrInputs = (useAtrSl: boolean) => {
 
 // Helper function to reset all inputs
 export const resetAllInputs = () => {
-    tradeStore.set(initialAppState);
-    clearResults(true);
+    tradeStore.set(initialTradeState);
+    resultsStore.set(initialResultsState);
+    uiStore.showError('dashboard.promptForData');
 };

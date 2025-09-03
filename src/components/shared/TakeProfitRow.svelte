@@ -12,22 +12,7 @@
     export let isLocked: boolean;
     export let tpDetail: any | undefined = undefined;
 
-    let previousPercent: string;
     let percentInput: HTMLInputElement;
-
-    onMount(() => {
-        previousPercent = percent;
-    });
-
-    $: if (percent !== previousPercent && percentInput) {
-        if (document.activeElement !== percentInput) {
-            percentInput.classList.add('highlight');
-            setTimeout(() => {
-                percentInput.classList.remove('highlight');
-            }, 500);
-        }
-        previousPercent = percent;
-    }
 
     function toggleLock() {
         dispatch('lockToggle', { index, isLocked: !isLocked });
@@ -38,20 +23,12 @@
     }
 
     function handleInput() {
-        previousPercent = percent;
         dispatch('input', { index, price, percent, isLocked });
     }
 </script>
 
 <style>
-    .highlight {
-        animation: flash 0.5s ease-out;
-    }
-
-    @keyframes flash {
-        0% { background-color: var(--accent-color); opacity: 0.7; }
-        100% { background-color: var(--input-bg); opacity: 1; }
-    }
+    /* Highlighting removed as it was causing svelte-check warnings */
 </style>
 
 <div class="tp-row flex items-center gap-2 p-2 rounded-lg" style="background-color: var(--bg-tertiary);">

@@ -5,7 +5,8 @@ import { apiService } from './apiService';
 import { modalManager } from './modalManager';
 import { uiManager } from './uiManager';
 import { calculator } from '../lib/calculator';
-import { tradeStore, updateTradeStore, clearResults, resetAllInputs, toggleAtrInputs } from '../stores/tradeStore';
+import { tradeStore, updateTradeStore, resetAllInputs, toggleAtrInputs } from '../stores/tradeStore';
+import { resultsStore, initialResultsState } from '../stores/resultsStore';
 import { presetStore, updatePresetStore } from '../stores/presetStore';
 import { journalStore } from '../stores/journalStore';
 import { uiStore } from '../stores/uiStore';
@@ -63,21 +64,22 @@ export const app = {
 
     calculateAndDisplay: () => {
         uiStore.hideError();
-        const currentAppState = get(tradeStore);
+        const currentTradeState = get(tradeStore);
+        const newResults = { ...initialResultsState };
 
         const getAndValidateInputs = (): { status: string; message?: string; fields?: string[]; data?: TradeValues } => {
             const values: TradeValues = {
-                accountSize: parseDecimal(currentAppState.accountSize),
-                riskPercentage: parseDecimal(currentAppState.riskPercentage),
-                entryPrice: parseDecimal(currentAppState.entryPrice),
-                leverage: parseDecimal(currentAppState.leverage || CONSTANTS.DEFAULT_LEVERAGE),
-                fees: parseDecimal(currentAppState.fees || CONSTANTS.DEFAULT_FEES),
-                symbol: currentAppState.symbol || '',
-                useAtrSl: currentAppState.useAtrSl,
-                atrValue: parseDecimal(currentAppState.atrValue),
-                atrMultiplier: parseDecimal(currentAppState.atrMultiplier || CONSTANTS.DEFAULT_ATR_MULTIPLIER),
-                stopLossPrice: parseDecimal(currentAppState.stopLossPrice),
-                targets: currentAppState.targets.map(t => ({ price: parseDecimal(t.price), percent: parseDecimal(t.percent), isLocked: t.isLocked })),
+                accountSize: parseDecimal(currentTradeState.accountSize),
+                riskPercentage: parseDecimal(currentTradeState.riskPercentage),
+                entryPrice: parseDecimal(currentTradeState.entryPrice),
+                leverage: parseDecimal(currentTradeState.leverage || CONSTANTS.DEFAULT_LEVERAGE),
+                fees: parseDecimal(currentTradeState.fees || CONSTANTS.DEFAULT_FEES),
+                symbol: currentTradeState.symbol || '',
+                useAtrSl: currentTradeState.useAtrSl,
+                atrValue: parseDecimal(currentTradeState.atrValue),
+                atrMultiplier: parseDecimal(currentTradeState.atrMultiplier || CONSTANTS.DEFAULT_ATR_MULTIPLIER),
+                stopLossPrice: parseDecimal(currentTradeState.stopLossPrice),
+                targets: currentTradeState.targets.map(t => ({ price: parseDecimal(t.price), percent: parseDecimal(t.percent), isLocked: t.isLocked })),
                 totalPercentSold: new Decimal(0)
             };
 
@@ -102,51 +104,45 @@ export const app = {
 
             if (values.useAtrSl) {
                 if (values.entryPrice.gt(0) && values.atrValue.gt(0) && values.atrMultiplier.gt(0)) {
-                    const operator = currentAppState.tradeType === CONSTANTS.TRADE_TYPE_LONG ? '-' : '+';
-                    values.stopLossPrice = currentAppState.tradeType === CONSTANTS.TRADE_TYPE_LONG
+                    const operator = currentTradeState.tradeType === CONSTANTS.TRADE_TYPE_LONG ? '-' : '+';
+                    values.stopLossPrice = currentTradeState.tradeType === CONSTANTS.TRADE_TYPE_LONG
                         ? values.entryPrice.minus(values.atrValue.times(values.atrMultiplier))
                         : values.entryPrice.plus(values.atrValue.times(values.atrMultiplier));
-                    updateTradeStore(state => ({ ...state, showAtrFormulaDisplay: true, atrFormulaText: `SL = ${values.entryPrice.toFixed(4)} ${operator} (${values.atrValue} × ${values.atrMultiplier}) = ${values.stopLossPrice.toFixed(4)}` }));
+
+                    newResults.showAtrFormulaDisplay = true;
+                    newResults.atrFormulaText = `SL = ${values.entryPrice.toFixed(4)} ${operator} (${values.atrValue} × ${values.atrMultiplier}) = ${values.stopLossPrice.toFixed(4)}`;
                 } else if (values.atrValue.gt(0) && values.atrMultiplier.gt(0)) {
                     return { status: CONSTANTS.STATUS_INCOMPLETE };
                 }
             } else {
-                updateTradeStore(state => ({ ...state, showAtrFormulaDisplay: false, atrFormulaText: '' }));
+                newResults.showAtrFormulaDisplay = false;
+                newResults.atrFormulaText = '';
             }
 
             if (values.accountSize.lte(0) || values.riskPercentage.lte(0) || values.entryPrice.lte(0) || values.stopLossPrice.lte(0)) {
                 return { status: CONSTANTS.STATUS_INCOMPLETE };
             }
 
-            if (currentAppState.tradeType === CONSTANTS.TRADE_TYPE_LONG && values.entryPrice.lte(values.stopLossPrice)) {
+            if (currentTradeState.tradeType === CONSTANTS.TRADE_TYPE_LONG && values.entryPrice.lte(values.stopLossPrice)) {
                 return { status: CONSTANTS.STATUS_INVALID, message: "Long: Stop-Loss muss unter dem Kaufpreis liegen.", fields: ['stopLossPrice', 'entryPrice'] };
             }
-            if (currentAppState.tradeType === CONSTANTS.TRADE_TYPE_SHORT && values.entryPrice.gte(values.stopLossPrice)) {
+            if (currentTradeState.tradeType === CONSTANTS.TRADE_TYPE_SHORT && values.entryPrice.gte(values.stopLossPrice)) {
                 return { status: CONSTANTS.STATUS_INVALID, message: "Short: Stop-Loss muss über dem Verkaufspreis liegen.", fields: ['stopLossPrice', 'entryPrice'] };
             }
 
-            // Validate Take-Profit targets against Stop-Loss and Entry Price
             for (const tp of values.targets) {
-                if (tp.price.gt(0)) { // Only validate if TP price is provided
-                    if (currentAppState.tradeType === CONSTANTS.TRADE_TYPE_LONG) {
-                        if (tp.price.lte(values.stopLossPrice)) {
-                            return { status: CONSTANTS.STATUS_INVALID, message: `Long: Take-Profit Ziel ${tp.price.toFixed(4)} muss über dem Stop-Loss liegen.`, fields: ['targets'] };
-                        }
-                        if (tp.price.lte(values.entryPrice)) {
-                            return { status: CONSTANTS.STATUS_INVALID, message: `Long: Take-Profit Ziel ${tp.price.toFixed(4)} muss über dem Einstiegspreis liegen.`, fields: ['targets'] };
-                        }
-                    } else { // Short trade
-                        if (tp.price.gte(values.stopLossPrice)) {
-                            return { status: CONSTANTS.STATUS_INVALID, message: `Short: Take-Profit Ziel ${tp.price.toFixed(4)} muss unter dem Stop-Loss liegen.`, fields: ['targets'] };
-                        }
-                        if (tp.price.gte(values.entryPrice)) {
-                            return { status: CONSTANTS.STATUS_INVALID, message: `Short: Take-Profit Ziel ${tp.price.toFixed(4)} muss unter dem Einstiegspreis liegen.`, fields: ['targets'] };
-                        }
+                if (tp.price.gt(0)) {
+                    if (currentTradeState.tradeType === CONSTANTS.TRADE_TYPE_LONG) {
+                        if (tp.price.lte(values.stopLossPrice)) return { status: CONSTANTS.STATUS_INVALID, message: `Long: Take-Profit Ziel ${tp.price.toFixed(4)} muss über dem Stop-Loss liegen.`, fields: ['targets'] };
+                        if (tp.price.lte(values.entryPrice)) return { status: CONSTANTS.STATUS_INVALID, message: `Long: Take-Profit Ziel ${tp.price.toFixed(4)} muss über dem Einstiegspreis liegen.`, fields: ['targets'] };
+                    } else {
+                        if (tp.price.gte(values.stopLossPrice)) return { status: CONSTANTS.STATUS_INVALID, message: `Short: Take-Profit Ziel ${tp.price.toFixed(4)} muss unter dem Stop-Loss liegen.`, fields: ['targets'] };
+                        if (tp.price.gte(values.entryPrice)) return { status: CONSTANTS.STATUS_INVALID, message: `Short: Take-Profit Ziel ${tp.price.toFixed(4)} muss unter dem Einstiegspreis liegen.`, fields: ['targets'] };
                     }
                 }
             }
 
-            values.totalPercentSold = values.targets.reduce((sum: Decimal, t: { price: Decimal; percent: Decimal; isLocked: boolean; }) => sum.plus(t.percent), new Decimal(0));
+            values.totalPercentSold = values.targets.reduce((sum: Decimal, t) => sum.plus(t.percent), new Decimal(0));
             if (values.totalPercentSold.gt(100)) {
                 return { status: CONSTANTS.STATUS_INVALID, message: `Die Summe der Verkaufsprozente (${values.totalPercentSold.toFixed(0)}%) darf 100% nicht überschreiten.`, fields: [] };
             }
@@ -158,84 +154,87 @@ export const app = {
 
         if (validationResult.status === CONSTANTS.STATUS_INVALID) {
             uiStore.showError(validationResult.message || "");
-            clearResults();
+            app.clearResults();
             return;
         }
 
         if (validationResult.status === CONSTANTS.STATUS_INCOMPLETE) {
-            clearResults(true);
+            app.clearResults(true);
             return;
         }
 
         let values = validationResult.data as TradeValues;
         let baseMetrics;
 
-        if (currentAppState.isPositionSizeLocked && currentAppState.lockedPositionSize && currentAppState.lockedPositionSize.gt(0)) {
+        if (currentTradeState.isPositionSizeLocked && currentTradeState.lockedPositionSize && currentTradeState.lockedPositionSize.gt(0)) {
             const riskPerUnit = values.entryPrice.minus(values.stopLossPrice).abs();
             if (riskPerUnit.lte(0)) {
                 uiStore.showError("Stop-Loss muss einen gültigen Abstand zum Einstiegspreis haben.");
-                clearResults(); // Clear results if locked position size leads to invalid state
+                app.clearResults();
                 return;
             }
-            const riskAmount = riskPerUnit.times(currentAppState.lockedPositionSize);
+            const riskAmount = riskPerUnit.times(currentTradeState.lockedPositionSize);
             const newRiskPercentage = values.accountSize.isZero() ? new Decimal(0) : riskAmount.div(values.accountSize).times(100);
 
             updateTradeStore(state => ({ ...state, riskPercentage: newRiskPercentage.toFixed(2) }));
             values.riskPercentage = newRiskPercentage;
 
-            baseMetrics = calculator.calculateBaseMetrics(values, currentAppState.tradeType);
-            if (baseMetrics) baseMetrics.positionSize = currentAppState.lockedPositionSize;
+            baseMetrics = calculator.calculateBaseMetrics(values, currentTradeState.tradeType);
+            if (baseMetrics) baseMetrics.positionSize = currentTradeState.lockedPositionSize;
         } else {
-            baseMetrics = calculator.calculateBaseMetrics(values, currentAppState.tradeType);
+            baseMetrics = calculator.calculateBaseMetrics(values, currentTradeState.tradeType);
         }
 
         if (!baseMetrics || baseMetrics.positionSize.lte(0)) {
-            clearResults();
-            if (currentAppState.isPositionSizeLocked) app.togglePositionSizeLock(false);
+            app.clearResults();
+            if (currentTradeState.isPositionSizeLocked) app.togglePositionSizeLock(false);
             return;
         }
 
-        const liquidationPriceDisplay = values.leverage.gt(1)
-            ? formatDynamicDecimal(baseMetrics.liquidationPrice)
-            : 'N/A';
-
-        updateTradeStore(state => ({ ...state,
-            positionSize: formatDynamicDecimal(baseMetrics.positionSize, 4),
-            requiredMargin: formatDynamicDecimal(baseMetrics.requiredMargin, 2),
-            netLoss: `-${formatDynamicDecimal(baseMetrics.netLoss, 2)}`,
-            liquidationPrice: liquidationPriceDisplay,
-            breakEvenPrice: formatDynamicDecimal(baseMetrics.breakEvenPrice),
-            entryFee: formatDynamicDecimal(baseMetrics.entryFee, 4)
-        }));
+        newResults.positionSize = formatDynamicDecimal(baseMetrics.positionSize, 4);
+        newResults.requiredMargin = formatDynamicDecimal(baseMetrics.requiredMargin, 2);
+        newResults.netLoss = `-${formatDynamicDecimal(baseMetrics.netLoss, 2)}`;
+        newResults.liquidationPrice = values.leverage.gt(1) ? formatDynamicDecimal(baseMetrics.liquidationPrice) : 'N/A';
+        newResults.breakEvenPrice = formatDynamicDecimal(baseMetrics.breakEvenPrice);
+        newResults.entryFee = formatDynamicDecimal(baseMetrics.entryFee, 4);
 
         const calculatedTpDetails: IndividualTpResult[] = [];
-        values.targets.forEach((tp: { price: Decimal; percent: Decimal; isLocked: boolean; }, index: number) => {
+        values.targets.forEach((tp, index) => {
             if (tp.price.gt(0) && tp.percent.gt(0)) {
                 const details = calculator.calculateIndividualTp(tp.price, tp.percent, baseMetrics, values, index);
-                if ((currentAppState.tradeType === 'long' && tp.price.gt(values.entryPrice)) || (currentAppState.tradeType === 'short' && tp.price.lt(values.entryPrice))) {
+                if ((currentTradeState.tradeType === 'long' && tp.price.gt(values.entryPrice)) || (currentTradeState.tradeType === 'short' && tp.price.lt(values.entryPrice))) {
                    calculatedTpDetails.push(details);
                 }
             }
         });
-        updateTradeStore(state => ({ ...state, calculatedTpDetails: calculatedTpDetails }));
+        newResults.calculatedTpDetails = calculatedTpDetails;
 
-        const totalMetrics = calculator.calculateTotalMetrics(values.targets, baseMetrics, values, currentAppState.tradeType);
+        const totalMetrics = calculator.calculateTotalMetrics(values.targets, baseMetrics, values, currentTradeState.tradeType);
         if (values.totalPercentSold.gt(0)) {
-            updateTradeStore(state => ({ ...state,
-                totalRR: formatDynamicDecimal(totalMetrics.totalRR, 2),
-                totalNetProfit: `+${formatDynamicDecimal(totalMetrics.totalNetProfit, 2)}`,
-                totalPercentSold: `${formatDynamicDecimal(values.totalPercentSold, 0)}%`,
-                riskAmountCurrency: `-${formatDynamicDecimal(totalMetrics.riskAmount, 2)}`,
-                totalFees: formatDynamicDecimal(totalMetrics.totalFees, 2),
-                maxPotentialProfit: `+${formatDynamicDecimal(totalMetrics.maxPotentialProfit, 2)}`,
-                showTotalMetricsGroup: true,
-            }));
+            newResults.totalRR = formatDynamicDecimal(totalMetrics.totalRR, 2);
+            newResults.totalNetProfit = `+${formatDynamicDecimal(totalMetrics.totalNetProfit, 2)}`;
+            newResults.totalPercentSold = `${formatDynamicDecimal(values.totalPercentSold, 0)}%`;
+            newResults.riskAmountCurrency = `-${formatDynamicDecimal(totalMetrics.riskAmount, 2)}`;
+            newResults.totalFees = formatDynamicDecimal(totalMetrics.totalFees, 2);
+            newResults.maxPotentialProfit = `+${formatDynamicDecimal(totalMetrics.maxPotentialProfit, 2)}`;
+            newResults.showTotalMetricsGroup = true;
         } else {
-            updateTradeStore(state => ({ ...state, showTotalMetricsGroup: false }));
+            newResults.showTotalMetricsGroup = false;
         }
 
-        updateTradeStore(state => ({ ...state, currentTradeData: { ...values, ...baseMetrics, ...totalMetrics, tradeType: currentAppState.tradeType, status: 'Open', calculatedTpDetails } }));
+        resultsStore.set(newResults);
+
+        updateTradeStore(state => ({ ...state, currentTradeData: { ...values, ...baseMetrics, ...totalMetrics, tradeType: currentTradeState.tradeType, status: 'Open', calculatedTpDetails } }));
         app.saveSettings();
+    },
+
+    clearResults: (showGuidance = false) => {
+        resultsStore.set(initialResultsState);
+        if (showGuidance) {
+            uiStore.showError('dashboard.promptForData');
+        } else {
+            uiStore.hideError();
+        }
     },
 
     getJournal: (): JournalEntry[] => {
@@ -544,13 +543,13 @@ export const app = {
     },
 
     handleFetchPrice: async () => {
-        const currentAppState = get(tradeStore);
-        const symbol = currentAppState.symbol.toUpperCase().replace('/', '');
+        const currentTradeState = get(tradeStore);
+        const symbol = currentTradeState.symbol.toUpperCase().replace('/', '');
         if (!symbol) {
             uiStore.showError("Bitte geben Sie ein Symbol ein.");
             return;
         }
-        updateTradeStore(state => ({ ...state, isPriceFetching: true }));
+        uiStore.update(state => ({ ...state, isPriceFetching: true }));
         try {
             const price = await apiService.fetchBinancePrice(symbol);
             updateTradeStore(state => ({ ...state, entryPrice: price.toDP(4).toString() }));
@@ -559,20 +558,40 @@ export const app = {
         } catch (error: any) {
             uiStore.showError(error.message);
         } finally {
-            updateTradeStore(state => ({ ...state, isPriceFetching: false }));
+            uiStore.update(state => ({ ...state, isPriceFetching: false }));
         }
     },
+
+    selectSymbolSuggestion: (symbol: string) => {
+        updateTradeStore(s => ({ ...s, symbol: symbol }));
+        uiStore.update(s => ({ ...s, showSymbolSuggestions: false, symbolSuggestions: [] }));
+        app.handleFetchPrice();
+    },
+
+    updateSymbolSuggestions: (query: string) => {
+        const upperQuery = query.toUpperCase().replace('/', '');
+        let filtered: string[] = [];
+        if (upperQuery) {
+            filtered = CONSTANTS.SUGGESTED_SYMBOLS.filter(s => s.startsWith(upperQuery));
+        }
+        uiStore.update(s => ({ ...s, symbolSuggestions: filtered, showSymbolSuggestions: filtered.length > 0 }));
+    },
     togglePositionSizeLock: (forceState?: boolean) => {
-        const currentAppState = get(tradeStore);
-        const shouldBeLocked = forceState !== undefined ? forceState : !currentAppState.isPositionSizeLocked;
-        if (shouldBeLocked && (!currentAppState.positionSize || parseDecimal(currentAppState.positionSize).lte(0))) {
+        const currentTradeState = get(tradeStore);
+        const currentResultsState = get(resultsStore);
+        const shouldBeLocked = forceState !== undefined ? forceState : !currentTradeState.isPositionSizeLocked;
+
+        if (shouldBeLocked && (!currentResultsState.positionSize || parseDecimal(currentResultsState.positionSize).lte(0))) {
             uiStore.showError("Positionsgröße kann nicht gesperrt werden, solange sie ungültig ist.");
             return;
         }
-        updateTradeStore(state => ({ ...state,
+
+        updateTradeStore(state => ({
+            ...state,
             isPositionSizeLocked: shouldBeLocked,
-            lockedPositionSize: shouldBeLocked ? parseDecimal(currentAppState.positionSize) : null
+            lockedPositionSize: shouldBeLocked ? parseDecimal(currentResultsState.positionSize) : null
         }));
+
         app.calculateAndDisplay();
     },
     addTakeProfitRow: (price: string = '', percent: string = '', isLocked = false) => {
@@ -581,11 +600,11 @@ export const app = {
             targets: [...state.targets, { price, percent, isLocked }]
         }));
     },
-    adjustTpPercentages: (changedIndex: number) => {
+    adjustTpPercentages: (changedIndex: number | null) => {
         const currentAppState = get(tradeStore);
 
         // Guard clause: If the target that triggered the change is locked, do nothing.
-        if (currentAppState.targets[changedIndex].isLocked) {
+        if (changedIndex !== null && currentAppState.targets[changedIndex].isLocked) {
             return;
         }
 
@@ -608,14 +627,13 @@ export const app = {
 
         // Edge Case: No other fields to adjust, so revert the change on the current field.
         if (otherUnlocked.length === 0) {
-            decTargets[changedIndex].percent = decTargets[changedIndex].percent.plus(diff);
+            if (changedIndex !== null) {
+                decTargets[changedIndex].percent = decTargets[changedIndex].percent.plus(diff);
+            }
         }
-        // --- Handle Surplus (diff > 0): A value was decreased ---
+        // --- Handle Surplus (diff > 0): A value was decreased or a TP was removed ---
         else if (diff.gt(ZERO)) {
-            const tp1 = decTargets[0];
-            if (tp1 && !tp1.isLocked && changedIndex !== 0) {
-                tp1.percent = tp1.percent.plus(diff);
-            } else {
+            if (otherUnlocked.length > 0) {
                 const share = diff.div(otherUnlocked.length);
                 otherUnlocked.forEach((t: any) => {
                     decTargets[t.originalIndex].percent = decTargets[t.originalIndex].percent.plus(share);
@@ -657,6 +675,6 @@ export const app = {
             }
         }
 
-        updateTradeStore(state => ({ ...state, targets: finalTargets.map(t => ({price: t.price, percent: t.percent, isLocked: t.isLocked})) }));
+        updateTradeStore(state => ({ ...state, targets: finalTargets.map((t: { price: string; percent: string; isLocked: boolean; }) => ({price: t.price, percent: t.percent, isLocked: t.isLocked})) }));
     },
 };

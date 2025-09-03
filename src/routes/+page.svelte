@@ -8,6 +8,7 @@
     import { CONSTANTS, themes, themeIcons, icons } from '../lib/constants';
     import { app } from '../services/app';
     import { tradeStore, updateTradeStore, resetAllInputs, toggleAtrInputs } from '../stores/tradeStore';
+    import { resultsStore } from '../stores/resultsStore';
     import { presetStore } from '../stores/presetStore';
     import { journalStore } from '../stores/journalStore';
     import { uiStore } from '../stores/uiStore';
@@ -70,12 +71,6 @@
     function handleTradeSetupError(e: CustomEvent<string>) {
         uiStore.showError(e.detail);
     }
-
-    function handleTradeSetupSetLoading(e: CustomEvent<boolean>) {
-        updateTradeStore(s => ({ ...s, isPriceFetching: e.detail }));
-    }
-
-    
 
     function handleTargetsChange(event: CustomEvent<Array<{ price: string; percent: string; isLocked: boolean }>>) {
         updateTradeStore(s => ({ ...s, targets: event.detail }));
@@ -157,24 +152,20 @@
             bind:stopLossPrice={$tradeStore.stopLossPrice}
 
             on:showError={handleTradeSetupError}
-            on:setLoading={handleTradeSetupSetLoading}
             
             on:fetchPrice={() => app.handleFetchPrice()}
             on:toggleAtrInputs={(e) => toggleAtrInputs(e.detail)}
-            on:updateSymbolSuggestions={(e) => updateTradeStore(s => ({ ...s, symbolSuggestions: e.detail, showSymbolSuggestions: e.detail.length > 0 }))}
-            on:selectSymbolSuggestion={(e) => {
-                updateTradeStore(s => ({ ...s, symbol: e.detail, showSymbolSuggestions: false }));
-                app.handleFetchPrice();
-            }}
-            atrFormulaDisplay={$tradeStore.atrFormulaText}
-            showAtrFormulaDisplay={$tradeStore.showAtrFormulaDisplay}
-            isPriceFetching={$tradeStore.isPriceFetching}
-            symbolSuggestions={$tradeStore.symbolSuggestions}
-            showSymbolSuggestions={$tradeStore.showSymbolSuggestions}
+            on:selectSymbolSuggestion={(e) => app.selectSymbolSuggestion(e.detail)}
+
+            atrFormulaDisplay={$resultsStore.atrFormulaText}
+            showAtrFormulaDisplay={$resultsStore.showAtrFormulaDisplay}
+            isPriceFetching={$uiStore.isPriceFetching}
+            symbolSuggestions={$uiStore.symbolSuggestions}
+            showSymbolSuggestions={$uiStore.showSymbolSuggestions}
         />
     </div>
 
-    <TakeProfitTargets bind:targets={$tradeStore.targets} on:change={handleTargetsChange} on:remove={handleTpRemove} calculatedTpDetails={$tradeStore.calculatedTpDetails} />
+    <TakeProfitTargets bind:targets={$tradeStore.targets} on:change={handleTargetsChange} on:remove={handleTpRemove} calculatedTpDetails={$resultsStore.calculatedTpDetails} />
 
     {#if $uiStore.showErrorMessage}
         <div id="error-message" class="text-[var(--danger-color)] text-center text-sm font-medium mt-4 md:col-span-2">{$_($uiStore.errorMessage)}</div>
@@ -185,29 +176,29 @@
             <SummaryResults
                 isPositionSizeLocked={$tradeStore.isPositionSizeLocked}
                 showCopyFeedback={$uiStore.showCopyFeedback}
-                positionSize={$tradeStore.positionSize}
-                netLoss={$tradeStore.netLoss}
-                requiredMargin={$tradeStore.requiredMargin}
-                entryFee={$tradeStore.entryFee}
-                liquidationPrice={$tradeStore.liquidationPrice}
-                breakEvenPrice={$tradeStore.breakEvenPrice}
+                positionSize={$resultsStore.positionSize}
+                netLoss={$resultsStore.netLoss}
+                requiredMargin={$resultsStore.requiredMargin}
+                entryFee={$resultsStore.entryFee}
+                liquidationPrice={$resultsStore.liquidationPrice}
+                breakEvenPrice={$resultsStore.breakEvenPrice}
                 on:toggleLock={() => app.togglePositionSizeLock()}
                 on:copy={() => uiStore.showFeedback('copy')}
             />
-            {#if $tradeStore.showTotalMetricsGroup}
+            {#if $resultsStore.showTotalMetricsGroup}
                 <div id="total-metrics-group" class="result-group">
                     <h2 class="section-header">{$_('dashboard.totalTradeMetrics')}<Tooltip text={$_('dashboard.totalTradeMetricsTooltip')} /></h2>
-                    <div class="result-item"><span class="result-label">{$_('dashboard.riskPerTradeCurrency')}<Tooltip text={$_('dashboard.riskPerTradeCurrencyTooltip')} /></span><span id="riskAmountCurrency" class="result-value text-[var(--danger-color)]">{$tradeStore.riskAmountCurrency}</span></div>
-                    <div class="result-item"><span class="result-label">{$_('dashboard.totalFees')}<Tooltip text={$_('dashboard.totalFeesTooltip')} /></span><span id="totalFees" class="result-value">{$tradeStore.totalFees}</span></div>
-                    <div class="result-item"><span class="result-label">{$_('dashboard.maxPotentialProfit')}<Tooltip text={$_('dashboard.maxPotentialProfitTooltip')} /></span><span id="maxPotentialProfit" class="result-value text-[var(--success-color)]">{$tradeStore.maxPotentialProfit}</span></div>
-                    <div class="result-item"><span class="result-label">{$_('dashboard.weightedRR')}<Tooltip text={$_('dashboard.weightedRRTooltip')} /></span><span id="totalRR" class="result-value">{$tradeStore.totalRR}</span></div>
-                    <div class="result-item"><span class="result-label">{$_('dashboard.totalNetProfit')}<Tooltip text={$_('dashboard.totalNetProfitTooltip')} /></span><span id="totalNetProfit" class="result-value text-[var(--success-color)]">{$tradeStore.totalNetProfit}</span></div>
-                    <div class="result-item"><span class="result-label">{$_('dashboard.soldPosition')}<Tooltip text={$_('dashboard.soldPositionTooltip')} /></span><span id="totalPercentSold" class="result-value">{$tradeStore.totalPercentSold}</span></div>
+                    <div class="result-item"><span class="result-label">{$_('dashboard.riskPerTradeCurrency')}<Tooltip text={$_('dashboard.riskPerTradeCurrencyTooltip')} /></span><span id="riskAmountCurrency" class="result-value text-[var(--danger-color)]">{$resultsStore.riskAmountCurrency}</span></div>
+                    <div class="result-item"><span class="result-label">{$_('dashboard.totalFees')}<Tooltip text={$_('dashboard.totalFeesTooltip')} /></span><span id="totalFees" class="result-value">{$resultsStore.totalFees}</span></div>
+                    <div class="result-item"><span class="result-label">{$_('dashboard.maxPotentialProfit')}<Tooltip text={$_('dashboard.maxPotentialProfitTooltip')} /></span><span id="maxPotentialProfit" class="result-value text-[var(--success-color)]">{$resultsStore.maxPotentialProfit}</span></div>
+                    <div class="result-item"><span class="result-label">{$_('dashboard.weightedRR')}<Tooltip text={$_('dashboard.weightedRRTooltip')} /></span><span id="totalRR" class="result-value">{$resultsStore.totalRR}</span></div>
+                    <div class="result-item"><span class="result-label">{$_('dashboard.totalNetProfit')}<Tooltip text={$_('dashboard.totalNetProfitTooltip')} /></span><span id="totalNetProfit" class="result-value text-[var(--success-color)]">{$resultsStore.totalNetProfit}</span></div>
+                    <div class="result-item"><span class="result-label">{$_('dashboard.soldPosition')}<Tooltip text={$_('dashboard.soldPositionTooltip')} /></span><span id="totalPercentSold" class="result-value">{$resultsStore.totalPercentSold}</span></div>
                 </div>
             {/if}
         </div>
         <div id="tp-results-container">
-            {#each $tradeStore.calculatedTpDetails as tpDetail: IndividualTpResult}
+            {#each $resultsStore.calculatedTpDetails as tpDetail: IndividualTpResult}
                 <div class="result-group !mt-0 md:!mt-6">
                     <h2 class="section-header">{$_('dashboard.takeProfit')} {(tpDetail as IndividualTpResult).index + 1} ({(tpDetail as IndividualTpResult).percentSold.toFixed(0)}%)</h2>
                     <div class="result-item"><span class="result-label">{$_('dashboard.riskRewardRatio')}</span><span class="result-value {tpDetail.riskRewardRatio.gte(2) ? 'text-[var(--success-color)]' : tpDetail.riskRewardRatio.gte(1.5) ? 'text-[var(--warning-color)]' : 'text-[var(--danger-color)]'}">{formatDynamicDecimal(tpDetail.riskRewardRatio, 2)}</span></div>
@@ -224,12 +215,12 @@
             stopLossPrice={$tradeStore.stopLossPrice}
             tradeType={$tradeStore.tradeType}
             targets={$tradeStore.targets}
-            calculatedTpDetails={$tradeStore.calculatedTpDetails}
+            calculatedTpDetails={$resultsStore.calculatedTpDetails}
         />
         <footer class="md:col-span-2">
             <textarea id="tradeNotes" class="input-field w-full px-4 py-2 rounded-md mb-4" rows="2" placeholder="{$_('dashboard.tradeNotesPlaceholder')}" bind:value={$tradeStore.tradeNotes}></textarea>
             <div class="flex items-center gap-4">
-                <button id="save-journal-btn" class="w-full font-bold py-3 px-4 rounded-lg btn-primary-action" on:click={app.addTrade} disabled={$tradeStore.positionSize === '-'}>{$_('dashboard.addTradeToJournal')}</button>
+                <button id="save-journal-btn" class="w-full font-bold py-3 px-4 rounded-lg btn-primary-action" on:click={app.addTrade} disabled={$resultsStore.positionSize === '-'}>{$_('dashboard.addTradeToJournal')}</button>
                 <button id="show-dashboard-readme-btn" class="font-bold p-3 rounded-lg btn-secondary-action" title="{$_('dashboard.showInstructionsTitle')}" aria-label="{$_('dashboard.showInstructionsAriaLabel')}" on:click={() => app.uiManager.showReadme('dashboard')}>{@html icons.book}</button>
                 {#if $uiStore.showSaveFeedback}<span id="save-feedback" class="save-feedback" class:visible={$uiStore.showSaveFeedback}>{$_('dashboard.savedFeedback')}</span>{/if}
             </div>

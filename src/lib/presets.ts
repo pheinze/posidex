@@ -1,7 +1,7 @@
 import { browser } from '$app/environment';
 import { get } from 'svelte/store';
 import { presetStore, updatePresetStore } from '../stores/presetStore';
-import { tradeStore, updateTradeStore, clearResults } from '../stores/tradeStore';
+import { tradeStore, updateTradeStore } from '../stores/tradeStore';
 import type { AppState } from '../stores/types';
 import { CONSTANTS } from './constants';
 
@@ -79,6 +79,6 @@ export const applyPreset = (name: string) => {
 			...store,
 			selectedPreset: name
 		}));
-		clearResults(true); // Clear results and show guidance after applying preset
+		// clearResults(true); // This function is removed, results are cleared in app.ts's loadPreset
 	}
 };
