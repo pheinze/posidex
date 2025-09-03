@@ -56,10 +56,10 @@
 
 <div class="tp-row flex items-center gap-2 p-2 rounded-lg" style="background-color: var(--bg-tertiary);">
     <div class="flex-grow">
-        <div class="flex justify-between items-center mb-1">
+        <div class="flex flex-wrap justify-between items-center mb-1">
             <label class="tp-label text-xs text-[var(--text-secondary)]" for="tp-price-{index}">TP {index + 1}</label>
             {#if tpDetail}
-                <div class="text-xs text-[var(--text-secondary)] text-right">
+                <div class="text-xs text-[var(--text-secondary)] text-right flex-shrink-0">
                     <span class="mr-2">{$_('dashboard.takeProfitRow.winLabel')} <span class="text-[var(--success-color)]">+${tpDetail.netProfit.toFixed(2)}</span></span>
                     <span>{$_('dashboard.takeProfitRow.rrLabel')} <span class="{tpDetail.riskRewardRatio.gte(2) ? 'text-[var(--success-color)]' : tpDetail.riskRewardRatio.gte(1.5) ? 'text-[var(--warning-color)]' : 'text-[var(--danger-color)]'}">{tpDetail.riskRewardRatio.toFixed(2)}</span></span>
                 </div>
