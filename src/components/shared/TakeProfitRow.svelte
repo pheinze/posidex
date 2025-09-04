@@ -3,6 +3,7 @@
     import { createEventDispatcher, onMount } from 'svelte';
     import { numberInput } from '../../utils/inputUtils';
     import { _ } from '../../locales/i18n';
+    import { trackClick } from '../../lib/actions';
 
     const dispatch = createEventDispatcher();
 
@@ -59,14 +60,14 @@
             >
         </div>
     </div>
-    <button class="lock-tp-btn btn-lock-icon p-1 self-center" title="{$_('dashboard.takeProfitRow.lockButtonTitle')}" tabindex="-1" on:click={toggleLock}>
+    <button class="lock-tp-btn btn-lock-icon p-1 self-center" title="{$_('dashboard.takeProfitRow.lockButtonTitle')}" tabindex="-1" on:click={toggleLock} use:trackClick={{ category: 'TakeProfitRow', action: 'Click', name: 'ToggleLock' }}>
         {#if isLocked}
             {@html icons.lockClosed}
         {:else}
             {@html icons.lockOpen}
         {/if}
     </button>
-    <button class="remove-tp-btn text-[var(--danger-color)] hover:opacity-80 p-1 self-center" title="{$_('dashboard.takeProfitRow.removeButtonTitle')}" tabindex="-1" on:click={removeRow}>
+    <button class="remove-tp-btn text-[var(--danger-color)] hover:opacity-80 p-1 self-center" title="{$_('dashboard.takeProfitRow.removeButtonTitle')}" tabindex="-1" on:click={removeRow} use:trackClick={{ category: 'TakeProfitRow', action: 'Click', name: 'RemoveRow' }}>
         {@html icons.remove}
     </button>
 </div>

@@ -3,6 +3,7 @@
     import { updateTradeStore } from '../../stores/tradeStore';
     import { numberInput } from '../../utils/inputUtils'; // Import the action
     import { _ } from '../../locales/i18n';
+    import { trackClick } from '../../lib/actions';
 
     export let tradeType: string;
     export let leverage: string;
@@ -23,6 +24,7 @@
                 role="radio"
                 aria-checked={tradeType === CONSTANTS.TRADE_TYPE_LONG}
                 on:click={() => setTradeType(CONSTANTS.TRADE_TYPE_LONG)}
+                use:trackClick={{ category: 'GeneralInputs', action: 'SetTradeType', name: 'Long' }}
             >{$_('dashboard.generalInputs.longButton')}</button>
             <button
                 class="short w-1/2"
@@ -30,6 +32,7 @@
                 role="radio"
                 aria-checked={tradeType === CONSTANTS.TRADE_TYPE_SHORT}
                 on:click={() => setTradeType(CONSTANTS.TRADE_TYPE_SHORT)}
+                use:trackClick={{ category: 'GeneralInputs', action: 'SetTradeType', name: 'Short' }}
             >{$_('dashboard.generalInputs.shortButton')}</button>
         </div>
         <div class="grid grid-cols-2 gap-4">
