@@ -16,7 +16,8 @@
     $: {
         visualBarData = updateVisualBar(
             { entryPrice, stopLossPrice, tradeType },
-            targets
+            targets,
+            calculatedTpDetails
         );
     }
 
@@ -36,11 +37,17 @@
             {@const tpDetail = calculatedTpDetails.find(d => d.index === marker.index)}
             <div
                 class="bar-marker {marker.isEntry ? 'entry-marker' : ''} {marker.index !== undefined ? 'tp-marker' : ''}"
-                style="left: {marker.pos}%;"
+                style="left: {marker.pos}%; z-index: {marker.index !== undefined ? 20 - marker.index : 'auto'};"
                 role="button"
                 tabindex="0"
             >
-                <span style="transform: translateX(-50%);">{marker.label}</span>
+                <span class="marker-label" style="transform: translateX(-50%);">{marker.label}</span>
+
+                {#if marker.rr}
+                <span class="rr-label" style="transform: translateX(-50%);">
+                    {marker.rr.toFixed(2)}R
+                </span>
+                {/if}
 
                 {#if tpDetail}
                     <div class="tp-tooltip">
@@ -61,8 +68,10 @@
     .bar-marker { position: absolute; top: -0.25rem; bottom: -0.25rem; width: 20px; display: flex; flex-direction: column; align-items: center; cursor: pointer; transform: translateX(-50%); }
     .bar-marker::before { content: ''; position: absolute; left: 50%; transform: translateX(-50%); width: 4px; height: 100%; background-color: var(--text-primary); }
     .bar-marker span { position: absolute; font-size: 0.75rem; background-color: var(--bg-tertiary); padding: 0.1rem 0.3rem; border-radius: 0.25rem; white-space: nowrap; }
-    .bar-marker:not(.entry-marker) span { bottom: 100%; margin-bottom: 0.25rem; box-shadow: var(--shadow-tooltip); }
-    .entry-marker span { top: 100%; margin-top: 0.25rem; }
+    .bar-marker .marker-label { bottom: 100%; margin-bottom: 1.2rem; font-size: 0.7rem; }
+    .entry-marker .marker-label { top: 100%; margin-top: 0.25rem; bottom: auto; margin-bottom: 0; }
+    .bar-marker .rr-label { bottom: 100%; margin-bottom: 0.25rem; background-color: transparent; font-size: 0.65rem; color: var(--text-secondary); }
+    .entry-marker .rr-label { display: none; } /* Should not happen, but for safety */
 
     .tp-tooltip {
         position: absolute;

@@ -14,9 +14,10 @@ interface VisualBarContentItem {
 
 interface VisualBarMarker {
     pos: Decimal;
-    label: string;
+    label:string;
     isEntry: boolean;
     index?: number;
+    rr?: Decimal;
 }
 
 export interface VisualBarData {
@@ -40,9 +41,9 @@ export const uiManager = {
     }
 };
 
-export function updateVisualBar(values: any, targets: any[]): VisualBarData {
+export function updateVisualBar(values: any, targets: any[], calculatedTpDetails: any[]): VisualBarData {
     const visualBarContent: { type: string; style: { left: string; width: string; }; }[] = [];
-    const markers: { pos: Decimal; label: string; isEntry: boolean; index?: number; }[] = [];
+    const markers: VisualBarMarker[] = [];
 
     const validTargetPrices = targets.map(t => parseDecimal(t.price)).filter(p => p.gt(0));
     const allPrices = [parseDecimal(values.entryPrice), parseDecimal(values.stopLossPrice), ...validTargetPrices];
@@ -67,11 +68,16 @@ export function updateVisualBar(values: any, targets: any[]): VisualBarData {
     markers.push({ pos: slPos, label: 'SL', isEntry: false });
     markers.push({ pos: entryPos, label: 'Einstieg', isEntry: true });
 
-    targets.forEach((tp, i) => {
-        if ((values.tradeType === CONSTANTS.TRADE_TYPE_LONG && parseDecimal(tp.price).gt(parseDecimal(values.entryPrice))) || (values.tradeType === CONSTANTS.TRADE_TYPE_SHORT && parseDecimal(tp.price).lt(parseDecimal(values.entryPrice)))) {
-            const tpPos = parseDecimal(tp.price).minus(lowestPrice).dividedBy(totalRange).times(100);
-            markers.push({ pos: tpPos, label: `TP${i+1}`, isEntry: false, index: i });
-        }
+    calculatedTpDetails.forEach(tpDetail => {
+        const tpPrice = parseDecimal(targets[tpDetail.index].price);
+        const tpPos = tpPrice.minus(lowestPrice).dividedBy(totalRange).times(100);
+        markers.push({
+            pos: tpPos,
+            label: `TP${tpDetail.index + 1}`,
+            isEntry: false,
+            index: tpDetail.index,
+            rr: tpDetail.riskRewardRatio
+        });
     });
 
     return { visualBarContent, markers };
