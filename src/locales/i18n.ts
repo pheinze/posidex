@@ -41,12 +41,12 @@ init({
 export const locale = writable<string | null>(initialLocaleValue);
 
 locale.subscribe((value) => {
-  if (value) {
-    svelteLocale.set(value);
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem('locale', value);
-    }
-  }
+	if (value) {
+		svelteLocale.set(value);
+		if (typeof localStorage !== 'undefined') {
+			localStorage.setItem('locale', value);
+		}
+	}
 });
 
 export function setLocale(newLocale: string) {

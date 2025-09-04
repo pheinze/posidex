@@ -3,7 +3,11 @@
 > vite dev
 
 
-  VITE v7.1.3  ready in 1548 ms
+  VITE v7.1.3  ready in 3149 ms
 
   ➜  Local:   http://localhost:5173/
   ➜  Network: use --host to expose
+Cookies received on server: []
+Cookies received on server: []
+Cookies received on server: []
+Cookies received on server: [ { name: 'test-cookie', value: 'test-value' } ]

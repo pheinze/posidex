@@ -28,6 +28,7 @@
 		"vitest": "^3.2.4"
 	},
 	"dependencies": {
+		"@playwright/test": "^1.55.0",
 		"decimal.js": "^10.6.0",
 		"marked": "^16.2.0",
 		"svelte-i18n": "^4.0.1",

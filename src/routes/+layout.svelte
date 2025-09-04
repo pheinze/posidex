@@ -23,7 +23,25 @@
 </script>
 
 <svelte:head>
+	<title>{data.seo.title}</title>
+	<meta name="description" content={data.seo.description} />
+	<meta name="keywords" content={data.seo.keywords} />
 	<link rel="icon" href={favicon} />
+	<link rel="canonical" href="https://www.cachy.app/" />
+
+	<!-- Open Graph / Facebook -->
+	<meta property="og:type" content="website" />
+	<meta property="og:url" content="https://www.cachy.app/" />
+	<meta property="og:title" content={data.seo.title} />
+	<meta property="og:description" content={data.seo.description} />
+	<!-- <meta property="og:image" content="https://www.cachy.app/og-image.jpg" /> -->
+
+	<!-- Twitter -->
+	<meta property="twitter:card" content="summary_large_image" />
+	<meta property="twitter:url" content="https://www.cachy.app/" />
+	<meta property="twitter:title" content={data.seo.title} />
+	<meta property="twitter:description" content={data.seo.description} />
+	<!-- <meta property="twitter:image" content="https://www.cachy.app/twitter-image.jpg" /> -->
 </svelte:head>
 
 <div class="px-4">
