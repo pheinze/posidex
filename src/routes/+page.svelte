@@ -26,6 +26,7 @@
     import CachyIcon from '../components/shared/CachyIcon.svelte';
 
     let changelogContent = '';
+    let guideContent = '';
 
     // Initialisierung der App-Logik, sobald die Komponente gemountet ist
     onMount(() => {
@@ -36,6 +37,13 @@
     $: if ($uiStore.showChangelogModal && changelogContent === '') {
         loadInstruction('changelog').then(content => {
             changelogContent = content.html;
+        });
+    }
+
+    // Load guide content when modal is opened
+    $: if ($uiStore.showGuideModal && guideContent === '') {
+        loadInstruction('guide').then(content => {
+            guideContent = content.html;
         });
     }
 
@@ -232,7 +240,7 @@
 </main>
 
 <footer class="w-full max-w-4xl mx-auto text-center py-4 text-sm text-gray-500">
-    Version 0.92b - <button class="text-link" on:click={() => uiStore.toggleChangelogModal(true)}>Changelog</button>
+    Version 0.92b - <button class="text-link" on:click={() => uiStore.toggleGuideModal(true)}>{$_('app.guideButton')}</button> | <button class="text-link" on:click={() => uiStore.toggleChangelogModal(true)}>Changelog</button>
 </footer>
 
 <JournalView />
@@ -247,6 +255,18 @@
         </div>
         <div id="changelog-content" class="prose dark:prose-invert max-h-[calc(100vh-10rem)] overflow-y-auto">
             {@html changelogContent}
+        </div>
+    </div>
+</div>
+
+<div id="guide-modal" class="modal-overlay" class:visible={$uiStore.showGuideModal} class:opacity-100={$uiStore.showGuideModal}>
+    <div class="modal-content w-full h-full max-w-6xl">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-2xl font-bold">{$_('app.guideTitle')}</h2>
+            <button id="close-guide-btn" class="text-3xl" aria-label="{$_('app.closeGuideAriaLabel')}" on:click={() => uiStore.toggleGuideModal(false)}>&times;</button>
+        </div>
+        <div id="guide-content" class="prose dark:prose-invert max-h-[calc(100vh-10rem)] overflow-y-auto">
+            {@html guideContent}
         </div>
     </div>
 </div>

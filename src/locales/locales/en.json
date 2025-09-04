@@ -4,7 +4,10 @@
     "journalButton": "Journal",
     "journalButtonTitle": "Open Trade Journal",
     "changelogTitle": "Changelog",
-    "closeChangelogAriaLabel": "Close Changelog"
+    "closeChangelogAriaLabel": "Close Changelog",
+    "guideButton": "Guide",
+    "guideTitle": "Guide",
+    "closeGuideAriaLabel": "Close Guide"
   },
   "dashboard": {
     "presetLoad": "Load Preset...",

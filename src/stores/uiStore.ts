@@ -6,6 +6,7 @@ interface UiState {
     currentTheme: string;
     showJournalModal: boolean;
     showChangelogModal: boolean;
+    showGuideModal: boolean;
     showCopyFeedback: boolean;
     showSaveFeedback: boolean;
     errorMessage: string;
@@ -19,6 +20,7 @@ const initialUiState: UiState = {
     currentTheme: 'dark', // Always default to 'dark' to prevent hydration mismatch
     showJournalModal: false,
     showChangelogModal: false,
+    showGuideModal: false,
     showCopyFeedback: false,
     showSaveFeedback: false,
     errorMessage: '',
@@ -57,6 +59,7 @@ function createUiStore() {
         },
         toggleJournalModal: (show: boolean) => update(state => ({ ...state, showJournalModal: show })),
         toggleChangelogModal: (show: boolean) => update(state => ({ ...state, showChangelogModal: show })),
+        toggleGuideModal: (show: boolean) => update(state => ({ ...state, showGuideModal: show })),
         showFeedback: (type: 'copy' | 'save', duration = 2000) => {
             const key = type === 'copy' ? 'showCopyFeedback' : 'showSaveFeedback';
             update(state => ({ ...state, [key]: true }));

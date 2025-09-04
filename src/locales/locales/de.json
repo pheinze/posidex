@@ -4,7 +4,10 @@
     "journalButton": "Journal",
     "journalButtonTitle": "Trade Journal öffnen",
     "changelogTitle": "Changelog",
-    "closeChangelogAriaLabel": "Changelog schließen"
+    "closeChangelogAriaLabel": "Changelog schließen",
+    "guideButton": "Anleitung",
+    "guideTitle": "Anleitung",
+    "closeGuideAriaLabel": "Anleitung schließen"
   },
   "dashboard": {
     "presetLoad": "Preset laden...",
