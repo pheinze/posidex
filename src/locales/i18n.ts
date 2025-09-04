@@ -1,22 +1,21 @@
 import { _, register, init, locale as svelteLocale } from 'svelte-i18n';
 
-// Register locales
-// Using static imports for simplicity as they are small files
+// Using static imports is fine here as the JSON files are small.
+// For larger dictionaries, dynamic imports (`() => import('./locales/en.json')`) are better.
 import * as en from './locales/en.json';
 import * as de from './locales/de.json';
 
+// Register the locales
 register('en', () => Promise.resolve(en));
 register('de', () => Promise.resolve(de));
 
-
-// Initialize svelte-i18n
+// Initialize svelte-i18n. The initialLocale will be set dynamically in the layout.
 init({
   fallbackLocale: 'en',
-  initialLocale: 'en', // This will be the default on the client until the layout loads
+  initialLocale: 'en',
 });
 
-// Export the translation function
+// Export the translation function and the locale store
+// so other components can use it.
 export { _ };
-
-// Export the locale store so components can react to changes
 export const locale = svelteLocale;
