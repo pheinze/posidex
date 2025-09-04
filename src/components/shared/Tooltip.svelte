@@ -31,6 +31,7 @@
     on:focus={show}
     on:blur={hide}
     on:keydown={handleKeydown}
+    tabindex="-1"
   >
     ?
   </button>

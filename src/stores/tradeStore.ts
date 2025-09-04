@@ -25,8 +25,8 @@ export const initialTradeState: Pick<AppState,
     'currentTradeData'
 > = {
     tradeType: CONSTANTS.TRADE_TYPE_LONG,
-    accountSize: '',
-    riskPercentage: '',
+    accountSize: '1000',
+    riskPercentage: '1',
     entryPrice: '',
     stopLossPrice: '',
     leverage: CONSTANTS.DEFAULT_LEVERAGE,
