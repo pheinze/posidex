@@ -47,6 +47,12 @@
         });
     }
 
+    // Reset content when locale changes to force refetch
+    $: if ($locale) {
+        guideContent = '';
+        changelogContent = '';
+    }
+
     // Reactive statement to trigger app.calculateAndDisplay() when relevant inputs change
     $: {
         // Trigger calculation when any of these inputs change
