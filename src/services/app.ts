@@ -14,6 +14,7 @@ import type { AppState, JournalEntry, TradeValues, IndividualTpResult } from '..
 import { Decimal } from 'decimal.js';
 import { browser } from '$app/environment';
 import { trackCustomEvent } from './trackingService';
+import { onboardingService } from './onboardingService';
 
 interface CSVTradeEntry {
     'ID': string;
@@ -226,7 +227,9 @@ export const app = {
 
         resultsStore.set(newResults);
 
-        trackCustomEvent('Calculation', 'Success', currentTradeState.tradeType, values.accountSize.toNumber());
+        const activeTargets = values.targets.filter(t => t.price.gt(0) && t.percent.gt(0)).length;
+        trackCustomEvent('Calculation', 'Success', currentTradeState.tradeType, activeTargets);
+        onboardingService.trackFirstCalculation();
 
         updateTradeStore(state => ({ ...state, currentTradeData: { ...values, ...baseMetrics, ...totalMetrics, tradeType: currentTradeState.tradeType, status: 'Open', calculatedTpDetails } }));
         app.saveSettings();
@@ -281,6 +284,7 @@ export const app = {
         journalData.push({ ...currentAppState.currentTradeData, notes: currentAppState.tradeNotes, id: Date.now(), date: new Date().toISOString() } as JournalEntry);
         app.saveJournal(journalData);
         journalStore.set(journalData);
+        onboardingService.trackFirstJournalSave();
         uiStore.showFeedback('save');
     },
     updateTradeStatus: (id: number, newStatus: string) => {
@@ -290,6 +294,7 @@ export const app = {
             journalData[tradeIndex].status = newStatus;
             app.saveJournal(journalData);
             journalStore.set(journalData);
+            trackCustomEvent('Journal', 'UpdateStatus', newStatus);
         }
     },
     deleteTrade: (id: number) => {
@@ -446,6 +451,7 @@ export const app = {
         if (!browser) return;
         const journalData = get(journalStore);
         if (journalData.length === 0) { uiStore.showError("Journal ist leer."); return; }
+        trackCustomEvent('Journal', 'Export', 'CSV', journalData.length);
         const headers = ['ID', 'Datum', 'Uhrzeit', 'Symbol', 'Typ', 'Status', 'Konto Guthaben', 'Risiko %', 'Hebel', 'Gebuehren %', 'Einstieg', 'Stop Loss', 'Gewichtetes R/R', 'Gesamt Netto-Gewinn', 'Risiko pro Trade (Waehrung)', 'Gesamte Gebuehren', 'Max. potenzieller Gewinn', 'Notizen', ...Array.from({length: 5}, (_, i) => [`TP${i+1} Preis`, `TP${i+1} %`]).flat()];
         const rows = journalData.map(trade => {
             const date = new Date(trade.date);
@@ -538,6 +544,7 @@ export const app = {
 
                 if (await modalManager.show("Import bestätigen", `Sie sind dabei, ${entries.length} Trades zu importieren. Bestehende Trades mit derselben ID werden überschrieben. Fortfahren?`, "confirm")) {
                     journalStore.set(unique);
+                    trackCustomEvent('Journal', 'Import', 'CSV', entries.length);
                     uiStore.showFeedback('save', 2000);
                 }
             } else {

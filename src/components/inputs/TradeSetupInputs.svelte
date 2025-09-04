@@ -5,6 +5,7 @@
     import { numberInput } from '../../utils/inputUtils'; // Import the action
     import { _ } from '../../locales/i18n';
     import { trackCustomEvent } from '../../services/trackingService';
+    import { onboardingService } from '../../services/onboardingService';
 
     const dispatch = createEventDispatcher();
 
@@ -66,7 +67,7 @@
         <input
             type="text"
             bind:value={symbol}
-            on:input={handleSymbolInput}
+            on:input={() => { handleSymbolInput(); onboardingService.trackFirstInput(); }}
             class="input-field w-full px-4 py-2 rounded-md pr-10"
             placeholder="{$_('dashboard.tradeSetupInputs.symbolPlaceholder')}"
             autocomplete="off"
@@ -96,7 +97,7 @@
             </div>
         {/if}
     </div>
-    <input type="text" inputmode="decimal" use:numberInput={{ maxDecimalPlaces: 4 }} bind:value={entryPrice} class="input-field w-full px-4 py-2 rounded-md mb-4" placeholder="{$_('dashboard.tradeSetupInputs.entryPricePlaceholder')}">
+    <input type="text" inputmode="decimal" use:numberInput={{ maxDecimalPlaces: 4 }} bind:value={entryPrice} class="input-field w-full px-4 py-2 rounded-md mb-4" placeholder="{$_('dashboard.tradeSetupInputs.entryPricePlaceholder')}" on:input={onboardingService.trackFirstInput}>
 
     <div class="p-2 rounded-lg mb-4" style="background-color: var(--bg-tertiary);">
         <div class="flex justify-end mb-2">
