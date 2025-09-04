@@ -12,6 +12,7 @@
     import { presetStore } from '../stores/presetStore';
     import { journalStore } from '../stores/journalStore';
     import { uiStore } from '../stores/uiStore';
+    import { modalManager } from '../services/modalManager';
     import { onMount } from 'svelte';
     import { _, locale } from '../locales/i18n'; // Import locale
     import { get } from 'svelte/store'; // Import get
@@ -117,6 +118,15 @@
     }
 
     function handleKeydown(event: KeyboardEvent) {
+        if (event.key.toLowerCase() === 'escape') {
+            event.preventDefault();
+            if ($uiStore.showJournalModal) uiStore.toggleJournalModal(false);
+            if ($uiStore.showGuideModal) uiStore.toggleGuideModal(false);
+            if ($uiStore.showChangelogModal) uiStore.toggleChangelogModal(false);
+            if (get(modalManager).isOpen) modalManager._handleModalConfirm(false);
+            return;
+        }
+
         if (event.altKey) {
             switch (event.key.toLowerCase()) {
                 case 'l':
@@ -273,14 +283,14 @@
 </main>
 
 <footer class="w-full max-w-4xl mx-auto text-center py-4 text-sm text-gray-500">
-    Version 0.92b - <button class="text-link" on:click={() => uiStore.toggleGuideModal(true)} use:trackClick={{ category: 'Navigation', action: 'Click', name: 'ShowGuide' }}>{$_('app.guideButton')}</button> | <button class="text-link" on:click={() => uiStore.toggleChangelogModal(true)} use:trackClick={{ category: 'Navigation', action: 'Click', name: 'ShowChangelog' }}>Changelog</button>
+    Version 0.92b1 - <button class="text-link" on:click={() => uiStore.toggleGuideModal(true)} use:trackClick={{ category: 'Navigation', action: 'Click', name: 'ShowGuide' }}>{$_('app.guideButton')}</button> | <button class="text-link" on:click={() => uiStore.toggleChangelogModal(true)} use:trackClick={{ category: 'Navigation', action: 'Click', name: 'ShowChangelog' }}>Changelog</button>
 </footer>
 
 <JournalView />
 
 <CustomModal />
 
-<div id="changelog-modal" class="modal-overlay" class:visible={$uiStore.showChangelogModal} class:opacity-100={$uiStore.showChangelogModal}>
+<div id="changelog-modal" class="modal-overlay" class:visible={$uiStore.showChangelogModal} class:opacity-100={$uiStore.showChangelogModal} on:click={(e) => { if (e.target === e.currentTarget) uiStore.toggleChangelogModal(false) }}>
     <div class="modal-content w-full h-full max-w-6xl">
         <div class="flex justify-between items-center mb-4">
             <h2 class="text-2xl font-bold">{$_('app.changelogTitle')}</h2>
@@ -292,7 +302,7 @@
     </div>
 </div>
 
-<div id="guide-modal" class="modal-overlay" class:visible={$uiStore.showGuideModal} class:opacity-100={$uiStore.showGuideModal}>
+<div id="guide-modal" class="modal-overlay" class:visible={$uiStore.showGuideModal} class:opacity-100={$uiStore.showGuideModal} on:click={(e) => { if (e.target === e.currentTarget) uiStore.toggleGuideModal(false) }}>
     <div class="modal-content w-full h-full max-w-6xl">
         <div class="flex justify-between items-center mb-4">
             <h2 class="text-2xl font-bold">{$_('app.guideTitle')}</h2>

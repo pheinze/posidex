@@ -68,9 +68,9 @@
     .bar-marker { position: absolute; top: -0.25rem; bottom: -0.25rem; width: 20px; display: flex; flex-direction: column; align-items: center; cursor: pointer; transform: translateX(-50%); }
     .bar-marker::before { content: ''; position: absolute; left: 50%; transform: translateX(-50%); width: 4px; height: 100%; background-color: var(--text-primary); }
     .bar-marker span { position: absolute; font-size: 0.75rem; background-color: var(--bg-tertiary); padding: 0.1rem 0.3rem; border-radius: 0.25rem; white-space: nowrap; }
-    .bar-marker .marker-label { bottom: 100%; margin-bottom: 1.2rem; font-size: 0.7rem; }
+    .bar-marker .marker-label { bottom: 100%; margin-bottom: 1.5rem; font-size: 0.7rem; }
     .entry-marker .marker-label { top: 100%; margin-top: 0.25rem; bottom: auto; margin-bottom: 0; }
-    .bar-marker .rr-label { bottom: 100%; margin-bottom: 0.25rem; background-color: transparent; font-size: 0.65rem; color: var(--text-secondary); }
+    .bar-marker .rr-label { bottom: 100%; margin-bottom: 0.75rem; background-color: transparent; font-size: 0.65rem; color: var(--text-secondary); }
     .entry-marker .rr-label { display: none; } /* Should not happen, but for safety */
 
     .tp-tooltip {
