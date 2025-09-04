@@ -21,28 +21,16 @@ const themeHandler: Handle = async ({ event, resolve }) => {
 };
 
 const languageHandler: Handle = async ({ event, resolve }) => {
-	let lang = event.url.searchParams.get('lang');
+	// This hook now only sets the initial language based on cookie or header.
+	// Language switching is handled on the client.
+	const langCookie = event.cookies.get(CONSTANTS.LOCALE_COOKIE_KEY);
 
-	if (lang) {
-		// Language from URL parameter, set cookie and use it
-		event.cookies.set(CONSTANTS.LOCALE_COOKIE_KEY, lang, {
-			path: '/',
-			maxAge: 31536000
-		});
+	let lang: string;
+	if (langCookie && (langCookie === 'de' || langCookie === 'en')) {
+		lang = langCookie;
 	} else {
-		// No URL parameter, try to get from cookie
-		lang = event.cookies.get(CONSTANTS.LOCALE_COOKIE_KEY);
-	}
-
-	// If no language found yet, fall back to header
-	if (!lang) {
 		const acceptLanguage = event.request.headers.get('accept-language');
 		lang = acceptLanguage?.includes('de') ? 'de' : 'en';
-	}
-
-	// Ensure lang is either 'de' or 'en'
-	if (lang !== 'de' && lang !== 'en') {
-		lang = 'en';
 	}
 
 	event.locals.lang = lang;

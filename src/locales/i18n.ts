@@ -1,21 +1,60 @@
-import { _, register, init, locale as svelteLocale } from 'svelte-i18n';
+import { _, register, init, getLocaleFromNavigator, locale as svelteLocale } from 'svelte-i18n';
+import { writable } from 'svelte/store';
 
-// Using static imports is fine here as the JSON files are small.
-// For larger dictionaries, dynamic imports (`() => import('./locales/en.json')`) are better.
 import * as en from './locales/en.json';
 import * as de from './locales/de.json';
 
-// Register the locales
 register('en', () => Promise.resolve(en));
 register('de', () => Promise.resolve(de));
 
-// Initialize svelte-i18n. The initialLocale will be set dynamically in the layout.
+function getInitialLocale(): string {
+  if (typeof localStorage !== 'undefined') {
+    const storedLocale = localStorage.getItem('locale');
+    if (storedLocale && (storedLocale === 'en' || storedLocale === 'de')) {
+      return storedLocale;
+    }
+  }
+  if (typeof navigator !== 'undefined') {
+    const browserLocale = getLocaleFromNavigator();
+    if (browserLocale?.startsWith('de')) {
+      return 'de';
+    }
+  }
+  return 'en'; // Fallback to English
+}
+
+const initialLocaleValue = getInitialLocale();
+
 init({
   fallbackLocale: 'en',
-  initialLocale: 'en',
+  initialLocale: initialLocaleValue,
 });
 
-// Export the translation function and the locale store
-// so other components can use it.
+export const locale = writable<string>(initialLocaleValue);
+
+locale.subscribe((value) => {
+  if (value) {
+    svelteLocale.set(value);
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('locale', value);
+    }
+  }
+});
+
+export async function setLocale(newLocale: 'de' | 'en') {
+  locale.set(newLocale);
+  // Also set the cookie for subsequent SSR requests
+  try {
+    await fetch('/api/lang', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ lang: newLocale })
+    });
+  } catch (e) {
+    console.error('Failed to set language cookie:', e);
+  }
+}
+
 export { _ };
-export const locale = svelteLocale;
