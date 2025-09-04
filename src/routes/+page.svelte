@@ -116,7 +116,31 @@
         app.loadPreset(selectedPreset);
     }
 
+    function handleKeydown(event: KeyboardEvent) {
+        if (event.altKey) {
+            switch (event.key.toLowerCase()) {
+                case 'l':
+                    event.preventDefault();
+                    updateTradeStore(s => ({ ...s, tradeType: CONSTANTS.TRADE_TYPE_LONG }));
+                    break;
+                case 's':
+                    event.preventDefault();
+                    updateTradeStore(s => ({ ...s, tradeType: CONSTANTS.TRADE_TYPE_SHORT }));
+                    break;
+                case 'r':
+                    event.preventDefault();
+                    resetAllInputs();
+                    break;
+                case 'j':
+                    event.preventDefault();
+                    uiStore.toggleJournalModal(true);
+                    break;
+            }
+        }
+    }
 </script>
+
+<svelte:window on:keydown={handleKeydown} />
 
 <main class="my-8 w-full max-w-4xl mx-auto calculator-wrapper rounded-2xl shadow-2xl p-6 sm:p-8 fade-in">
 

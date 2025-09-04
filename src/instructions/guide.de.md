@@ -78,3 +78,14 @@ Cachy bietet eine Reihe von Werkzeugen, um Ihren Workflow zu optimieren.
 *   **Theme wechseln:** Mit dem Sonnen-/Mond-Symbol können Sie zwischen einem hellen und dunklen Design wechseln.
 *   **Sprache wechseln:** Unten links finden Sie die Möglichkeit, die Sprache der Benutzeroberfläche zu ändern.
 *   **Alles zurücksetzen:** Der Besen-Button setzt alle Eingabefelder auf den Standardwert zurück.
+
+---
+
+#### **5. Tastaturkürzel (Shortcuts)**
+
+Für eine schnellere Bedienung können Sie die folgenden Tastaturkürzel verwenden:
+
+*   `Alt + L`: Stellt den Trade-Typ auf **Long** um.
+*   `Alt + S`: Stellt den Trade-Typ auf **Short** um.
+*   `Alt + R`: Setzt alle Eingaben auf die Standardwerte zurück (**Reset**).
+*   `Alt + J`: Öffnet oder schließt das **Journal**-Fenster.

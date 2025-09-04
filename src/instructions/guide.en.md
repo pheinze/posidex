@@ -78,3 +78,14 @@ Cachy offers a range of tools to optimize your workflow.
 *   **Switch Theme:** Use the sun/moon icon to switch between a light and dark theme.
 *   **Switch Language:** At the bottom left, you will find the option to change the user interface language.
 *   **Reset All:** The broom button resets all input fields to their default values.
+
+---
+
+#### **5. Keyboard Shortcuts**
+
+For faster operation, you can use the following keyboard shortcuts:
+
+*   `Alt + L`: Switches the trade type to **Long**.
+*   `Alt + S`: Switches the trade type to **Short**.
+*   `Alt + R`: Resets all inputs to their default values (**Reset**).
+*   `Alt + J`: Opens or closes the **Journal** window.
