@@ -3,8 +3,17 @@
 	import { tradeStore, updateTradeStore } from '../stores/tradeStore';
 	import { uiStore } from '../stores/uiStore';
 	import { onMount } from 'svelte';
+	import { locale } from '../locales/i18n';
 
 	let { children, data } = $props();
+
+	// This effect will run whenever `data.lang` from the server changes,
+	// keeping the client-side i18n library in sync.
+	$effect(() => {
+		if (data.lang) {
+			locale.set(data.lang);
+		}
+	});
 
 	import '../app.css';
 

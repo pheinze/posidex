@@ -8,7 +8,6 @@
 <div class="flex items-center justify-center gap-2">
 	<a
 		href="?lang=de"
-		data-sveltekit-reload
 		class="w-10 h-10 rounded-full flex items-center justify-center text-xl transition-all duration-200"
 		class:border-2={locale === 'de'}
 		class:border-[var(--accent-color)]={locale === 'de'}
@@ -21,7 +20,6 @@
 	</a>
 	<a
 		href="?lang=en"
-		data-sveltekit-reload
 		class="w-10 h-10 rounded-full flex items-center justify-center text-xl transition-all duration-200"
 		class:border-2={locale === 'en'}
 		class:border-[var(--accent-color)]={locale === 'en'}

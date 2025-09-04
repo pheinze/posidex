@@ -11,16 +11,18 @@ test('should set the language and update meta tags', async ({ page }) => {
   // Scroll to the bottom of the page to find the language switcher
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
 
-  // Click the german language switcher and wait for the page to reload
+  // Click the german language switcher
   await page.locator('a:has-text("🇩🇪")').click();
 
-  // Check that the lang and title have changed
-  await expect(page.locator('html')).toHaveAttribute('lang', 'de');
+  // Wait for the title to change and check the lang attribute
   await expect(page).toHaveTitle(de.seo.title);
+  await expect(page.locator('html')).toHaveAttribute('lang', 'de');
 
   // Go back to english
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
   await page.locator('a:has-text("🇬🇧")').click();
-  await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+
+  // Wait for the title to change and check the lang attribute
   await expect(page).toHaveTitle(en.seo.title);
+  await expect(page.locator('html')).toHaveAttribute('lang', 'en');
 });
