@@ -21,14 +21,31 @@ const themeHandler: Handle = async ({ event, resolve }) => {
 };
 
 const languageHandler: Handle = async ({ event, resolve }) => {
-	const langCookie = event.cookies.get(CONSTANTS.LOCALE_COOKIE_KEY);
+	let lang = event.url.searchParams.get('lang');
 
-	if (langCookie) {
-		event.locals.lang = langCookie;
+	if (lang) {
+		// Language from URL parameter, set cookie and use it
+		event.cookies.set(CONSTANTS.LOCALE_COOKIE_KEY, lang, {
+			path: '/',
+			maxAge: 31536000
+		});
 	} else {
-		const acceptLanguage = event.request.headers.get('accept-language');
-		event.locals.lang = acceptLanguage?.includes('de') ? 'de' : 'en';
+		// No URL parameter, try to get from cookie
+		lang = event.cookies.get(CONSTANTS.LOCALE_COOKIE_KEY);
 	}
+
+	// If no language found yet, fall back to header
+	if (!lang) {
+		const acceptLanguage = event.request.headers.get('accept-language');
+		lang = acceptLanguage?.includes('de') ? 'de' : 'en';
+	}
+
+	// Ensure lang is either 'de' or 'en'
+	if (lang !== 'de' && lang !== 'en') {
+		lang = 'en';
+	}
+
+	event.locals.lang = lang;
 
 	return resolve(event, {
 		transformPageChunk: ({ html }) => html.replace('%lang%', event.locals.lang)
