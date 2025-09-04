@@ -631,9 +631,12 @@ export const app = {
                 decTargets[changedIndex].percent = decTargets[changedIndex].percent.plus(diff);
             }
         }
-        // --- Handle Surplus (diff > 0): A value was decreased or a TP was removed ---
+        // --- Handle Surplus (diff > 0): A value was decreased ---
         else if (diff.gt(ZERO)) {
-            if (otherUnlocked.length > 0) {
+            const tp1 = decTargets[0];
+            if (tp1 && !tp1.isLocked && changedIndex !== 0) {
+                tp1.percent = tp1.percent.plus(diff);
+            } else {
                 const share = diff.div(otherUnlocked.length);
                 otherUnlocked.forEach((t: any) => {
                     decTargets[t.originalIndex].percent = decTargets[t.originalIndex].percent.plus(share);
