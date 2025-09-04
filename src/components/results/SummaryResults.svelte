@@ -3,6 +3,7 @@
     import { icons } from '../../lib/constants';
     import Tooltip from '../shared/Tooltip.svelte';
     import { _ } from '../../locales/i18n';
+    import { trackCustomEvent } from '../../services/trackingService';
 
     const dispatch = createEventDispatcher();
 
@@ -16,8 +17,14 @@
     export let breakEvenPrice: string;
 
     function handleCopy() {
+        trackCustomEvent('Result', 'Copy', 'PositionSize');
         navigator.clipboard.writeText(positionSize);
         dispatch('copy');
+    }
+
+    function handleToggleLock() {
+        trackCustomEvent('Result', 'ToggleLock', !isPositionSizeLocked ? 'On' : 'Off');
+        dispatch('toggleLock');
     }
 </script>
 
@@ -26,7 +33,7 @@
     <div class="result-item">
         <div class="result-label">
             {$_('dashboard.summaryResults.positionSizeLabel')}
-            <button id="lock-position-size-btn" class="copy-btn ml-2" title="{$_('dashboard.summaryResults.lockPositionSizeTitle')}" aria-label="{$_('dashboard.summaryResults.lockPositionSizeAriaLabel')}" on:click={() => dispatch('toggleLock')}>
+            <button id="lock-position-size-btn" class="copy-btn ml-2" title="{$_('dashboard.summaryResults.lockPositionSizeTitle')}" aria-label="{$_('dashboard.summaryResults.lockPositionSizeAriaLabel')}" on:click={handleToggleLock}>
                 {#if isPositionSizeLocked}
                     {@html icons.lockClosed}
                 {:else}

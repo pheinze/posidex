@@ -13,6 +13,7 @@ import { uiStore } from '../stores/uiStore';
 import type { AppState, JournalEntry, TradeValues, IndividualTpResult } from '../stores/types';
 import { Decimal } from 'decimal.js';
 import { browser } from '$app/environment';
+import { trackCustomEvent } from './trackingService';
 
 interface CSVTradeEntry {
     'ID': string;
@@ -153,6 +154,7 @@ export const app = {
         const validationResult = getAndValidateInputs();
 
         if (validationResult.status === CONSTANTS.STATUS_INVALID) {
+            trackCustomEvent('Calculation', 'Error', validationResult.message);
             uiStore.showError(validationResult.message || "");
             app.clearResults();
             return;
@@ -223,6 +225,8 @@ export const app = {
         }
 
         resultsStore.set(newResults);
+
+        trackCustomEvent('Calculation', 'Success', currentTradeState.tradeType, values.accountSize.toNumber());
 
         updateTradeStore(state => ({ ...state, currentTradeData: { ...values, ...baseMetrics, ...totalMetrics, tradeType: currentTradeState.tradeType, status: 'Open', calculatedTpDetails } }));
         app.saveSettings();
@@ -395,6 +399,7 @@ export const app = {
     loadPreset: (presetName: string) => {
         if (!browser) return;
         if (!presetName) return;
+        trackCustomEvent('Preset', 'Load', presetName);
         try {
             const presets = JSON.parse(localStorage.getItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY) || '{}');
             const preset = presets[presetName];

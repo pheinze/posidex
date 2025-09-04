@@ -4,6 +4,7 @@
     import { createEventDispatcher } from 'svelte';
     import { numberInput } from '../../utils/inputUtils'; // Import the action
     import { _ } from '../../locales/i18n';
+    import { trackCustomEvent } from '../../services/trackingService';
 
     const dispatch = createEventDispatcher();
 
@@ -22,10 +23,13 @@
     export let showSymbolSuggestions: boolean;
 
     function toggleAtrSl() {
-        dispatch('toggleAtrInputs', !useAtrSl);
+        const newState = !useAtrSl;
+        trackCustomEvent('ATR', 'Toggle', newState ? 'On' : 'Off');
+        dispatch('toggleAtrInputs', newState);
     }
 
     function handleFetchPriceClick() {
+        trackCustomEvent('Price', 'Fetch', symbol);
         dispatch('fetchPrice');
     }
 
@@ -36,6 +40,7 @@
     }, 200);
 
     function selectSuggestion(s: string) {
+        trackCustomEvent('Symbol', 'SelectSuggestion', s);
         dispatch('selectSymbolSuggestion', s);
     }
 
