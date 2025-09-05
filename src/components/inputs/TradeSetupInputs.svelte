@@ -145,12 +145,14 @@
                             <option value="1d">1d</option>
                         </select>
                     </div>
-                    <div class="relative">
-                        <label for="atr-value-input-auto" class="input-label !mb-1 text-xs">ATR</label>
-                        <input id="atr-value-input-auto" type="text" readonly bind:value={atrValue} class="input-field w-full px-4 py-2 rounded-md pr-10" placeholder="ATR">
-                        <button type="button" class="price-fetch-btn absolute top-1/2 right-2 -translate-y-1/2 {isPriceFetching ? 'animate-spin' : ''}" on:click={() => { trackCustomEvent('ATR', 'Fetch', symbol); dispatch('fetchAtr'); }} title="Fetch ATR Value">
-                            {@html icons.fetch}
-                        </button>
+                    <div>
+                        <div class="flex justify-between items-center">
+                            <label for="atr-value-input-auto" class="input-label !mb-1 text-xs">ATR</label>
+                            <button type="button" class="price-fetch-btn {isPriceFetching ? 'animate-spin' : ''}" on:click={() => { trackCustomEvent('ATR', 'Fetch', symbol); dispatch('fetchAtr'); }} title="Fetch ATR Value">
+                                {@html icons.fetch}
+                            </button>
+                        </div>
+                        <input id="atr-value-input-auto" type="text" inputmode="decimal" use:numberInput={{ maxDecimalPlaces: 4 }} bind:value={atrValue} on:input={() => dispatch('atrEdited')} class="input-field w-full px-4 py-2 rounded-md" placeholder="ATR">
                     </div>
                     <div>
                         <label for="atr-multiplier-input-auto" class="input-label !mb-1 text-xs">Multiplier</label>
