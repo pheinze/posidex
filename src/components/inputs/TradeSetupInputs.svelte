@@ -65,6 +65,7 @@
     <h2 class="section-header">{$_('dashboard.tradeSetupInputs.header')}</h2>
     <div class="relative mb-4 symbol-input-container">
         <input
+            id="symbol-input"
             type="text"
             bind:value={symbol}
             on:input={() => { handleSymbolInput(); onboardingService.trackFirstInput(); }}
@@ -97,24 +98,24 @@
             </div>
         {/if}
     </div>
-    <input type="text" inputmode="decimal" use:numberInput={{ maxDecimalPlaces: 4 }} bind:value={entryPrice} class="input-field w-full px-4 py-2 rounded-md mb-4" placeholder="{$_('dashboard.tradeSetupInputs.entryPricePlaceholder')}" on:input={onboardingService.trackFirstInput}>
+    <input id="entry-price-input" type="text" inputmode="decimal" use:numberInput={{ maxDecimalPlaces: 4 }} bind:value={entryPrice} class="input-field w-full px-4 py-2 rounded-md mb-4" placeholder="{$_('dashboard.tradeSetupInputs.entryPricePlaceholder')}" on:input={onboardingService.trackFirstInput}>
 
     <div class="p-2 rounded-lg mb-4" style="background-color: var(--bg-tertiary);">
         <div class="flex justify-end mb-2">
             <label class="flex items-center cursor-pointer">
                 <span class="mr-2 text-sm">{$_('dashboard.tradeSetupInputs.atrStopLossLabel')}</span>
-                <input type="checkbox" bind:checked={useAtrSl} on:change={toggleAtrSl} class="sr-only peer" role="switch" aria-checked={useAtrSl}>
+                <input id="use-atr-sl-checkbox" type="checkbox" bind:checked={useAtrSl} on:change={toggleAtrSl} class="sr-only peer" role="switch" aria-checked={useAtrSl}>
                 <div class="atr-toggle-track relative w-11 h-6 peer-focus:outline-none rounded-full peer after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:border after:rounded-full after:h-5 after:w-5"></div>
             </label>
         </div>
         {#if !useAtrSl}
             <div>
-                <input type="text" inputmode="decimal" use:numberInput={{ maxDecimalPlaces: 4 }} bind:value={stopLossPrice} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.tradeSetupInputs.manualStopLossPlaceholder')}">
+                <input id="stop-loss-price-input" type="text" inputmode="decimal" use:numberInput={{ maxDecimalPlaces: 4 }} bind:value={stopLossPrice} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.tradeSetupInputs.manualStopLossPlaceholder')}">
             </div>
         {:else}
             <div class="grid grid-cols-2 gap-2">
-                <input type="text" inputmode="decimal" use:numberInput={{ maxDecimalPlaces: 4 }} bind:value={atrValue} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.tradeSetupInputs.atrValuePlaceholder')}">
-                <input type="text" inputmode="decimal" use:numberInput={{ maxDecimalPlaces: 4 }} bind:value={atrMultiplier} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.tradeSetupInputs.multiplierPlaceholder')}">
+                <input id="atr-value-input" type="text" inputmode="decimal" use:numberInput={{ maxDecimalPlaces: 4 }} bind:value={atrValue} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.tradeSetupInputs.atrValuePlaceholder')}">
+                <input id="atr-multiplier-input" type="text" inputmode="decimal" use:numberInput={{ maxDecimalPlaces: 4 }} bind:value={atrMultiplier} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.tradeSetupInputs.multiplierPlaceholder')}">
             </div>
             {#if showAtrFormulaDisplay}
                 <div class="text-center text-xs text-sky-300 mt-2">{atrFormulaDisplay}</div>
