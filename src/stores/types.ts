@@ -57,6 +57,8 @@ export interface AppState {
     atrValue: string;
     atrMultiplier: string;
     useAtrSl: boolean;
+    atrMode: 'manual' | 'auto';
+    atrTimeframe: string;
     tradeNotes: string;
     targets: Array<{ price: string; percent: string; isLocked: boolean }>;
 
@@ -78,6 +80,8 @@ export interface AppState {
     // UI State
     isPositionSizeLocked: boolean;
     lockedPositionSize: Decimal | null;
+    isRiskAmountLocked: boolean;
+    riskAmount: string;
     errorMessage: string;
     showErrorMessage: boolean;
     showTotalMetricsGroup: boolean;

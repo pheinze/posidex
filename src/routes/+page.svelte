@@ -68,6 +68,8 @@
         $tradeStore.atrValue,
         $tradeStore.atrMultiplier,
         $tradeStore.useAtrSl,
+        $tradeStore.atrMode,
+        $tradeStore.atrTimeframe,
         $tradeStore.tradeType,
         $tradeStore.targets;
 
@@ -190,7 +192,14 @@
         <div>
             <GeneralInputs bind:tradeType={$tradeStore.tradeType} bind:leverage={$tradeStore.leverage} bind:fees={$tradeStore.fees} />
 
-            <PortfolioInputs bind:accountSize={$tradeStore.accountSize} bind:riskPercentage={$tradeStore.riskPercentage} />
+            <PortfolioInputs
+                bind:accountSize={$tradeStore.accountSize}
+                bind:riskPercentage={$tradeStore.riskPercentage}
+                bind:riskAmount={$tradeStore.riskAmount}
+                isRiskAmountLocked={$tradeStore.isRiskAmountLocked}
+                isPositionSizeLocked={$tradeStore.isPositionSizeLocked}
+                on:toggleRiskAmountLock={() => app.toggleRiskAmountLock()}
+            />
 
         </div>
 
@@ -201,12 +210,17 @@
             bind:atrValue={$tradeStore.atrValue}
             bind:atrMultiplier={$tradeStore.atrMultiplier}
             bind:stopLossPrice={$tradeStore.stopLossPrice}
+            bind:atrMode={$tradeStore.atrMode}
+            bind:atrTimeframe={$tradeStore.atrTimeframe}
 
             on:showError={handleTradeSetupError}
             
             on:fetchPrice={() => app.handleFetchPrice()}
             on:toggleAtrInputs={(e) => toggleAtrInputs(e.detail)}
             on:selectSymbolSuggestion={(e) => app.selectSymbolSuggestion(e.detail)}
+            on:setAtrMode={(e) => app.setAtrMode(e.detail)}
+            on:setAtrTimeframe={(e) => app.setAtrTimeframe(e.detail)}
+            on:fetchAtr={() => app.fetchAtr()}
 
             atrFormulaDisplay={$resultsStore.atrFormulaText}
             showAtrFormulaDisplay={$resultsStore.showAtrFormulaDisplay}

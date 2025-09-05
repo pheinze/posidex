@@ -1,6 +1,7 @@
 import { Decimal } from 'decimal.js';
 import { CONSTANTS } from './constants';
 import type { TradeValues, BaseMetrics, IndividualTpResult, TotalMetrics } from '../stores/types';
+import type { Kline } from '../services/apiService';
 
 export const calculator = {
     calculateBaseMetrics(values: TradeValues, tradeType: string): BaseMetrics | null {
@@ -26,6 +27,39 @@ export const calculator = {
         
         return { positionSize, requiredMargin, netLoss, breakEvenPrice, liquidationPrice, entryFee, riskAmount };
     },
+
+    calculateATR(klines: Kline[], period: number = 14): Decimal {
+        // We need at least `period + 1` klines to calculate `period` true ranges.
+        if (klines.length < period + 1) {
+            return new Decimal(0); // Not enough data to calculate ATR.
+        }
+
+        const trueRanges: Decimal[] = [];
+        // Loop starts at 1 because each True Range calculation needs the previous kline (at i-1).
+        // We calculate TR for the last `period` candles available.
+        const relevantKlines = klines.slice(-(period + 1));
+
+        for (let i = 1; i < relevantKlines.length; i++) {
+            const kline = relevantKlines[i];
+            const prevKline = relevantKlines[i - 1];
+
+            const highLow = kline.high.minus(kline.low);
+            const highPrevClose = kline.high.minus(prevKline.close).abs();
+            const lowPrevClose = kline.low.minus(prevKline.close).abs();
+
+            const trueRange = Decimal.max(highLow, highPrevClose, lowPrevClose);
+            trueRanges.push(trueRange);
+        }
+
+        if (trueRanges.length === 0) {
+            return new Decimal(0);
+        }
+
+        // The ATR is the average of the true ranges.
+        const sumOfTrueRanges = trueRanges.reduce((sum, val) => sum.plus(val), new Decimal(0));
+        return sumOfTrueRanges.div(trueRanges.length);
+    },
+
     calculateIndividualTp(tpPrice: Decimal, currentTpPercent: Decimal, baseMetrics: BaseMetrics, values: TradeValues, index: number): IndividualTpResult {
         const { positionSize, requiredMargin, riskAmount } = baseMetrics;
         const gainPerUnit = tpPrice.minus(values.entryPrice).abs();

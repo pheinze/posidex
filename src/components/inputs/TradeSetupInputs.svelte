@@ -15,6 +15,8 @@
     export let atrValue: string;
     export let atrMultiplier: string;
     export let stopLossPrice: string;
+    export let atrMode: 'manual' | 'auto';
+    export let atrTimeframe: string;
 
 
     export let atrFormulaDisplay: string;
@@ -113,10 +115,44 @@
                 <input id="stop-loss-price-input" type="text" inputmode="decimal" use:numberInput={{ maxDecimalPlaces: 4 }} bind:value={stopLossPrice} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.tradeSetupInputs.manualStopLossPlaceholder')}">
             </div>
         {:else}
-            <div class="grid grid-cols-2 gap-2">
-                <input id="atr-value-input" type="text" inputmode="decimal" use:numberInput={{ maxDecimalPlaces: 4 }} bind:value={atrValue} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.tradeSetupInputs.atrValuePlaceholder')}">
-                <input id="atr-multiplier-input" type="text" inputmode="decimal" use:numberInput={{ maxDecimalPlaces: 4 }} bind:value={atrMultiplier} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.tradeSetupInputs.multiplierPlaceholder')}">
+            <div class="atr-mode-switcher">
+                <button
+                    class="btn-switcher {atrMode === 'manual' ? 'active' : ''}"
+                    on:click={() => dispatch('setAtrMode', 'manual')}
+                >
+                    Manual
+                </button>
+                <button
+                    class="btn-switcher {atrMode === 'auto' ? 'active' : ''}"
+                    on:click={() => dispatch('setAtrMode', 'auto')}
+                >
+                    Auto
+                </button>
             </div>
+
+            {#if atrMode === 'manual'}
+                <div class="grid grid-cols-2 gap-2 mt-2">
+                    <input id="atr-value-input" type="text" inputmode="decimal" use:numberInput={{ maxDecimalPlaces: 4 }} bind:value={atrValue} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.tradeSetupInputs.atrValuePlaceholder')}">
+                    <input id="atr-multiplier-input" type="text" inputmode="decimal" use:numberInput={{ maxDecimalPlaces: 4 }} bind:value={atrMultiplier} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.tradeSetupInputs.multiplierPlaceholder')}">
+                </div>
+            {:else}
+                <div class="grid grid-cols-3 gap-2 mt-2">
+                    <select bind:value={atrTimeframe} on:change={(e) => dispatch('setAtrTimeframe', e.currentTarget.value)} class="input-field w-full px-4 py-2 rounded-md col-span-1">
+                        <option value="15m">15m</option>
+                        <option value="1h">1h</option>
+                        <option value="4h">4h</option>
+                        <option value="1d">1d</option>
+                    </select>
+                    <input id="atr-value-input-auto" type="text" readonly bind:value={atrValue} class="input-field w-full px-4 py-2 rounded-md col-span-1" placeholder="ATR">
+                    <button class="btn-primary w-full h-full col-span-1" on:click={() => { trackCustomEvent('ATR', 'Fetch', symbol); dispatch('fetchAtr'); }}>
+                        Fetch
+                    </button>
+                </div>
+                <div class="mt-2">
+                     <input id="atr-multiplier-input-auto" type="text" inputmode="decimal" use:numberInput={{ maxDecimalPlaces: 4 }} bind:value={atrMultiplier} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.tradeSetupInputs.multiplierPlaceholder')}">
+                </div>
+            {/if}
+
             {#if showAtrFormulaDisplay}
                 {@const lastEq = atrFormulaDisplay.lastIndexOf('=')}
                 {@const formula = atrFormulaDisplay.substring(0, lastEq + 1)}

@@ -350,6 +350,34 @@ input[type=number] { -moz-appearance: textfield; }
 .trade-type-switch button:not(.active) { background-color: var(--bg-tertiary); color: var(--text-primary); }
 .trade-type-switch { background-color: var(--bg-tertiary); }
 
+/* Styles for ATR Mode Switcher */
+.atr-mode-switcher {
+    display: flex;
+    border-radius: 0.375rem; /* 6px */
+    background-color: var(--bg-tertiary);
+    padding: 0.25rem; /* 4px */
+    margin-bottom: 0.5rem; /* 8px */
+}
+
+.btn-switcher {
+    flex-grow: 1;
+    padding: 0.5rem 0; /* 8px */
+    border: none;
+    background-color: transparent;
+    color: var(--text-secondary);
+    border-radius: 0.25rem; /* 4px */
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    font-size: 0.875rem; /* 14px */
+    font-weight: 600;
+}
+
+.btn-switcher.active {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
 .atr-toggle-track { background-color: var(--toggle-bg-off); transition: background-color 0.3s; }
 input[type="checkbox"]:checked + .atr-toggle-track { background-color: var(--toggle-bg-on); }
 .atr-toggle-track::after { background-color: var(--toggle-circle-bg); border-color: var(--border-color); transition: transform 0.3s, background-color 0.3s, border-color 0.3s; }

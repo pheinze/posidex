@@ -16,10 +16,14 @@ export const initialTradeState: Pick<AppState,
     'atrValue' |
     'atrMultiplier' |
     'useAtrSl' |
+    'atrMode' |
+    'atrTimeframe' |
     'tradeNotes' |
     'targets' |
     'isPositionSizeLocked' |
     'lockedPositionSize' |
+    'isRiskAmountLocked' |
+    'riskAmount' |
     'journalSearchQuery' |
     'journalFilterStatus' |
     'currentTradeData'
@@ -35,6 +39,8 @@ export const initialTradeState: Pick<AppState,
     atrValue: '',
     atrMultiplier: CONSTANTS.DEFAULT_ATR_MULTIPLIER,
     useAtrSl: false,
+    atrMode: 'manual',
+    atrTimeframe: '1d',
     tradeNotes: '',
     targets: [
         { price: '', percent: '50', isLocked: false },
@@ -43,6 +49,8 @@ export const initialTradeState: Pick<AppState,
     ],
     isPositionSizeLocked: false,
     lockedPositionSize: null,
+    isRiskAmountLocked: false,
+    riskAmount: '',
     journalSearchQuery: '',
     journalFilterStatus: 'all',
     currentTradeData: {},

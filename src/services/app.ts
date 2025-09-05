@@ -10,7 +10,7 @@ import { resultsStore, initialResultsState } from '../stores/resultsStore';
 import { presetStore, updatePresetStore } from '../stores/presetStore';
 import { journalStore } from '../stores/journalStore';
 import { uiStore } from '../stores/uiStore';
-import type { AppState, JournalEntry, TradeValues, IndividualTpResult } from '../stores/types';
+import type { AppState, JournalEntry, TradeValues, IndividualTpResult, BaseMetrics } from '../stores/types';
 import { Decimal } from 'decimal.js';
 import { browser } from '$app/environment';
 import { trackCustomEvent } from './trackingService';
@@ -179,9 +179,18 @@ export const app = {
         }
 
         let values = validationResult.data as TradeValues;
-        let baseMetrics;
+        let baseMetrics: BaseMetrics | null;
 
-        if (currentTradeState.isPositionSizeLocked && currentTradeState.lockedPositionSize && currentTradeState.lockedPositionSize.gt(0)) {
+        if (currentTradeState.isRiskAmountLocked) {
+            const riskAmount = parseDecimal(currentTradeState.riskAmount);
+            if (riskAmount.gt(0) && values.accountSize.gt(0)) {
+                const newRiskPercentage = riskAmount.div(values.accountSize).times(100);
+                updateTradeStore(state => ({ ...state, riskPercentage: newRiskPercentage.toFixed(4) }));
+                values.riskPercentage = newRiskPercentage;
+            }
+            baseMetrics = calculator.calculateBaseMetrics(values, currentTradeState.tradeType);
+
+        } else if (currentTradeState.isPositionSizeLocked && currentTradeState.lockedPositionSize && currentTradeState.lockedPositionSize.gt(0)) {
             const riskPerUnit = values.entryPrice.minus(values.stopLossPrice).abs();
             if (riskPerUnit.lte(0)) {
                 uiStore.showError("Stop-Loss muss einen gültigen Abstand zum Einstiegspreis haben.");
@@ -191,13 +200,18 @@ export const app = {
             const riskAmount = riskPerUnit.times(currentTradeState.lockedPositionSize);
             const newRiskPercentage = values.accountSize.isZero() ? new Decimal(0) : riskAmount.div(values.accountSize).times(100);
 
-            updateTradeStore(state => ({ ...state, riskPercentage: newRiskPercentage.toFixed(2) }));
+            updateTradeStore(state => ({ ...state, riskPercentage: newRiskPercentage.toFixed(2), riskAmount: riskAmount.toFixed(2) }));
             values.riskPercentage = newRiskPercentage;
 
             baseMetrics = calculator.calculateBaseMetrics(values, currentTradeState.tradeType);
             if (baseMetrics) baseMetrics.positionSize = currentTradeState.lockedPositionSize;
+
         } else {
             baseMetrics = calculator.calculateBaseMetrics(values, currentTradeState.tradeType);
+            if (baseMetrics) {
+                const finalMetrics = baseMetrics;
+                updateTradeStore(state => ({ ...state, riskAmount: finalMetrics.riskAmount.toFixed(2) }));
+            }
         }
 
         if (!baseMetrics || baseMetrics.positionSize.lte(0)) {
@@ -586,6 +600,46 @@ export const app = {
         }
     },
 
+    setAtrMode: (mode: 'manual' | 'auto') => {
+        updateTradeStore(state => ({
+            ...state,
+            atrMode: mode,
+            atrValue: mode === 'auto' ? '' : state.atrValue // Clear ATR value when switching to auto
+        }));
+        app.calculateAndDisplay();
+    },
+
+    setAtrTimeframe: (timeframe: string) => {
+        updateTradeStore(state => ({
+            ...state,
+            atrTimeframe: timeframe
+        }));
+    },
+
+    fetchAtr: async () => {
+        const currentTradeState = get(tradeStore);
+        const symbol = currentTradeState.symbol.toUpperCase().replace('/', '');
+        if (!symbol) {
+            uiStore.showError("Bitte geben Sie ein Symbol ein.");
+            return;
+        }
+        uiStore.update(state => ({ ...state, isPriceFetching: true })); // Reuse for loading spinner
+        try {
+            const klines = await apiService.fetchKlines(symbol, currentTradeState.atrTimeframe);
+            const atr = calculator.calculateATR(klines);
+            if (atr.lte(0)) {
+                throw new Error("ATR konnte nicht berechnet werden. Prüfen Sie das Symbol oder den Zeitrahmen.");
+            }
+            updateTradeStore(state => ({ ...state, atrValue: atr.toDP(4).toString() }));
+            app.calculateAndDisplay();
+            uiStore.showFeedback('copy', 700); // Reusing copy feedback for loaded animation
+        } catch (error: any) {
+            uiStore.showError(error.message);
+        } finally {
+            uiStore.update(state => ({ ...state, isPriceFetching: false }));
+        }
+    },
+
     selectSymbolSuggestion: (symbol: string) => {
         updateTradeStore(s => ({ ...s, symbol: symbol }));
         uiStore.update(s => ({ ...s, showSymbolSuggestions: false, symbolSuggestions: [] }));
@@ -613,11 +667,34 @@ export const app = {
         updateTradeStore(state => ({
             ...state,
             isPositionSizeLocked: shouldBeLocked,
-            lockedPositionSize: shouldBeLocked ? parseDecimal(currentResultsState.positionSize) : null
+            lockedPositionSize: shouldBeLocked ? parseDecimal(currentResultsState.positionSize) : null,
+            // Enforce mutual exclusion
+            isRiskAmountLocked: false,
         }));
 
         app.calculateAndDisplay();
     },
+
+    toggleRiskAmountLock: (forceState?: boolean) => {
+        const currentTradeState = get(tradeStore);
+        const shouldBeLocked = forceState !== undefined ? forceState : !currentTradeState.isRiskAmountLocked;
+
+        if (shouldBeLocked && parseDecimal(currentTradeState.riskAmount).lte(0)) {
+            uiStore.showError("Risikobetrag kann nicht gesperrt werden, solange er ungültig ist.");
+            return;
+        }
+
+        updateTradeStore(state => ({
+            ...state,
+            isRiskAmountLocked: shouldBeLocked,
+            // Enforce mutual exclusion
+            isPositionSizeLocked: false,
+            lockedPositionSize: null,
+        }));
+
+        app.calculateAndDisplay();
+    },
+
     addTakeProfitRow: (price: string = '', percent: string = '', isLocked = false) => {
         updateTradeStore(state => ({
             ...state,
