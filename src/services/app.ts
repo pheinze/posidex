@@ -121,11 +121,9 @@ export const app = {
                 newResults.atrFormulaText = '';
             }
 
-            if (values.useAtrSl && values.stopLossPrice.lte(0) && values.entryPrice.gt(0) && values.atrValue.gt(0) && values.atrMultiplier.gt(0)) {
-                newResults.atrFormulaError = 'Der berechnete Stop-Loss ist ungültig (<= 0).';
-            }
+            newResults.isAtrSlInvalid = values.useAtrSl && values.stopLossPrice.lte(0);
 
-            if (values.stopLossPrice.lte(0) && !newResults.atrFormulaError) {
+            if (values.stopLossPrice.lte(0) && !newResults.isAtrSlInvalid) {
                 return { status: CONSTANTS.STATUS_INCOMPLETE };
             }
 
@@ -158,8 +156,13 @@ export const app = {
 
         const validationResult = getAndValidateInputs();
 
-        if (newResults.atrFormulaError) {
-            resultsStore.set(newResults);
+        if (newResults.isAtrSlInvalid) {
+            resultsStore.set({
+                ...initialResultsState,
+                showAtrFormulaDisplay: newResults.showAtrFormulaDisplay,
+                atrFormulaText: newResults.atrFormulaText,
+                isAtrSlInvalid: true,
+            });
             return;
         }
 

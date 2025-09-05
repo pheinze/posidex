@@ -18,7 +18,7 @@ export const initialResultsState: Pick<AppState,
     'showTotalMetricsGroup' |
     'showAtrFormulaDisplay' |
     'atrFormulaText' |
-    'atrFormulaError'
+    'isAtrSlInvalid'
 > = {
     positionSize: '-',
     requiredMargin: '-',
@@ -36,7 +36,7 @@ export const initialResultsState: Pick<AppState,
     showTotalMetricsGroup: false,
     showAtrFormulaDisplay: false,
     atrFormulaText: '',
-    atrFormulaError: '',
+    isAtrSlInvalid: false,
 };
 
 export const resultsStore = writable(initialResultsState);

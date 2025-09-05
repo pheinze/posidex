@@ -19,7 +19,7 @@
 
     export let atrFormulaDisplay: string;
     export let showAtrFormulaDisplay: boolean;
-    export let atrFormulaError: string;
+    export let isAtrSlInvalid: boolean;
     export let isPriceFetching: boolean;
     export let symbolSuggestions: string[];
     export let showSymbolSuggestions: boolean;
@@ -118,11 +118,9 @@
             </div>
             {#if showAtrFormulaDisplay}
                 <div class="text-center text-xs text-sky-300 mt-2">
-                    {atrFormulaDisplay}
+                    <span>{atrFormulaDisplay.split('=')[0]}=</span>
+                    <span class:text-red-500={isAtrSlInvalid} class:dark:text-red-400={isAtrSlInvalid} style={isAtrSlInvalid ? 'color: var(--danger-color)' : ''}>{atrFormulaDisplay.split('=')[1]}</span>
                 </div>
-            {/if}
-            {#if atrFormulaError}
-                <div class="text-center text-xs mt-1" style="color: var(--danger-color);">{atrFormulaError}</div>
             {/if}
         {/if}
     </div>
