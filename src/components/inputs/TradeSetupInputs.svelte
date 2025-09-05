@@ -103,7 +103,8 @@
     <input id="entry-price-input" type="text" inputmode="decimal" use:numberInput={{ maxDecimalPlaces: 4 }} bind:value={entryPrice} class="input-field w-full px-4 py-2 rounded-md mb-4" placeholder="{$_('dashboard.tradeSetupInputs.entryPricePlaceholder')}" on:input={onboardingService.trackFirstInput}>
 
     <div class="p-2 rounded-lg mb-4" style="background-color: var(--bg-tertiary);">
-        <div class="flex justify-between items-center mb-2">
+        <div class="flex items-center mb-2 {useAtrSl ? 'justify-between' : 'justify-end'}">
+            {#if useAtrSl}
             <div class="atr-mode-switcher">
                 <button
                     class="btn-switcher {atrMode === 'manual' ? 'active' : ''}"
@@ -118,6 +119,7 @@
                     Auto
                 </button>
             </div>
+            {/if}
             <label class="flex items-center cursor-pointer">
                 <span class="mr-2 text-sm">{$_('dashboard.tradeSetupInputs.atrStopLossLabel')}</span>
                 <input id="use-atr-sl-checkbox" type="checkbox" bind:checked={useAtrSl} on:change={toggleAtrSl} class="sr-only peer" role="switch" aria-checked={useAtrSl}>
@@ -139,6 +141,7 @@
                     <div>
                         <label for="atr-timeframe" class="input-label !mb-1 text-xs">Timeframe</label>
                         <select id="atr-timeframe" bind:value={atrTimeframe} on:change={(e) => dispatch('setAtrTimeframe', e.currentTarget.value)} class="input-field w-full px-4 py-2 rounded-md">
+                            <option value="5m">5m</option>
                             <option value="15m">15m</option>
                             <option value="1h">1h</option>
                             <option value="4h">4h</option>
