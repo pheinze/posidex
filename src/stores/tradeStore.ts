@@ -60,6 +60,7 @@ export const toggleAtrInputs = (useAtrSl: boolean) => {
     updateTradeStore(state => ({
         ...state,
         useAtrSl: useAtrSl,
+        stopLossPrice: useAtrSl ? '' : state.stopLossPrice, // Clear manual SL if ATR is enabled
     }));
 };
 

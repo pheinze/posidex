@@ -121,9 +121,7 @@ export const app = {
                 newResults.atrFormulaText = '';
             }
 
-            newResults.isAtrSlInvalid = values.useAtrSl && values.stopLossPrice.lte(0);
-
-            if (values.stopLossPrice.lte(0) && !newResults.isAtrSlInvalid) {
+            if (values.accountSize.lte(0) || values.riskPercentage.lte(0) || values.entryPrice.lte(0) || values.stopLossPrice.lte(0)) {
                 return { status: CONSTANTS.STATUS_INCOMPLETE };
             }
 
@@ -155,16 +153,6 @@ export const app = {
         };
 
         const validationResult = getAndValidateInputs();
-
-        if (newResults.isAtrSlInvalid) {
-            resultsStore.set({
-                ...initialResultsState,
-                showAtrFormulaDisplay: newResults.showAtrFormulaDisplay,
-                atrFormulaText: newResults.atrFormulaText,
-                isAtrSlInvalid: true,
-            });
-            return;
-        }
 
         if (validationResult.status === CONSTANTS.STATUS_INVALID) {
             trackCustomEvent('Calculation', 'Error', validationResult.message);

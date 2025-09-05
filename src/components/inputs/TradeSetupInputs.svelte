@@ -19,14 +19,14 @@
 
     export let atrFormulaDisplay: string;
     export let showAtrFormulaDisplay: boolean;
-    export let isAtrSlInvalid: boolean;
     export let isPriceFetching: boolean;
     export let symbolSuggestions: string[];
     export let showSymbolSuggestions: boolean;
 
     function toggleAtrSl() {
-        trackCustomEvent('ATR', 'Toggle', useAtrSl ? 'On' : 'Off');
-        dispatch('toggleAtrInputs', useAtrSl);
+        const newState = !useAtrSl;
+        trackCustomEvent('ATR', 'Toggle', newState ? 'On' : 'Off');
+        dispatch('toggleAtrInputs', newState);
     }
 
     function handleFetchPriceClick() {
@@ -117,13 +117,7 @@
                 <input type="text" inputmode="decimal" use:numberInput={{ maxDecimalPlaces: 4 }} bind:value={atrMultiplier} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.tradeSetupInputs.multiplierPlaceholder')}">
             </div>
             {#if showAtrFormulaDisplay}
-                {@const lastEq = atrFormulaDisplay.lastIndexOf('=')}
-                {@const formula = atrFormulaDisplay.substring(0, lastEq + 1)}
-                {@const result = atrFormulaDisplay.substring(lastEq + 1)}
-                <div class="text-center text-xs mt-2" style="color: var(--text-primary);">
-                    <span>{formula}</span>
-                    <span style={isAtrSlInvalid ? 'color: var(--danger-color)' : 'color: var(--text-primary);'}>{result}</span>
-                </div>
+                <div class="text-center text-xs text-sky-300 mt-2">{atrFormulaDisplay}</div>
             {/if}
         {/if}
     </div>
