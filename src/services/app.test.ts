@@ -25,15 +25,16 @@ describe('app service - adjustTpPercentages (Prioritized Logic)', () => {
     });
 
     // --- DECREASE SCENARIOS ---
-    it('should give surplus to TP1 when another TP is decreased', () => {
-        // User decreases TP2 from 30 to 20. Surplus of 10 should go to TP1.
+    it('should distribute surplus evenly when another TP is decreased', () => {
+        // User decreases TP2 from 30 to 20. Surplus of 10 is distributed
+        // between the other unlocked targets (TP1 and TP3).
         get(tradeStore).targets[1].percent = '20';
         app.adjustTpPercentages(1);
 
         const targets = get(tradeStore).targets;
-        expect(targets[0].percent).toBe('60'); // 50 + 10
-        expect(targets[1].percent).toBe('20');
-        expect(targets[2].percent).toBe('20');
+        expect(targets[0].percent).toBe('55'); // 50 + 5
+        expect(targets[1].percent).toBe('20'); // The edited one
+        expect(targets[2].percent).toBe('25'); // 20 + 5
     });
 
     it('should distribute surplus evenly to T2, T3... if TP1 is locked', () => {

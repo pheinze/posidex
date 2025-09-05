@@ -37,9 +37,9 @@ export const initialTradeState: Pick<AppState,
     useAtrSl: false,
     tradeNotes: '',
     targets: [
-        { price: '', percent: '', isLocked: false },
-        { price: '', percent: '', isLocked: false },
-        { price: '', percent: '', isLocked: false }
+        { price: '', percent: '50', isLocked: false },
+        { price: '', percent: '25', isLocked: false },
+        { price: '', percent: '25', isLocked: false }
     ],
     isPositionSizeLocked: false,
     lockedPositionSize: null,

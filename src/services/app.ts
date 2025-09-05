@@ -645,15 +645,10 @@ export const app = {
         }
         // --- Handle Surplus (diff > 0): A value was decreased ---
         else if (diff.gt(ZERO)) {
-            const tp1 = decTargets[0];
-            if (tp1 && !tp1.isLocked && changedIndex !== 0) {
-                tp1.percent = tp1.percent.plus(diff);
-            } else {
-                const share = diff.div(otherUnlocked.length);
-                otherUnlocked.forEach((t: any) => {
-                    decTargets[t.originalIndex].percent = decTargets[t.originalIndex].percent.plus(share);
-                });
-            }
+            const share = diff.div(otherUnlocked.length);
+            otherUnlocked.forEach((t: any) => {
+                decTargets[t.originalIndex].percent = decTargets[t.originalIndex].percent.plus(share);
+            });
         }
         // --- Handle Deficit (diff < 0): A value was increased ---
         else {
