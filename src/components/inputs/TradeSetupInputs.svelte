@@ -24,9 +24,8 @@
     export let showSymbolSuggestions: boolean;
 
     function toggleAtrSl() {
-        const newState = !useAtrSl;
-        trackCustomEvent('ATR', 'Toggle', newState ? 'On' : 'Off');
-        dispatch('toggleAtrInputs', newState);
+        trackCustomEvent('ATR', 'Toggle', useAtrSl ? 'On' : 'Off');
+        dispatch('toggleAtrInputs', useAtrSl);
     }
 
     function handleFetchPriceClick() {
