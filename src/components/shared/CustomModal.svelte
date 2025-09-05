@@ -20,7 +20,15 @@
 </script>
 
 {#if modalState.isOpen}
-    <div class="modal-overlay" class:visible={modalState.isOpen} transition:fade|local={{ duration: 150 }} on:click={(e) => { if (e.target === e.currentTarget) handleConfirm(false) }}>
+    <div
+        class="modal-overlay"
+        class:visible={modalState.isOpen}
+        transition:fade|local={{ duration: 150 }}
+        on:click={(e) => { if (e.target === e.currentTarget) handleConfirm(false) }}
+        on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { if (e.target === e.currentTarget) handleConfirm(false) } }}
+        role="button"
+        tabindex="0"
+    >
         <div class="modal-content">
             <h3 class="text-xl font-bold mb-4">{modalState.title}</h3>
             <div class="mb-4 max-h-[70vh] overflow-y-auto pr-2">{@html modalState.message}</div>

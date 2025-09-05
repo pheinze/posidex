@@ -290,7 +290,16 @@
 
 <CustomModal />
 
-<div id="changelog-modal" class="modal-overlay" class:visible={$uiStore.showChangelogModal} class:opacity-100={$uiStore.showChangelogModal} on:click={(e) => { if (e.target === e.currentTarget) uiStore.toggleChangelogModal(false) }}>
+<div
+    id="changelog-modal"
+    class="modal-overlay"
+    class:visible={$uiStore.showChangelogModal}
+    class:opacity-100={$uiStore.showChangelogModal}
+    on:click={(e) => { if (e.target === e.currentTarget) uiStore.toggleChangelogModal(false) }}
+    on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { if (e.target === e.currentTarget) uiStore.toggleChangelogModal(false) } }}
+    role="button"
+    tabindex="0"
+>
     <div class="modal-content w-full h-full max-w-6xl">
         <div class="flex justify-between items-center mb-4">
             <h2 class="text-2xl font-bold">{$_('app.changelogTitle')}</h2>
@@ -302,7 +311,16 @@
     </div>
 </div>
 
-<div id="guide-modal" class="modal-overlay" class:visible={$uiStore.showGuideModal} class:opacity-100={$uiStore.showGuideModal} on:click={(e) => { if (e.target === e.currentTarget) uiStore.toggleGuideModal(false) }}>
+<div
+    id="guide-modal"
+    class="modal-overlay"
+    class:visible={$uiStore.showGuideModal}
+    class:opacity-100={$uiStore.showGuideModal}
+    on:click={(e) => { if (e.target === e.currentTarget) uiStore.toggleGuideModal(false) }}
+    on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { if (e.target === e.currentTarget) uiStore.toggleGuideModal(false) } }}
+    role="button"
+    tabindex="0"
+>
     <div class="modal-content w-full h-full max-w-6xl">
         <div class="flex justify-between items-center mb-4">
             <h2 class="text-2xl font-bold">{$_('app.guideTitle')}</h2>
