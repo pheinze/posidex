@@ -118,7 +118,7 @@
     }
 
     function handleKeydown(event: KeyboardEvent) {
-        if (event.key.toLowerCase() === 'escape') {
+        if (event && event.key && event.key.toLowerCase() === 'escape') {
             event.preventDefault();
             if ($uiStore.showJournalModal) uiStore.toggleJournalModal(false);
             if ($uiStore.showGuideModal) uiStore.toggleGuideModal(false);
@@ -127,7 +127,7 @@
             return;
         }
 
-        if (event.altKey) {
+        if (event && event.key && event.altKey) {
             switch (event.key.toLowerCase()) {
                 case 'l':
                     event.preventDefault();

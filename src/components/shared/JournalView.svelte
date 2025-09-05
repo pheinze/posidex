@@ -7,11 +7,10 @@
     import { icons, CONSTANTS } from '../../lib/constants';
     import { browser } from '$app/environment';
 
-    $: filteredTrades = $journalStore.filter(trade => {
-        const statusMatch = $tradeStore.journalFilterStatus === 'all' || trade.status === $tradeStore.journalFilterStatus;
-        const searchMatch = !$tradeStore.journalSearchQuery || (trade.symbol && trade.symbol.toLowerCase().includes($tradeStore.journalSearchQuery.toLowerCase()));
-        return statusMatch && searchMatch;
-    });
+    $: filteredTrades = $journalStore.filter(trade =>
+        trade.symbol.toLowerCase().includes($tradeStore.journalSearchQuery.toLowerCase()) &&
+        ($tradeStore.journalFilterStatus === 'all' || trade.status === $tradeStore.journalFilterStatus)
+    );
 
     function handleImportCsv(event: Event) {
         if (browser) {
