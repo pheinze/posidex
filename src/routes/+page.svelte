@@ -220,7 +220,7 @@
     <TakeProfitTargets bind:targets={$tradeStore.targets} on:change={handleTargetsChange} on:remove={handleTpRemove} calculatedTpDetails={$resultsStore.calculatedTpDetails} />
 
     {#if $uiStore.showErrorMessage}
-        <div id="error-message" class="text-danger text-center text-sm font-medium mt-4 md:col-span-2">{$_($uiStore.errorMessage)}</div>
+        <div id="error-message" class="text-center text-sm font-medium mt-4 md:col-span-2" style:color="var(--danger-color)">{$_($uiStore.errorMessage)}</div>
     {/if}
 
     <section id="results" class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-x-8">
@@ -240,11 +240,11 @@
             {#if $resultsStore.showTotalMetricsGroup}
                 <div id="total-metrics-group" class="result-group">
                     <h2 class="section-header">{$_('dashboard.totalTradeMetrics')}<Tooltip text={$_('dashboard.totalTradeMetricsTooltip')} /></h2>
-                    <div class="result-item"><span class="result-label">{$_('dashboard.riskPerTradeCurrency')}<Tooltip text={$_('dashboard.riskPerTradeCurrencyTooltip')} /></span><span id="riskAmountCurrency" class="result-value text-danger">{$resultsStore.riskAmountCurrency}</span></div>
+                    <div class="result-item"><span class="result-label">{$_('dashboard.riskPerTradeCurrency')}<Tooltip text={$_('dashboard.riskPerTradeCurrencyTooltip')} /></span><span id="riskAmountCurrency" class="result-value" style:color="var(--danger-color)">{$resultsStore.riskAmountCurrency}</span></div>
                     <div class="result-item"><span class="result-label">{$_('dashboard.totalFees')}<Tooltip text={$_('dashboard.totalFeesTooltip')} /></span><span id="totalFees" class="result-value">{$resultsStore.totalFees}</span></div>
-                    <div class="result-item"><span class="result-label">{$_('dashboard.maxPotentialProfit')}<Tooltip text={$_('dashboard.maxPotentialProfitTooltip')} /></span><span id="maxPotentialProfit" class="result-value text-success">{$resultsStore.maxPotentialProfit}</span></div>
+                    <div class="result-item"><span class="result-label">{$_('dashboard.maxPotentialProfit')}<Tooltip text={$_('dashboard.maxPotentialProfitTooltip')} /></span><span id="maxPotentialProfit" class="result-value" style:color="var(--success-color)">{$resultsStore.maxPotentialProfit}</span></div>
                     <div class="result-item"><span class="result-label">{$_('dashboard.weightedRR')}<Tooltip text={$_('dashboard.weightedRRTooltip')} /></span><span id="totalRR" class="result-value">{$resultsStore.totalRR}</span></div>
-                    <div class="result-item"><span class="result-label">{$_('dashboard.totalNetProfit')}<Tooltip text={$_('dashboard.totalNetProfitTooltip')} /></span><span id="totalNetProfit" class="result-value text-success">{$resultsStore.totalNetProfit}</span></div>
+                    <div class="result-item"><span class="result-label">{$_('dashboard.totalNetProfit')}<Tooltip text={$_('dashboard.totalNetProfitTooltip')} /></span><span id="totalNetProfit" class="result-value" style:color="var(--success-color)">{$resultsStore.totalNetProfit}</span></div>
                     <div class="result-item"><span class="result-label">{$_('dashboard.soldPosition')}<Tooltip text={$_('dashboard.soldPositionTooltip')} /></span><span id="totalPercentSold" class="result-value">{$resultsStore.totalPercentSold}</span></div>
                 </div>
             {/if}
@@ -253,10 +253,10 @@
             {#each $resultsStore.calculatedTpDetails as tpDetail: IndividualTpResult}
                 <div class="result-group !mt-0 md:!mt-6">
                     <h2 class="section-header">{$_('dashboard.takeProfit')} {(tpDetail as IndividualTpResult).index + 1} ({(tpDetail as IndividualTpResult).percentSold.toFixed(0)}%)</h2>
-                    <div class="result-item"><span class="result-label">{$_('dashboard.riskRewardRatio')}</span><span class="result-value {tpDetail.riskRewardRatio.gte(2) ? 'text-success' : tpDetail.riskRewardRatio.gte(1.5) ? 'text-warning' : 'text-danger'}">{formatDynamicDecimal(tpDetail.riskRewardRatio, 2)}</span></div>
-                    <div class="result-item"><span class="result-label">{$_('dashboard.netProfit')}<Tooltip text={$_('dashboard.netProfitTooltip')} /></span><span class="result-value text-success">+{formatDynamicDecimal(tpDetail.netProfit, 2)}</span></div>
-                    <div class="result-item"><span class="result-label">{$_('dashboard.priceChange')}<Tooltip text={$_('dashboard.priceChangeTooltip')} /></span><span class="result-value {tpDetail.priceChangePercent.gt(0) ? 'text-success' : tpDetail.priceChangePercent.lt(0) ? 'text-danger' : ''}">{formatDynamicDecimal(tpDetail.priceChangePercent, 2)}%</span></div>
-                    <div class="result-item"><span class="result-label">{$_('dashboard.returnOnCapital')}<Tooltip text={$_('dashboard.returnOnCapitalTooltip')} /></span><span class="result-value {tpDetail.returnOnCapital.gt(0) ? 'text-success' : tpDetail.returnOnCapital.lt(0) ? 'text-danger' : ''}">{formatDynamicDecimal(tpDetail.returnOnCapital, 2)}%</span></div>
+                    <div class="result-item"><span class="result-label">{$_('dashboard.riskRewardRatio')}</span><span class="result-value" style:color={tpDetail.riskRewardRatio.gte(2) ? 'var(--success-color)' : tpDetail.riskRewardRatio.gte(1.5) ? 'var(--warning-color)' : 'var(--danger-color)'}>{formatDynamicDecimal(tpDetail.riskRewardRatio, 2)}</span></div>
+                    <div class="result-item"><span class="result-label">{$_('dashboard.netProfit')}<Tooltip text={$_('dashboard.netProfitTooltip')} /></span><span class="result-value" style:color="var(--success-color)">+{formatDynamicDecimal(tpDetail.netProfit, 2)}</span></div>
+                    <div class="result-item"><span class="result-label">{$_('dashboard.priceChange')}<Tooltip text={$_('dashboard.priceChangeTooltip')} /></span><span class="result-value" style:color={tpDetail.priceChangePercent.gt(0) ? 'var(--success-color)' : 'var(--danger-color)'}>{formatDynamicDecimal(tpDetail.priceChangePercent, 2)}%</span></div>
+                    <div class="result-item"><span class="result-label">{$_('dashboard.returnOnCapital')}<Tooltip text={$_('dashboard.returnOnCapitalTooltip')} /></span><span class="result-value" style:color={tpDetail.returnOnCapital.gt(0) ? 'var(--success-color)' : 'var(--danger-color)'}>{formatDynamicDecimal(tpDetail.returnOnCapital, 2)}%</span></div>
                     <div class="result-item"><span class="result-label">{$_('dashboard.partialVolume')}<Tooltip text={$_('dashboard.partialVolumeTooltip')} /></span><span class="result-value">{formatDynamicDecimal(tpDetail.partialVolume, 4)}</span></div>
                     <div class="result-item"><span class="result-label">{$_('dashboard.exitFeeLabel')}</span><span class="result-value">{formatDynamicDecimal(tpDetail.exitFee, 4)}</span></div>
                 </div>

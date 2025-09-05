@@ -6,13 +6,7 @@ export default {
     './src/routes/**/*.svelte',
   ],
   theme: {
-    extend: {
-      colors: {
-        success: 'var(--success-color)',
-        danger: 'var(--danger-color)',
-        warning: 'var(--warning-color)',
-      }
-    },
+    extend: {},
   },
   darkMode: 'class',
   plugins: [],
