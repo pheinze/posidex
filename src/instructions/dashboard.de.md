@@ -1,79 +1,90 @@
-# Anleitung: Trading Dashboard
+Diese Anleitung bricht die Magie hinter den Zahlen auf. Sie zeigt Ihnen Schritt für Schritt, wie Cachy aus Ihren Eingaben die zentralen Handelskennzahlen berechnet. Jede Formel wird mit einem klaren Beispiel erklärt, damit Sie genau nachvollziehen können, wie die Ergebnisse zustande kommen und was sie für Ihre Handelsentscheidungen bedeuten.
 
-Willkommen beim Trading Dashboard! Dieses Tool wurde entwickelt, um Ihnen bei der präzisen Berechnung Ihrer Positionsgröße und der Analyse potenzieller Trades zu helfen, basierend auf einem soliden Risikomanagement. Verstehen Sie Ihre Kennzahlen auf einen Blick und treffen Sie fundierte Entscheidungen.
+#### **Die Eingaben - Unsere Beispielwerte**
 
-## 1. Grundlagen der Eingabe
+Für alle folgenden Berechnungen verwenden wir ein einheitliches Beispiel, damit Sie die Zusammenhänge leicht nachvollziehen können.
 
-Bevor Sie mit der Berechnung beginnen, geben Sie bitte die erforderlichen Handelsdaten ein.
+*   **Trade-Typ:** `Long`
+*   **Kontoguthaben:** `1.000 €`
+*   **Risiko pro Trade:** `2 %`
+*   **Hebel:** `10x`
+*   **Gebühren:** `0,1 %` (für Ein- und Ausstieg)
+*   **Einstiegspreis:** `100 €`
+*   **Stop Loss Preis:** `98 €`
 
-### Allgemein
-*   **Trade-Typ:** Wählen Sie, ob Sie eine **Long**-Position (Kauf) oder eine **Short**-Position (Verkauf) eingehen möchten.
-*   **Hebel (Leverage):** Geben Sie den Hebel ein, den Sie verwenden möchten (z.B. `10x`, `20x`).
-*   **Gebühren pro Trade (%):** Tragen Sie die geschätzten Handelsgebühren Ihrer Börse in Prozent ein (z.B. `0.075` für 0,075%).
+---
 
-### Portfolio
-*   **Konto Guthaben:** Ihr gesamtes verfügbares Kapital auf dem Handelskonto.
-*   **Risiko je Trade (%):** Der Prozentsatz Ihres Kontoguthabens, den Sie bereit sind, pro Trade zu riskieren (z.B. `1` für 1%).
+### **Teil 1: Die Kernberechnungen**
 
-### Trade Setup
-*   **Symbol:** Das Handelspaar, das Sie analysieren möchten (z.B. `BTCUSDT`, `ETHUSDT`). Klicken Sie auf den **Pfeil-Button**, um den aktuellen Live-Preis von Binance zu laden.
-*   **Kaufpreis (Entry Price):** Der Preis, zu dem Sie die Position eröffnen möchten.
-*   **Stopp Loss (Stop-Loss Price):** Der Preis, bei dem Ihre Position automatisch geschlossen wird, um Verluste zu begrenzen. Sie haben zwei Optionen:
-    *   **Manueller Stopp Loss:** Geben Sie den gewünschten Stopp-Loss-Preis direkt ein.
-    *   **ATR Stopp Loss:** Aktivieren Sie den Schalter, um den Stopp-Loss basierend auf dem Average True Range (ATR) Indikator zu berechnen.
-        *   **ATR Wert:** Der aktuelle Wert des ATR-Indikators für das gewählte Zeitfenster.
-        *   **Multiplikator:** Ein Faktor, mit dem der ATR-Wert multipliziert wird (üblich sind z.B. `1.5` oder `2`).
-        *   **Formel (Long):** `Stopp Loss = Kaufpreis - (ATR Wert * Multiplikator)`
-        *   **Formel (Short):** `Stopp Loss = Kaufpreis + (ATR Wert * Multiplikator)`
+Dies sind die grundlegenden Metriken, die für jeden Trade berechnet werden.
 
-## 2. Take-Profit Ziele (Partiell)
+**1. Risikobetrag (€)**
+*   **Was es ist:** Der maximale Geldbetrag, den Sie bei diesem Trade riskieren, basierend auf Ihrem prozentualen Risiko.
+*   **Formel:** `Kontoguthaben * (Risiko pro Trade / 100)`
+*   **Beispiel:** `1.000 € * (2 / 100) = 20 €`
 
-Legen Sie mehrere Take-Profit-Ziele fest, um Ihre Gewinne schrittweise zu realisieren.
+**2. Positionsgröße**
+*   **Was es ist:** Die Menge des Assets, die Sie kaufen müssen, um genau Ihren festgelegten Risikobetrag zu riskieren. Dies ist die wichtigste Berechnung für das Risikomanagement.
+*   **Formel:** `Risikobetrag / |Einstiegspreis - Stop Loss Preis|` (Der Betrag `|...|` wird verwendet, damit es für Long und Short funktioniert)
+*   **Beispiel:** `20 € / |100 € - 98 €| = 10 Einheiten`
 
-*   **Preis:** Der Zielpreis, bei dem ein Teil Ihrer Position verkauft werden soll.
-*   **Prozentsatz:** Der Prozentsatz Ihrer *ursprünglichen* Positionsgröße, der bei diesem Zielpreis verkauft werden soll. Die Summe aller Prozentsätze kann 100% nicht überschreiten.
-*   **Schloss-Symbol:** Sperren/Entsperren Sie den Prozentsatz, um ihn bei Anpassungen beizubehalten.
-*   **Entfernen:** Löschen Sie ein Take-Profit-Ziel.
-*   **Weiteres Ziel hinzufügen:** Fügen Sie zusätzliche Take-Profit-Ziele hinzu.
+**3. Benötigte Margin**
+*   **Was es ist:** Das Kapital, das von Ihrem Konto als Sicherheit für die gehebelte Position hinterlegt wird. Bei einem Hebel von 1x entspricht die Margin dem vollen Ordervolumen.
+*   **Formel:** `(Positionsgröße * Einstiegspreis) / Hebel`
+*   **Beispiel:** `(10 Einheiten * 100 €) / 10 = 100 €`
 
-## 3. Zusammenfassung & Metriken
+**4. Maximaler Nettoverlust**
+*   **Was es ist:** Ihr tatsächlicher, maximaler Verlust in Euro, wenn der Stop Loss erreicht wird. Dieser Wert berücksichtigt bereits die Gebühren für die Eröffnung (Einstieg) und die Schließung (Ausstieg am SL) der Position.
+*   **Formeln:**
+    *   `Einstiegsgebühr = (Positionsgröße * Einstiegspreis) * (Gebühren / 100)`
+    *   `Stop-Loss-Ausstiegsgebühr = (Positionsgröße * Stop Loss Preis) * (Gebühren / 100)`
+    *   `Max. Nettoverlust = Risikobetrag + Einstiegsgebühr + Stop-Loss-Ausstiegsgebühr`
+*   **Beispiel:**
+    *   `Einstiegsgebühr = (10 * 100 €) * 0,001 = 1 €`
+    *   `Stop-Loss-Ausstiegsgebühr = (10 * 98 €) * 0,001 = 0,98 €`
+    *   `Max. Nettoverlust = 20 € + 1 € + 0,98 € = 21,98 €`
 
-Nachdem Sie alle Eingaben gemacht haben, berechnet das Dashboard automatisch wichtige Kennzahlen:
+**5. Break-Even-Preis**
+*   **Was es ist:** Der Preis, bei dem Sie aus dem Trade aussteigen können, ohne Gewinn oder Verlust zu machen. An diesem Punkt sind die Kosten für die Ein- und Ausstiegsgebühren gedeckt.
+*   **Formel (Long):** `Einstiegspreis * (1 + Gebühren%) / (1 - Gebühren%)`
+*   **Beispiel:** `100 € * (1 + 0,001) / (1 - 0,001) ≈ 100,20 €`
 
-### Positionsgröße
-*   **Positionsgröße:** Die wichtigste Kennzahl! Sie zeigt Ihnen, wie viele Einheiten des Assets Sie kaufen/verkaufen sollten, um Ihr definiertes Risiko pro Trade einzuhalten.
-*   **Positionsgröße sperren:** Klicken Sie auf das Schloss-Symbol neben der Positionsgröße. Wenn gesperrt, bleibt die Positionsgröße fix. Änderungen am Stopp-Loss oder Einstiegspreis wirken sich dann auf Ihr Risiko in % aus, anstatt die Positionsgröße anzupassen. Dies ist nützlich, um die Auswirkung von SL-Anpassungen auf Ihr Risiko zu sehen.
-*   **Kopieren:** Kopieren Sie die berechnete Positionsgröße in die Zwischenablage.
+**6. Geschätzter Liquidationspreis**
+*   **Was es ist:** Eine Schätzung des Preises, bei dem Ihre Position von der Börse zwangsliquidiert wird, weil der Verlust die hinterlegte Margin aufgebraucht hat. (Dies ist eine vereinfachte Formel, die tatsächliche Berechnung der Börsen kann leicht abweichen).
+*   **Formel (Long):** `Einstiegspreis * (1 - (1 / Hebel))`
+*   **Beispiel:** `100 € * (1 - (1 / 10)) = 90 €`
 
-### Gesamt-Trade Metriken
-Diese Kennzahlen geben Ihnen einen Überblick über den gesamten Trade, wenn alle Take-Profit-Ziele erreicht werden würden.
+---
 
-*   **Risiko pro Trade (Währung):** Der absolute Geldbetrag, den Sie maximal riskieren, basierend auf Ihrem Konto Guthaben und Risiko je Trade (%).
-*   **Gesamte Gebühren:** Die geschätzten Gesamtkosten für diesen Trade (Kauf, Verkauf, Stopp-Loss/Take-Profit).
-*   **Max. potenzieller Gewinn:** Der maximale Netto-Gewinn, wenn die gesamte Position zum besten TP geschlossen würde.
-*   **Gewichtetes R/R (Risk/Reward):** Das durchschnittliche Chance-Risiko-Verhältnis aller Teilverkäufe. Ein höheres R/R ist besser.
-*   **Gesamt Netto-Gewinn:** Der kumulierte Netto-Gewinn aus allen Teilverkäufen.
-*   **Verkaufte Position:** Der Gesamtprozentsatz der ursprünglichen Position, der durch die Take-Profit-Ziele verkauft wird.
+### **Teil 2: Take-Profit-Berechnungen**
 
-### Weitere Kennzahlen
-*   **Benötigte Margin:** Das Kapital, das von Ihrem Konto für diesen Trade blockiert wird.
-*   **Gesch. Liquidationspreis:** Der geschätzte Preis, bei dem Ihre Position liquidiert wird, wenn Sie einen Hebel verwenden.
-*   **Break-Even Preis:** Der Kurs, bei dem Ihr Trade unter Berücksichtigung aller Gebühren null Gewinn/Verlust macht.
+Wenn Sie Take-Profit (TP) Ziele festlegen, werden für jedes Ziel separate Metriken berechnet. Nehmen wir an, Sie haben ein Ziel festgelegt:
 
-## 4. Visuelle Analyse
+*   **TP 1 Preis:** `104 €`
+*   **Zu verkaufender Anteil:** `50 %`
 
-Die visuelle Leiste bietet eine grafische Darstellung Ihres Trades:
+**1. Netto-Gewinn (pro Ziel)**
+*   **Was es ist:** Der Reingewinn für diesen spezifischen Teilverkauf, nachdem die anteiligen Gebühren für den Ein- und Ausstieg abgezogen wurden.
+*   **Formeln:**
+    *   `Anteilige Positionsgröße = Positionsgröße * (Anteil / 100)`
+    *   `Brutto-Gewinn = |TP Preis - Einstiegspreis| * Anteilige Positionsgröße`
+    *   `Anteilige Gebühren = (Anteilige Positionsgröße * Einstiegspreis * Gebühren%) + (Anteilige Positionsgröße * TP Preis * Gebühren%)`
+    *   `Netto-Gewinn = Brutto-Gewinn - Anteilige Gebühren`
+*   **Beispiel (TP 1):**
+    *   `Anteilige Positionsgröße = 10 * 0,5 = 5 Einheiten`
+    *   `Brutto-Gewinn = |104 € - 100 €| * 5 = 20 €`
+    *   `Anteilige Gebühren = (5 * 100 € * 0,001) + (5 * 104 € * 0,001) = 0,50 € + 0,52 € = 1,02 €`
+    *   `Netto-Gewinn = 20 € - 1,02 € = 18,98 €`
 
-*   **Einstiegspreis:** Markiert Ihren Kauf-/Verkaufspreis.
-*   **Stopp Loss:** Zeigt den Punkt an, an dem Ihr Trade geschlossen wird, um Verluste zu begrenzen.
-*   **Take-Profit-Ziele:** Markiert Ihre Gewinnziele.
-*   **Gewinn-/Verlustzonen:** Farbige Bereiche zeigen an, wo Sie Gewinn oder Verlust machen würden.
-*   **Tooltips:** Fahren Sie mit der Maus über die TP-Marker, um Details zu Netto-Gewinn und R/R für diesen spezifischen Teilverkauf zu sehen.
+**2. Chance-Risiko-Verhältnis (CRV / RRR)**
+*   **Was es ist:** Vergleicht den potenziellen Netto-Gewinn dieses Teilverkaufs mit dem dafür eingegangenen anteiligen Risiko. Ein CRV von 2 bedeutet, Sie können das Doppelte von dem gewinnen, was Sie für diesen Teil der Position riskiert haben.
+*   **Formel:** `Netto-Gewinn / (Risikobetrag * (Anteil / 100))`
+*   **Beispiel (TP 1):**
+    *   `Anteiliges Risiko = 20 € * 0,5 = 10 €`
+    *   `CRV = 18,98 € / 10 € ≈ 1,90`
 
-## 5. Presets
+---
 
-Speichern Sie Ihre aktuellen Eingaben als Preset, um häufig verwendete Einstellungen schnell wieder laden zu können. Dies ist ideal für verschiedene Strategien oder Märkte.
+#### **Schlussbemerkung**
 
-## 6. Trade zum Journal hinzufügen
-
-Nachdem Sie einen Trade analysiert haben, können Sie ihn mit einem Klick zum Trade Journal hinzufügen, um Ihre Performance zu verfolgen.
+Diese Berechnungen geben Ihnen eine solide, datengestützte Grundlage für Ihre Handelsentscheidungen. Indem Sie verstehen, *wie* diese Zahlen entstehen, können Sie die Kontrolle über Ihr Risikomanagement verbessern. Viel Erfolg beim Handeln!
