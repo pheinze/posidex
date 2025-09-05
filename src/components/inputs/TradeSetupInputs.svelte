@@ -117,9 +117,12 @@
                 <input type="text" inputmode="decimal" use:numberInput={{ maxDecimalPlaces: 4 }} bind:value={atrMultiplier} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.tradeSetupInputs.multiplierPlaceholder')}">
             </div>
             {#if showAtrFormulaDisplay}
+                {@const parts = atrFormulaDisplay.split('=')}
+                {@const result = parts.pop()}
+                {@const formula = parts.join('=') + '='}
                 <div class="text-center text-xs text-sky-300 mt-2">
-                    <span>{atrFormulaDisplay.split('=')[0]}=</span>
-                    <span class:text-red-500={isAtrSlInvalid} class:dark:text-red-400={isAtrSlInvalid} style={isAtrSlInvalid ? 'color: var(--danger-color)' : ''}>{atrFormulaDisplay.split('=')[1]}</span>
+                    <span>{formula}</span>
+                    <span style={isAtrSlInvalid ? 'color: var(--danger-color)' : ''}>{result}</span>
                 </div>
             {/if}
         {/if}
