@@ -30,10 +30,10 @@
             <input id="risk-percentage" type="text" inputmode="decimal" use:numberInput={{ noDecimals: true, isPercentage: true, maxValue: 100, minValue: 0 }} bind:value={riskPercentage} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.portfolioInputs.riskPerTradePlaceholder')}" on:input={onboardingService.trackFirstInput} disabled={isRiskAmountLocked || isPositionSizeLocked}>
         </div>
         <div>
-            <label for="risk-amount" class="input-label">Risk Amount</label>
+            <label for="risk-amount" class="input-label">{$_('dashboard.portfolioInputs.riskAmountLabel')}</label>
             <div class="relative">
                 <input id="risk-amount" type="text" inputmode="decimal" use:numberInput={{ maxDecimalPlaces: 2 }} bind:value={riskAmount} class="input-field w-full px-4 py-2 rounded-md pr-10" placeholder="e.g. 100" disabled={isPositionSizeLocked}>
-                <button class="absolute top-1/2 right-2 -translate-y-1/2 btn-lock-icon" on:click={handleLockClick} title="Lock/Unlock Risk Amount" disabled={isPositionSizeLocked}>
+                <button class="absolute top-1/2 right-2 -translate-y-1/2 btn-lock-icon" on:click={handleLockClick} title="{$_('dashboard.portfolioInputs.toggleRiskAmountLockTitle')}" disabled={isPositionSizeLocked}>
                     {@html isRiskAmountLocked ? icons.lockClosed : icons.lockOpen}
                 </button>
             </div>

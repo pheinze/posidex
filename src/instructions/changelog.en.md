@@ -7,6 +7,8 @@ trade with Bitunix => https://www.bitunix.com/register?inviteCode=cw291y
 # Changelog
 
 ## Version 0.92b1 (September 04, 2025)
+- **New:** Automatic ATR fetching from the Binance API with selectable timeframes (5m, 15m, 1h, 4h, 1d). The fetched value can be manually adjusted.
+- **New:** Enhanced locking features: The risk amount in currency can now be locked to calculate the position size and risk percentage.
 - **New:** Added keyboard shortcuts (`Alt+L/S/R/J`) for faster operation.
 - **New:** Modals can now be closed by pressing the `Escape` key or by clicking on the backdrop.
 

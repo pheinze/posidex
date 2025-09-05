@@ -17,20 +17,37 @@ Die Hauptfunktion von Cachy ist die Berechnung Ihrer Positionsgröße und andere
 
 **Schritt 2: Portfolio-Eingaben**
 *   **Konto Guthaben (Account Size):** Geben Sie die Gesamtgröße Ihres Trading-Kontos ein.
-*   **Risiko pro Trade (%):** Legen Sie fest, wie viel Prozent Ihres Kontos Sie bei diesem einen Trade maximal riskieren möchten (z.B. 1 für 1%).
+*   **Risiko/Trade (%):** Legen Sie fest, wie viel Prozent Ihres Kontos Sie bei diesem einen Trade maximal riskieren möchten (z.B. 1 für 1%).
+*   **Risikobetrag:** Dieses Feld zeigt den aus Ihrem prozentualen Risiko berechneten Geldbetrag an. Sie können diesen Betrag auch direkt eingeben und sperren (siehe Abschnitt "Erweiterte Sperr-Funktionen").
 
 **Schritt 3: Trade-Setup**
 *   **Symbol:** Geben Sie das Handelspaar ein (z.B. BTCUSDT).
     *   **Preis holen:** Klicken Sie auf den Pfeil-Button, um den aktuellen Preis von Binance zu laden.
 *   **Einstieg (Entry Price):** Der Preis, zu dem Sie die Position eröffnen.
 *   **Stop Loss (SL):** Der Preis, bei dem Ihre Position zur Verlustbegrenzung automatisch geschlossen wird.
-    *   **ATR Stop Loss verwenden:** Aktivieren Sie diesen Schalter, um den SL automatisch mittels ATR (Average True Range) zu berechnen. Geben Sie dazu den aktuellen ATR-Wert und einen Multiplikator an. Die Formel wird Ihnen zur Kontrolle angezeigt.
+    *   **ATR Stop Loss verwenden:** Aktivieren Sie diesen Schalter, um den SL mittels ATR (Average True Range) zu berechnen. Es erscheinen dann die "Manual/Auto"-Optionen.
+        *   **Manual:** Geben Sie den ATR-Wert und einen Multiplikator manuell ein.
+        *   **Auto:** Wählen Sie einen Zeitrahmen (z.B. 1h, 4h). Der aktuelle ATR-Wert wird automatisch von Binance geladen. Sie können den geladenen Wert danach immer noch manuell anpassen.
 
 Sobald alle diese Felder ausgefüllt sind, sehen Sie die Ergebnisse im rechten Bereich.
 
 ---
 
-#### **2. Die Ergebnisse verstehen**
+#### **2. Wie wird die Positionsgröße berechnet?**
+
+Die Kernformel zur Berechnung Ihrer Positionsgröße lautet:
+
+> **Positionsgröße = Risikobetrag / Risiko pro Aktie**
+
+Wobei:
+*   **Risikobetrag:** Der Geldbetrag, den Sie zu riskieren bereit sind. Er wird berechnet als: `Kontoguthaben * (Risiko/Trade % / 100)`. Wenn Sie den Risikobetrag sperren, wird dieser Wert direkt verwendet.
+*   **Risiko pro Aktie (oder Coin):** Der Abstand zwischen Ihrem Einstiegspreis und Ihrem Stop-Loss-Preis.
+
+Diese Formel stellt sicher, dass Sie bei Erreichen Ihres Stop-Loss genau den von Ihnen festgelegten Geldbetrag verlieren.
+
+---
+
+#### **3. Die Ergebnisse verstehen**
 
 Cachy berechnet für Sie die folgenden Werte:
 
@@ -56,7 +73,7 @@ Für jedes gültige TP-Ziel sehen Sie eine detaillierte Aufschlüsselung mit Ken
 
 ---
 
-#### **4. Erweiterte Funktionen**
+#### **5. Erweiterte Funktionen**
 
 Cachy bietet eine Reihe von Werkzeugen, um Ihren Workflow zu optimieren.
 
@@ -65,9 +82,16 @@ Cachy bietet eine Reihe von Werkzeugen, um Ihren Workflow zu optimieren.
 *   **Laden:** Wählen Sie ein gespeichertes Preset aus dem Dropdown-Menü aus, um alle Eingabefelder automatisch auszufüllen.
 *   **Löschen:** Wählen Sie ein Preset aus und klicken Sie auf den **Löschen-Button** (Mülleimer), um es zu entfernen.
 
-**Positionsgröße sperren**
-*   Klicken Sie auf das **Schloss-Symbol** neben der berechneten Positionsgröße.
-*   Wenn diese Funktion aktiv ist, bleibt die Positionsgröße konstant. Wenn Sie nun den Stop-Loss oder Einstiegspreis ändern, wird stattdessen Ihr **Risiko pro Trade (%)** angepasst. Das ist nützlich, wenn Sie mit einer festen Positionsgröße arbeiten möchten.
+**Erweiterte Sperr-Funktionen**
+
+Sie können bestimmte Werte sperren, um andere Werte davon abhängig zu berechnen. **Es kann immer nur eine Sperre aktiv sein.**
+
+*   **Positionsgröße sperren:**
+    *   Klicken Sie auf das **Schloss-Symbol** neben der berechneten **Positionsgröße**.
+    *   Wenn diese Funktion aktiv ist, bleibt die Positionsgröße konstant. Wenn Sie nun den Stop-Loss oder Einstiegspreis ändern, werden stattdessen Ihr **Risiko/Trade (%)** und der **Risikobetrag** angepasst. Das ist nützlich, wenn Sie mit einer festen Positionsgröße arbeiten möchten.
+*   **Risikobetrag sperren:**
+    *   Klicken Sie auf das **Schloss-Symbol** neben dem **Risikobetrag**.
+    *   Wenn diese Funktion aktiv ist, bleibt Ihr maximaler Verlust in Währung konstant. Wenn Sie den Stop-Loss ändern, werden die **Positionsgröße** und das **Risiko/Trade (%)** automatisch angepasst.
 
 **Trade Journal**
 *   **Trade hinzufügen:** Nachdem Sie einen Trade berechnet haben, können Sie Notizen hinzufügen und auf **"Trade zum Journal hinzufügen"** klicken. Der Trade wird mit allen Details in Ihrem Journal gespeichert.

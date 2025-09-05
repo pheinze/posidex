@@ -614,6 +614,9 @@ export const app = {
             ...state,
             atrTimeframe: timeframe
         }));
+        if (get(tradeStore).atrMode === 'auto') {
+            app.fetchAtr();
+        }
     },
 
     fetchAtr: async () => {

@@ -57,11 +57,18 @@
       "header": "Portfolio",
       "accountSizeLabel": "Account Size",
       "accountSizePlaceholder": "e.g., 10000",
-      "riskPerTradeLabel": "Risk per Trade (%)",
-      "riskPerTradePlaceholder": "e.g., 1.5"
+      "riskPerTradeLabel": "Risk/Trade (%)",
+      "riskPerTradePlaceholder": "e.g., 1.5",
+      "riskAmountLabel": "Risk Amount",
+      "toggleRiskAmountLockTitle": "Lock/Unlock Risk Amount"
     },
     "tradeSetupInputs": {
       "header": "Trade Setup",
+      "atrModeManual": "Manual",
+      "atrModeAuto": "Auto",
+      "atrTimeframeLabel": "Timeframe",
+      "atrLabel": "ATR",
+      "atrMultiplierLabel": "Multiplier",
       "symbolPlaceholder": "Symbol (e.g. BTCUSDT)",
       "fetchPriceTitle": "Fetch Live Price",
       "fetchPriceAriaLabel": "Fetch Live Price",

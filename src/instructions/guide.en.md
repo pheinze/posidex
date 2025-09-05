@@ -17,20 +17,37 @@ Cachy's main function is to calculate your position size and other important met
 
 **Step 2: Portfolio Inputs**
 *   **Account Size:** Enter the total size of your trading account.
-*   **Risk per Trade (%):** Define the maximum percentage of your account you want to risk on this single trade (e.g., 1 for 1%).
+*   **Risk/Trade (%):** Define the maximum percentage of your account you want to risk on this single trade (e.g., 1 for 1%).
+*   **Risk Amount:** This field displays the calculated monetary amount based on your percentage risk. You can also enter a value directly and lock it (see "Advanced Locking Features" section).
 
 **Step 3: Trade Setup**
 *   **Symbol:** Enter the trading pair (e.g., BTCUSDT).
     *   **Fetch Price:** Click the arrow button to load the current price from Binance.
 *   **Entry Price:** The price at which you open the position.
 *   **Stop Loss (SL):** The price at which your position is automatically closed to limit losses.
-    *   **Use ATR Stop Loss:** Activate this switch to calculate the SL automatically using ATR (Average True Range). To do this, enter the current ATR value and a multiplier. The formula will be displayed for you to check.
+    *   **Use ATR Stop Loss:** Activate this switch to calculate the SL using ATR (Average True Range). The "Manual/Auto" options will appear.
+        *   **Manual:** Enter the ATR value and a multiplier manually.
+        *   **Auto:** Select a timeframe (e.g., 1h, 4h). The current ATR value is automatically fetched from Binance. You can still adjust the fetched value manually afterward.
 
 Once all these fields are filled in, you will see the results in the right-hand section.
 
 ---
 
-#### **2. Understanding the Results**
+#### **2. How is Position Size Calculated?**
+
+The core formula for calculating your position size is:
+
+> **Position Size = Risk Amount / Risk per Share**
+
+Where:
+*   **Risk Amount:** The monetary amount you are willing to risk. It is calculated as: `Account Size * (Risk/Trade % / 100)`. If you lock the Risk Amount, this value is used directly.
+*   **Risk per Share (or Coin):** The distance between your entry price and your stop-loss price.
+
+This formula ensures that if your stop-loss is hit, you will lose exactly the amount of money you have defined.
+
+---
+
+#### **3. Understanding the Results**
 
 Cachy calculates the following values for you:
 
@@ -56,7 +73,7 @@ For each valid TP target, you will see a detailed breakdown with metrics such as
 
 ---
 
-#### **4. Advanced Features**
+#### **5. Advanced Features**
 
 Cachy offers a range of tools to optimize your workflow.
 
@@ -65,9 +82,16 @@ Cachy offers a range of tools to optimize your workflow.
 *   **Load:** Select a saved preset from the dropdown menu to automatically fill in all input fields.
 *   **Delete:** Select a preset and click the **Delete button** (trash can) to remove it.
 
-**Lock Position Size**
-*   Click the **lock icon** next to the calculated position size.
-*   When this function is active, the position size remains constant. If you now change the stop-loss or entry price, your **Risk per Trade (%)** will be adjusted instead. This is useful if you want to work with a fixed position size.
+**Advanced Locking Features**
+
+You can lock certain values to have other values calculated based on them. **Only one lock can be active at a time.**
+
+*   **Lock Position Size:**
+    *   Click the **lock icon** next to the calculated **Position Size**.
+    *   When this is active, the position size remains constant. If you change your stop-loss or entry price, your **Risk/Trade (%)** and **Risk Amount** will be adjusted instead. This is useful if you want to work with a fixed position size.
+*   **Lock Risk Amount:**
+    *   Click the **lock icon** next to the **Risk Amount**.
+    *   When this is active, your maximum monetary loss is fixed. If you change your stop-loss, the **Position Size** and **Risk/Trade (%)** will be adjusted automatically.
 
 **Trade Journal**
 *   **Add Trade:** After calculating a trade, you can add notes and click **"Add Trade to Journal"**. The trade will be saved with all details in your journal.

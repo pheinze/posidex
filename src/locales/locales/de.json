@@ -57,11 +57,18 @@
       "header": "Portfolio",
       "accountSizeLabel": "Kontoguthaben",
       "accountSizePlaceholder": "z.B. 10000",
-      "riskPerTradeLabel": "Risiko je Trade (%)",
-      "riskPerTradePlaceholder": "z.B. 1.5"
+      "riskPerTradeLabel": "Risiko/Trade (%)",
+      "riskPerTradePlaceholder": "z.B. 1.5",
+      "riskAmountLabel": "Risikobetrag",
+      "toggleRiskAmountLockTitle": "Risikobetrag sperren/entsperren"
     },
     "tradeSetupInputs": {
       "header": "Trade Setup",
+      "atrModeManual": "Manuell",
+      "atrModeAuto": "Auto",
+      "atrTimeframeLabel": "Timeframe",
+      "atrLabel": "ATR",
+      "atrMultiplierLabel": "Multiplier",
       "symbolPlaceholder": "Symbol (z.B. BTCUSDT)",
       "fetchPriceTitle": "Live-Preis holen",
       "fetchPriceAriaLabel": "Live-Preis holen",
