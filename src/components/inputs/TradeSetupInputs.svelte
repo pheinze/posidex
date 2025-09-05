@@ -19,6 +19,7 @@
 
     export let atrFormulaDisplay: string;
     export let showAtrFormulaDisplay: boolean;
+    export let atrFormulaError: string;
     export let isPriceFetching: boolean;
     export let symbolSuggestions: string[];
     export let showSymbolSuggestions: boolean;
@@ -116,7 +117,12 @@
                 <input type="text" inputmode="decimal" use:numberInput={{ maxDecimalPlaces: 4 }} bind:value={atrMultiplier} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.tradeSetupInputs.multiplierPlaceholder')}">
             </div>
             {#if showAtrFormulaDisplay}
-                <div class="text-center text-xs text-sky-300 mt-2">{atrFormulaDisplay}</div>
+                <div class="text-center text-xs text-sky-300 mt-2">
+                    {atrFormulaDisplay}
+                </div>
+            {/if}
+            {#if atrFormulaError}
+                <div class="text-center text-xs mt-1" style="color: var(--danger-color);">{atrFormulaError}</div>
             {/if}
         {/if}
     </div>

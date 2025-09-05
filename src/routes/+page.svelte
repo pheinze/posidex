@@ -210,6 +210,7 @@
 
             atrFormulaDisplay={$resultsStore.atrFormulaText}
             showAtrFormulaDisplay={$resultsStore.showAtrFormulaDisplay}
+            atrFormulaError={$resultsStore.atrFormulaError}
             isPriceFetching={$uiStore.isPriceFetching}
             symbolSuggestions={$uiStore.symbolSuggestions}
             showSymbolSuggestions={$uiStore.showSymbolSuggestions}

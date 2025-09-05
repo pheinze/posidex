@@ -83,6 +83,7 @@ export interface AppState {
     showTotalMetricsGroup: boolean;
     showAtrFormulaDisplay: boolean;
     atrFormulaText: string;
+    atrFormulaError: string;
     isPriceFetching: boolean;
     showCopyFeedback: boolean;
     showSaveFeedback: boolean;
