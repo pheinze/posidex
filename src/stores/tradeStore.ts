@@ -68,6 +68,7 @@ export const toggleAtrInputs = (useAtrSl: boolean) => {
     updateTradeStore(state => ({
         ...state,
         useAtrSl: useAtrSl,
+        atrMode: useAtrSl ? 'auto' : state.atrMode,
     }));
 };
 

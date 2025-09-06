@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { tradeStore, updateTradeStore, initialTradeState } from '../stores/tradeStore';
+import { tradeStore, updateTradeStore, initialTradeState, toggleAtrInputs } from '../stores/tradeStore';
 import { resultsStore, initialResultsState } from '../stores/resultsStore';
 import { app } from './app';
 import { get } from 'svelte/store';
@@ -285,5 +285,30 @@ describe('app service - ATR and Locking Logic', () => {
         const store = get(tradeStore);
         // 200 is 2% of 10000
         expect(new Decimal(store.riskPercentage).toFixed(2)).toBe('2.00');
+    });
+
+    it('should set atrMode to auto when useAtrSl is toggled on', () => {
+        // initial state has useAtrSl: false, atrMode: 'manual'
+        let state = get(tradeStore);
+        expect(state.useAtrSl).toBe(false);
+        expect(state.atrMode).toBe('manual');
+
+        toggleAtrInputs(true);
+
+        state = get(tradeStore);
+        expect(state.useAtrSl).toBe(true);
+        expect(state.atrMode).toBe('auto');
+
+        // Toggle back off, should retain atrMode
+        toggleAtrInputs(false);
+        state = get(tradeStore);
+        expect(state.useAtrSl).toBe(false);
+        expect(state.atrMode).toBe('auto');
+
+        // set to manual and toggle off and on
+        updateTradeStore(s => ({...s, atrMode: 'manual'}));
+        toggleAtrInputs(true);
+        state = get(tradeStore);
+        expect(state.atrMode).toBe('auto');
     });
 });
