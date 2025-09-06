@@ -37,7 +37,7 @@
                 use:trackClick={{ category: 'CustomModal', action: 'Click', name: 'CloseViaX' }}
             >&times;</button>
             <h3 class="text-xl font-bold mb-4 pr-8">{modalState.title}</h3>
-            <div class="mb-4 max-h-[70vh] overflow-y-auto pr-2">{@html modalState.message}</div>
+            <div class="prose dark:prose-invert mb-4 max-h-[70vh] overflow-y-auto pr-2 w-full max-w-none">{@html modalState.message}</div>
             {#if modalState.type === 'prompt'}
                 <input type="text" class="input-field w-full px-3 py-2 rounded-md mb-4" placeholder="{$_('dashboard.customModal.promptPlaceholder')}" bind:value={modalState.defaultValue} on:input={handleInput}>
             {/if}
