@@ -593,6 +593,14 @@ input[type="checkbox"]:checked + .atr-toggle-track::after { transform: translate
     color: var(--text-primary);
 }
 
+/* --- Accessibility fix for suggestion dropdown hover color --- */
+.theme-VIP .suggestion-item:hover {
+    color: #121212;
+}
+.theme-matrix .suggestion-item:hover {
+    color: #000000;
+}
+
 /* Themed Scrollbar Styles */
 ::-webkit-scrollbar {
     width: 12px;
