@@ -1,10 +1,9 @@
-**Feedback:** feedback@cachy.app
+*feedback@cachy.app*
 
-**Support & Thanks (BTC):** `bc1qgrm2kvs27rfkpwtgp5u7w0rlzkgwrxqtls2q4f`
+**support&thanks**: `bc1qgrm2kvs27rfkpwtgp5u7w0rlzkgwrxqtls2q4f`
 
-**Trade with Bitunix:** [https://www.bitunix.com/register?inviteCode=cw291y](https://www.bitunix.com/register?inviteCode=cw291y)
+***
 
----
 
 # Changelog
 
@@ -14,7 +13,9 @@
 - **New:** Added keyboard shortcuts (`Alt+L/S/R/J`) for faster operation.
 - **New:** Modals can now be closed by pressing the `Escape` key or by clicking on the backdrop.
 
+
 ---
+
 
 ## Version 0.92b (August 22, 2025)
 - **Improvement:** Symbol input field now accepts letters and numbers.

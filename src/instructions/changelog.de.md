@@ -1,10 +1,8 @@
-**Feedback:** feedback@cachy.app
+*feedback@cachy.app*
 
-**Support & Thanks (BTC):** `bc1qgrm2kvs27rfkpwtgp5u7w0rlzkgwrxqtls2q4f`
+**support&thanks**: `bc1qgrm2kvs27rfkpwtgp5u7w0rlzkgwrxqtls2q4f`
 
-**Trade with Bitunix:** [https://www.bitunix.com/register?inviteCode=cw291y](https://www.bitunix.com/register?inviteCode=cw291y)
-
----
+***
 
 # Changelog
 
@@ -13,8 +11,6 @@
 - **Neu:** Erweiterte Sperr-Funktionen: Der Risikobetrag in Währung kann jetzt gesperrt werden, um die Positionsgröße und das Risiko in % zu berechnen.
 - **Neu:** Tastaturkürzel (`Alt+L/S/R/J`) für schnellere Bedienung hinzugefügt.
 - **Neu:** Modalfenster können jetzt mit der `Escape`-Taste oder per Klick auf den Hintergrund geschlossen werden.
-
----
 
 ## Version 0.92b (22. August 2025)
 - **Verbesserung:** Eingabefeld für Symbol akzeptiert jetzt Buchstaben und Zahlen.
