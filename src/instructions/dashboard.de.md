@@ -1,79 +1,61 @@
-# Anleitung: Trading Dashboard
+# Anleitung: Die Berechnungen verstehen
 
-Willkommen beim Trading Dashboard! Dieses Tool wurde entwickelt, um Ihnen bei der präzisen Berechnung Ihrer Positionsgröße und der Analyse potenzieller Trades zu helfen, basierend auf einem soliden Risikomanagement. Verstehen Sie Ihre Kennzahlen auf einen Blick und treffen Sie fundierte Entscheidungen.
+Diese Anleitung erklärt detailliert, wie die Berechnungen in der App funktionieren. Wenn Sie verstehen, wie die Zahlen zustande kommen, können Sie das Tool optimal für Ihr Risikomanagement und Ihre Handelsstrategie nutzen.
 
-## 1. Grundlagen der Eingabe
+<p></p>
 
-Bevor Sie mit der Berechnung beginnen, geben Sie bitte die erforderlichen Handelsdaten ein.
+### Grundlegende Kennzahlen (Base Metrics)
 
-### Allgemein
-*   **Trade-Typ:** Wählen Sie, ob Sie eine **Long**-Position (Kauf) oder eine **Short**-Position (Verkauf) eingehen möchten.
-*   **Hebel (Leverage):** Geben Sie den Hebel ein, den Sie verwenden möchten (z.B. `10x`, `20x`).
-*   **Gebühren pro Trade (%):** Tragen Sie die geschätzten Handelsgebühren Ihrer Börse in Prozent ein (z.B. `0.075` für 0,075%).
+Alles beginnt mit der Einrichtung Ihres Trades. Die folgenden Kennzahlen sind die Grundlage für alle weiteren Berechnungen.
 
-### Portfolio
-*   **Konto Guthaben:** Ihr gesamtes verfügbares Kapital auf dem Handelskonto.
-*   **Risiko je Trade (%):** Der Prozentsatz Ihres Kontoguthabens, den Sie bereit sind, pro Trade zu riskieren (z.B. `1` für 1%).
+*   **Risikobetrag (Risk Amount):** Dies ist der Geldbetrag, den Sie bei diesem Trade maximal zu verlieren bereit sind.
+    *   **Formel:** `Kontogröße * (Risiko % / 100)`
+    *   **Beispiel:** Bei einem 10.000 € Konto und 1 % Risiko riskieren Sie 100 €.
 
-### Trade Setup
-*   **Symbol:** Das Handelspaar, das Sie analysieren möchten (z.B. `BTCUSDT`, `ETHUSDT`). Klicken Sie auf den **Pfeil-Button**, um den aktuellen Live-Preis von Binance zu laden.
-*   **Kaufpreis (Entry Price):** Der Preis, zu dem Sie die Position eröffnen möchten.
-*   **Stopp Loss (Stop-Loss Price):** Der Preis, bei dem Ihre Position automatisch geschlossen wird, um Verluste zu begrenzen. Sie haben zwei Optionen:
-    *   **Manueller Stopp Loss:** Geben Sie den gewünschten Stopp-Loss-Preis direkt ein.
-    *   **ATR Stopp Loss:** Aktivieren Sie den Schalter, um den Stopp-Loss basierend auf dem Average True Range (ATR) Indikator zu berechnen.
-        *   **ATR Wert:** Der aktuelle Wert des ATR-Indikators für das gewählte Zeitfenster.
-        *   **Multiplikator:** Ein Faktor, mit dem der ATR-Wert multipliziert wird (üblich sind z.B. `1.5` oder `2`).
-        *   **Formel (Long):** `Stopp Loss = Kaufpreis - (ATR Wert * Multiplikator)`
-        *   **Formel (Short):** `Stopp Loss = Kaufpreis + (ATR Wert * Multiplikator)`
+*   **Positionsgröße (Position Size):** Dies ist die Menge der Einheiten des Assets (z.B. Anzahl an Aktien oder Coins), die Sie kaufen oder verkaufen müssen, um genau Ihren gewünschten Risikobetrag zu riskieren.
+    *   **Formel:** `Risikobetrag / |Einstiegspreis - Stop-Loss-Preis|`
+    *   **Nutzen:** Diese Berechnung ist entscheidend, um in jedem Trade ein konsistentes Risiko zu gewährleisten, unabhängig von der Volatilität des Marktes.
 
-## 2. Take-Profit Ziele (Partiell)
+*   **Ordervolumen (Order Volume):** Der Gesamtwert Ihrer Position in der Basiswährung (z.B. USDT).
+    *   **Formel:** `Positionsgröße * Einstiegspreis`
 
-Legen Sie mehrere Take-Profit-Ziele fest, um Ihre Gewinne schrittweise zu realisieren.
+*   **Benötigte Margin (Required Margin):** Das Kapital, das Sie tatsächlich auf Ihrem Konto als Sicherheit (Margin) für die Eröffnung der gehebelten Position hinterlegen müssen.
+    *   **Formel:** `Ordervolumen / Hebel`
+    *   **Hinweis:** Bei einem Hebel von 1 (oder ohne Hebel) entspricht die Margin dem vollen Ordervolumen.
 
-*   **Preis:** Der Zielpreis, bei dem ein Teil Ihrer Position verkauft werden soll.
-*   **Prozentsatz:** Der Prozentsatz Ihrer *ursprünglichen* Positionsgröße, der bei diesem Zielpreis verkauft werden soll. Die Summe aller Prozentsätze kann 100% nicht überschreiten.
-*   **Schloss-Symbol:** Sperren/Entsperren Sie den Prozentsatz, um ihn bei Anpassungen beizubehalten.
-*   **Entfernen:** Löschen Sie ein Take-Profit-Ziel.
-*   **Weiteres Ziel hinzufügen:** Fügen Sie zusätzliche Take-Profit-Ziele hinzu.
+*   **Nettoverlust (Net Loss):** Der tatsächliche Verlust, wenn Ihr Stop-Loss ausgelöst wird. Er berücksichtigt nicht nur den Risikobetrag, sondern auch die Gebühren für die Eröffnung und Schließung der Position.
+    *   **Formel:** `Risikobetrag + Einstiegsgebühr + Stop-Loss-Ausstiegsgebühr`
 
-## 3. Zusammenfassung & Metriken
+*   **Break-Even-Preis (Break-Even Price):** Der Preis, bei dem Ihr Trade weder Gewinn noch Verlust macht, da die potenziellen Gewinne genau die Handelsgebühren decken.
+    *   **Nutzen:** Ein nützlicher Anhaltspunkt, um zu wissen, ab wann Ihr Trade profitabel wird.
 
-Nachdem Sie alle Eingaben gemacht haben, berechnet das Dashboard automatisch wichtige Kennzahlen:
+*   **Liquidationspreis (Liquidation Price):** (Nur bei Hebel-Trades) Der Preis, bei dem Ihre Position von der Börse automatisch geschlossen wird, weil Ihr Margin-Kapital aufgebraucht ist.
+    *   **Warnung:** Dieser Preis sollte immer weit von Ihrem Stop-Loss entfernt sein, um eine ungewollte Liquidation zu vermeiden.
 
-### Positionsgröße
-*   **Positionsgröße:** Die wichtigste Kennzahl! Sie zeigt Ihnen, wie viele Einheiten des Assets Sie kaufen/verkaufen sollten, um Ihr definiertes Risiko pro Trade einzuhalten.
-*   **Positionsgröße sperren:** Klicken Sie auf das Schloss-Symbol neben der Positionsgröße. Wenn gesperrt, bleibt die Positionsgröße fix. Änderungen am Stopp-Loss oder Einstiegspreis wirken sich dann auf Ihr Risiko in % aus, anstatt die Positionsgröße anzupassen. Dies ist nützlich, um die Auswirkung von SL-Anpassungen auf Ihr Risiko zu sehen.
-*   **Kopieren:** Kopieren Sie die berechnete Positionsgröße in die Zwischenablage.
+<p></p>
 
-### Gesamt-Trade Metriken
-Diese Kennzahlen geben Ihnen einen Überblick über den gesamten Trade, wenn alle Take-Profit-Ziele erreicht werden würden.
+### Kennzahlen der Take-Profit-Ziele (TP)
 
-*   **Risiko pro Trade (Währung):** Der absolute Geldbetrag, den Sie maximal riskieren, basierend auf Ihrem Konto Guthaben und Risiko je Trade (%).
-*   **Gesamte Gebühren:** Die geschätzten Gesamtkosten für diesen Trade (Kauf, Verkauf, Stopp-Loss/Take-Profit).
-*   **Max. potenzieller Gewinn:** Der maximale Netto-Gewinn, wenn die gesamte Position zum besten TP geschlossen würde.
-*   **Gewichtetes R/R (Risk/Reward):** Das durchschnittliche Chance-Risiko-Verhältnis aller Teilverkäufe. Ein höheres R/R ist besser.
-*   **Gesamt Netto-Gewinn:** Der kumulierte Netto-Gewinn aus allen Teilverkäufen.
-*   **Verkaufte Position:** Der Gesamtprozentsatz der ursprünglichen Position, der durch die Take-Profit-Ziele verkauft wird.
+Für jedes einzelne Take-Profit-Ziel werden individuelle Metriken berechnet.
 
-### Weitere Kennzahlen
-*   **Benötigte Margin:** Das Kapital, das von Ihrem Konto für diesen Trade blockiert wird.
-*   **Gesch. Liquidationspreis:** Der geschätzte Preis, bei dem Ihre Position liquidiert wird, wenn Sie einen Hebel verwenden.
-*   **Break-Even Preis:** Der Kurs, bei dem Ihr Trade unter Berücksichtigung aller Gebühren null Gewinn/Verlust macht.
+*   **Nettogewinn (Net Profit):** Der Reingewinn für einen Teilverkauf an einem TP-Ziel. Er berücksichtigt die anteiligen Gebühren.
+    *   **Formel:** `Bruttogewinn des Teils - Anteilige Einstiegsgebühr - Ausstiegsgebühr`
 
-## 4. Visuelle Analyse
+*   **Chance-Risiko-Verhältnis (Risk/Reward Ratio):** Zeigt, wie viel Gewinn Sie im Verhältnis zum eingegangenen Risiko für diesen Teil der Position erzielen.
+    *   **Formel:** `Nettogewinn / Anteiliger Risikobetrag`
+    *   **Nutzen:** Ein R/R von 2:1 bedeutet, dass der potenzielle Gewinn dieses Teilverkaufs doppelt so hoch ist wie das dafür eingegangene Risiko.
 
-Die visuelle Leiste bietet eine grafische Darstellung Ihres Trades:
+*   **Kapitalrendite (Return on Capital - ROC):** Zeigt die prozentuale Rendite auf das eingesetzte Margin-Kapital für diesen Teilverkauf.
+    *   **Formel:** `(Nettogewinn / (Benötigte Margin * Verkaufsanteil %)) * 100`
 
-*   **Einstiegspreis:** Markiert Ihren Kauf-/Verkaufspreis.
-*   **Stopp Loss:** Zeigt den Punkt an, an dem Ihr Trade geschlossen wird, um Verluste zu begrenzen.
-*   **Take-Profit-Ziele:** Markiert Ihre Gewinnziele.
-*   **Gewinn-/Verlustzonen:** Farbige Bereiche zeigen an, wo Sie Gewinn oder Verlust machen würden.
-*   **Tooltips:** Fahren Sie mit der Maus über die TP-Marker, um Details zu Netto-Gewinn und R/R für diesen spezifischen Teilverkauf zu sehen.
+<p></p>
 
-## 5. Presets
+### Gesamt-Kennzahlen des Trades (Total Metrics)
 
-Speichern Sie Ihre aktuellen Eingaben als Preset, um häufig verwendete Einstellungen schnell wieder laden zu können. Dies ist ideal für verschiedene Strategien oder Märkte.
+Diese Metriken fassen die Performance des gesamten Trades über alle Take-Profit-Ziele hinweg zusammen.
 
-## 6. Trade zum Journal hinzufügen
+*   **Gesamter Nettogewinn (Total Net Profit):** Die Summe der Nettogewinne aller Ihrer Teilverkäufe.
+*   **Gewichtetes CRV (Weighted R/R):** Das durchschnittliche Chance-Risiko-Verhältnis des gesamten Trades, gewichtet nach dem prozentualen Anteil jedes Ziels.
+*   **Maximal potenzieller Gewinn (Max Potential Profit):** Der Nettogewinn, den Sie erzielen würden, wenn Sie 100% Ihrer Position am besten Ihrer gesetzten TP-Ziele verkaufen würden.
 
-Nachdem Sie einen Trade analysiert haben, können Sie ihn mit einem Klick zum Trade Journal hinzufügen, um Ihre Performance zu verfolgen.
+Indem Sie diese Berechnungen verstehen, können Sie fundiertere Handelsentscheidungen treffen und Ihre Strategie präzise planen.

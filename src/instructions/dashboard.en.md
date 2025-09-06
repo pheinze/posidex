@@ -1,79 +1,61 @@
-# Guide: Trading Dashboard
+# Guide: Understanding the Calculations
 
-Welcome to the Trading Dashboard! This tool is designed to help you precisely calculate your position size and analyze potential trades, based on sound risk management. Understand your metrics at a glance and make informed decisions.
+This guide explains in detail how the calculations in the app work. Understanding where the numbers come from will help you make the most of the tool for your risk management and trading strategy.
 
-## 1. Input Fundamentals
+<p></p>
 
-Before you start calculating, please enter the required trade data.
+### Base Metrics
 
-### General
-*   **Trade Type:** Choose whether you want to enter a **Long** (buy) or **Short** (sell) position.
-*   **Leverage:** Enter the leverage you want to use (e.g., `10x`, `20x`).
-*   **Fees per Trade (%):** Enter your exchange's estimated trading fees as a percentage (e.g., `0.075` for 0.075%).
+Everything starts with setting up your trade. The following metrics are the foundation for all further calculations.
 
-### Portfolio
-*   **Account Balance:** Your total available capital in the trading account.
-*   **Risk per Trade (%):** The percentage of your account balance you are willing to risk per trade (e.g., `1` for 1%).
+*   **Risk Amount:** This is the maximum amount of money you are willing to lose on this trade.
+    *   **Formula:** `Account Size * (Risk % / 100)`
+    *   **Example:** On a €10,000 account with 1% risk, you are risking €100.
 
-### Trade Setup
-*   **Symbol:** The trading pair you want to analyze (e.g., `BTCUSDT`, `ETHUSDT`). Click the **arrow button** to load the current live price from Binance.
-*   **Entry Price:** The price at which you intend to open the position.
-*   **Stop-Loss Price:** The price at which your position will be automatically closed to limit losses. You have two options:
-    *   **Manual Stop-Loss:** Enter the desired stop-loss price directly.
-    *   **ATR Stop-Loss:** Activate the switch to calculate the stop-loss based on the Average True Range (ATR) indicator.
-        *   **ATR Value:** The current value of the ATR indicator for the selected timeframe.
-        *   **Multiplier:** A factor by which the ATR value is multiplied (common examples are `1.5` or `2`).
-        *   **Formula (Long):** `Stop-Loss = Entry Price - (ATR Value * Multiplier)`
-        *   **Formula (Short):** `Stop-Loss = Entry Price + (ATR Value * Multiplier)`
+*   **Position Size:** This is the quantity of units of the asset (e.g., number of shares or coins) you need to buy or sell to risk exactly your desired risk amount.
+    *   **Formula:** `Risk Amount / |Entry Price - Stop-Loss Price|`
+    *   **Benefit:** This calculation is crucial for ensuring consistent risk in every trade, regardless of market volatility.
 
-## 2. Take-Profit Targets (Partial)
+*   **Order Volume:** The total value of your position in the base currency (e.g., USDT).
+    *   **Formula:** `Position Size * Entry Price`
 
-Set multiple take-profit targets to gradually realize your profits.
+*   **Required Margin:** The capital you actually need to post as collateral (margin) in your account to open the leveraged position.
+    *   **Formula:** `Order Volume / Leverage`
+    *   **Note:** With a leverage of 1 (or no leverage), the margin equals the full order volume.
 
-*   **Price:** The target price at which a portion of your position should be sold.
-*   **Percentage:** The percentage of your *original* position size that should be sold at this target price. The sum of all percentages cannot exceed 100%.
-*   **Lock Icon:** Lock/unlock the percentage to maintain it during adjustments.
-*   **Remove:** Delete a take-profit target.
-*   **Add another target:** Add additional take-profit targets.
+*   **Net Loss:** The actual loss if your stop-loss is triggered. It accounts not only for the risk amount but also for the fees to open and close the position.
+    *   **Formula:** `Risk Amount + Entry Fee + Stop-Loss Exit Fee`
 
-## 3. Summary & Metrics
+*   **Break-Even Price:** The price at which your trade makes neither a profit nor a loss, as the potential gains exactly cover the trading fees.
+    *   **Benefit:** A useful reference point to know when your trade becomes profitable.
 
-After you have made all entries, the Dashboard automatically calculates important metrics:
+*   **Liquidation Price:** (Leveraged trades only) The price at which your position is automatically closed by the exchange because your margin capital is depleted.
+    *   **Warning:** This price should always be far from your stop-loss to avoid an unwanted liquidation.
 
-### Position Size
-*   **Position Size:** The most important metric! It tells you how many units of the asset you should buy/sell to adhere to your defined risk per trade.
-*   **Lock Position Size:** Click the lock icon next to the position size. When locked, the position size remains fixed. Changes to the stop-loss or entry price will then affect your risk in % instead of adjusting the position size. This is useful to see how an SL adjustment impacts your risk while keeping the position size constant.
-*   **Copy:** Copy the calculated position size to the clipboard.
+<p></p>
+
+### Take-Profit (TP) Target Metrics
+
+Individual metrics are calculated for each take-profit target.
+
+*   **Net Profit:** The net gain for a partial sale at a TP target. It accounts for the proportional fees.
+    *   **Formula:** `Gross Profit of the Part - Proportional Entry Fee - Exit Fee`
+
+*   **Risk/Reward Ratio:** Shows how much profit you are making in relation to the risk taken for that portion of the position.
+    *   **Formula:** `Net Profit / Proportional Risk Amount`
+    *   **Benefit:** An R/R of 2:1 means the potential profit of this partial sale is twice the risk taken for it.
+
+*   **Return on Capital (ROC):** Shows the percentage return on the margin capital used for this partial sale.
+    *   **Formula:** `(Net Profit / (Required Margin * Sell Portion %)) * 100`
+
+<p></p>
 
 ### Total Trade Metrics
-These metrics give you an overview of the entire trade if all take-profit targets were reached.
 
-*   **Risk per Trade (Currency):** The absolute amount of money you risk at most, based on your account balance and risk per trade (%).
-*   **Total Fees:** The estimated total cost for this trade (buy, sell, stop-loss/take-profit).
-*   **Max. Potential Profit:** The maximum net profit if the entire position were closed at the best TP.
-*   **Weighted R/R (Risk/Reward):** The average risk-reward ratio of all partial sales. A higher R/R is better.
-*   **Total Net Profit:** The accumulated net profit from all partial sales.
-*   **Sold Position:** The total percentage of the original position that is sold through the take-profit targets.
+These metrics summarize the performance of the entire trade across all take-profit targets.
 
-### Further Metrics
-*   **Required Margin:** The capital blocked from your account for this trade.
-*   **Est. Liquidation Price:** The estimated price at which your position will be liquidated if you use leverage.
-*   **Break-Even Price:** The price at which your trade makes zero profit/loss, considering all fees.
+*   **Total Net Profit:** The sum of the net profits from all your partial sales.
+*   **Weighted R/R:** The average risk/reward ratio of the entire trade, weighted by the percentage share of each target.
+*   **Max Potential Profit:** The net profit you would make if you sold 100% of your position at the best of your set TP targets.
 
-## 4. Visual Analysis
-
-The visual bar provides a graphical representation of your trade:
-
-*   **Entry Price:** Marks your buy/sell price.
-*   **Stop-Loss:** Shows the point at which your trade will be closed to limit losses.
-*   **Take-Profit Targets:** Marks your profit targets.
-*   **Profit/Loss Zones:** Colored areas indicate where you would make a profit or loss.
-*   **Tooltips:** Hover over the TP markers to see details on net profit and R/R for that specific partial sale.
-
-## 5. Presets
-
-Save your frequently used settings as a preset to quickly load them again. This is ideal for different strategies or markets.
-
-## 6. Add Trade to Journal
-
-After analyzing a trade, you can add it to the Trade Journal with a click to track your performance.
+By understanding these calculations, you can make more informed trading decisions and plan your strategy with precision.
