@@ -377,7 +377,7 @@ input[type="checkbox"]:checked + .atr-toggle-track { background-color: var(--tog
 .atr-toggle-track::after { background-color: var(--toggle-circle-bg); border-color: var(--border-color); transition: transform 0.3s, background-color 0.3s, border-color 0.3s; }
 input[type="checkbox"]:checked + .atr-toggle-track::after { transform: translateX(calc(100% + 2px)); border-color: var(--toggle-circle-bg); }
 
-.copy-btn, .price-fetch-btn { background: none; border: none; color: var(--text-secondary); cursor: pointer; transition: color 0.2s; }
+.copy-btn, .price-fetch-btn { background: none; border: none; color: var(--text-secondary); cursor: pointer; transition: color 0.2s; padding-right: 0.25rem; }
 .copy-btn:hover, .price-fetch-btn:hover { color: var(--success-color); }
 
 /* New class for accent-colored icon buttons */
