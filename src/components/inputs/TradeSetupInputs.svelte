@@ -107,13 +107,13 @@
             {#if useAtrSl}
             <div class="atr-mode-switcher">
                 <button
-                    class="btn-switcher {atrMode === 'manual' ? 'active' : ''}"
+                    class="btn-switcher text-base {atrMode === 'manual' ? 'active' : ''}"
                     on:click={() => dispatch('setAtrMode', 'manual')}
                 >
                     {$_('dashboard.tradeSetupInputs.atrModeManual')}
                 </button>
                 <button
-                    class="btn-switcher {atrMode === 'auto' ? 'active' : ''}"
+                    class="btn-switcher text-base {atrMode === 'auto' ? 'active' : ''}"
                     on:click={() => dispatch('setAtrMode', 'auto')}
                 >
                     {$_('dashboard.tradeSetupInputs.atrModeAuto')}
@@ -121,7 +121,7 @@
             </div>
             {/if}
             <label class="flex items-center cursor-pointer">
-                <span class="mr-2 text-sm">{$_('dashboard.tradeSetupInputs.atrStopLossLabel')}</span>
+                <span class="mr-2 text-base">{$_('dashboard.tradeSetupInputs.atrStopLossLabel')}</span>
                 <input id="use-atr-sl-checkbox" type="checkbox" bind:checked={useAtrSl} on:change={toggleAtrSl} class="sr-only peer" role="switch" aria-checked={useAtrSl}>
                 <div class="atr-toggle-track relative w-11 h-6 peer-focus:outline-none rounded-full peer after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:border after:rounded-full after:h-5 after:w-5"></div>
             </label>
@@ -139,7 +139,7 @@
             {:else}
                 <div class="grid grid-cols-3 gap-2 mt-2 items-end">
                     <div>
-                        <label for="atr-timeframe" class="input-label !mb-1 text-xs">{$_('dashboard.tradeSetupInputs.atrTimeframeLabel')}</label>
+                        <label for="atr-timeframe" class="input-label !mb-1 text-base">{$_('dashboard.tradeSetupInputs.atrTimeframeLabel')}</label>
                         <select id="atr-timeframe" bind:value={atrTimeframe} on:change={(e) => dispatch('setAtrTimeframe', e.currentTarget.value)} class="input-field w-full px-4 py-2 rounded-md">
                             <option value="5m">5m</option>
                             <option value="15m">15m</option>
@@ -150,7 +150,7 @@
                     </div>
                     <div>
                         <div class="flex justify-between items-center">
-                            <label for="atr-value-input-auto" class="input-label !mb-1 text-xs">{$_('dashboard.tradeSetupInputs.atrLabel')}</label>
+                            <label for="atr-value-input-auto" class="input-label !mb-1 text-base">{$_('dashboard.tradeSetupInputs.atrLabel')}</label>
                             <button type="button" class="price-fetch-btn {isPriceFetching ? 'animate-spin' : ''}" on:click={() => { trackCustomEvent('ATR', 'Fetch', symbol); dispatch('fetchAtr'); }} title="Fetch ATR Value">
                                 {@html icons.fetch}
                             </button>
@@ -158,7 +158,7 @@
                         <input id="atr-value-input-auto" type="text" inputmode="decimal" use:numberInput={{ maxDecimalPlaces: 4 }} bind:value={atrValue} class="input-field w-full px-4 py-2 rounded-md" placeholder="ATR">
                     </div>
                     <div>
-                        <label for="atr-multiplier-input-auto" class="input-label !mb-1 text-xs">{$_('dashboard.tradeSetupInputs.atrMultiplierLabel')}</label>
+                        <label for="atr-multiplier-input-auto" class="input-label !mb-1 text-base">{$_('dashboard.tradeSetupInputs.atrMultiplierLabel')}</label>
                         <input id="atr-multiplier-input-auto" type="text" inputmode="decimal" use:numberInput={{ maxDecimalPlaces: 4 }} bind:value={atrMultiplier} class="input-field w-full px-4 py-2 rounded-md" placeholder="1.5">
                     </div>
                 </div>
