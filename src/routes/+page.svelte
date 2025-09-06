@@ -221,7 +221,6 @@
             on:setAtrMode={(e) => app.setAtrMode(e.detail)}
             on:setAtrTimeframe={(e) => app.setAtrTimeframe(e.detail)}
             on:fetchAtr={() => app.fetchAtr()}
-            on:atrEdited={() => app.setAtrMode('manual')}
 
             atrFormulaDisplay={$resultsStore.atrFormulaText}
             showAtrFormulaDisplay={$resultsStore.showAtrFormulaDisplay}

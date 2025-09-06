@@ -155,7 +155,7 @@
                                 {@html icons.fetch}
                             </button>
                         </div>
-                        <input id="atr-value-input-auto" type="text" inputmode="decimal" use:numberInput={{ maxDecimalPlaces: 4 }} bind:value={atrValue} on:input={() => dispatch('atrEdited')} class="input-field w-full px-4 py-2 rounded-md" placeholder="ATR">
+                        <input id="atr-value-input-auto" type="text" inputmode="decimal" use:numberInput={{ maxDecimalPlaces: 4 }} bind:value={atrValue} class="input-field w-full px-4 py-2 rounded-md" placeholder="ATR">
                     </div>
                     <div>
                         <label for="atr-multiplier-input-auto" class="input-label !mb-1 text-xs">{$_('dashboard.tradeSetupInputs.atrMultiplierLabel')}</label>

@@ -111,6 +111,8 @@ export const app = {
                         ? values.entryPrice.minus(values.atrValue.times(values.atrMultiplier))
                         : values.entryPrice.plus(values.atrValue.times(values.atrMultiplier));
 
+                    updateTradeStore(state => ({ ...state, stopLossPrice: values.stopLossPrice.toString() }));
+
                     newResults.showAtrFormulaDisplay = true;
                     newResults.atrFormulaText = `SL = ${values.entryPrice.toFixed(4)} ${operator} (${values.atrValue} × ${values.atrMultiplier}) = ${values.stopLossPrice.toFixed(4)}`;
                 } else if (values.atrValue.gt(0) && values.atrMultiplier.gt(0)) {
