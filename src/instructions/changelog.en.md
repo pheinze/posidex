@@ -4,7 +4,6 @@
 
 ***
 
-
 # Changelog
 
 ## Version 0.92b1 (September 04, 2025)
