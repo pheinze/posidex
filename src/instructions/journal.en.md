@@ -1,8 +1,18 @@
-# Guide: Trade Journal
+# Guide: Master Your Trading Journal
 
 The Trade Journal is your personal logbook for all your trading activities. It helps you track your performance, identify patterns, and continuously improve your strategy.
 
-## 1. Journal Overview
+---
+
+### Table of Contents
+1. [Journal Overview](#journal-overview)
+2. [Search & Filter](#search-filter)
+3. [Performance Statistics](#performance-statistics)
+4. [Data Management](#data-management)
+
+---
+
+### <a name="journal-overview"></a>1. Journal Overview
 
 The main table of the journal shows a chronological list of all your trades.
 
@@ -18,14 +28,18 @@ The main table of the journal shows a chronological list of all your trades.
     *   Longer notes can be expanded and collapsed by clicking on the note cell.
 *   **Action:** Here you will find options such as deleting a trade.
 
-## 2. Search & Filter
+---
+
+### <a name="search-filter"></a>2. Search & Filter
 
 Above the table, you will find functions to organize your trades:
 
 *   **Search Symbol:** Enter a symbol to display only trades of that asset.
 *   **Filter:** Filter trades by their status (`All`, `Open`, `Won`, `Lost`).
 
-## 3. Performance Statistics
+---
+
+### <a name="performance-statistics"></a>3. Performance Statistics
 
 At the top of the journal (or in a separate section), you will find a summary of your performance.
 
@@ -34,7 +48,9 @@ At the top of the journal (or in a separate section), you will find a summary of
     *   **Profit %:** The percentage of winning trades for this symbol.
     *   **Total P/L (Profit/Loss):** The cumulative profit or loss for this symbol.
 
-## 4. Data Management
+---
+
+### <a name="data-management"></a>4. Data Management
 
 Manage your journal data securely and efficiently.
 

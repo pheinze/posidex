@@ -1,8 +1,8 @@
 # Anleitung: Meistere dein Trading mit Cachy
 
-Willkommen bei Cachy dem Positionsgrößenrechner der VIP-Community! Die Anleitung hilft dir dabei, dieses Tools zu verstehen und dein Trading auf das nächste Level zu heben.
+Willkommen bei Cachy dem Positionsgrößenrechner der VIP-Community! Diese Anleitung erklärt dir dieses Tools Schritt für Schritt, um dein Trading auf das nächste Level zu heben.
 
-Der Kern des erfolgreichen Tradings ist **diszipliniertes Risikomanagement**. Cachy wurde entwickelt, um dir genau dabei zu helfen, indem es die komplexen, aber entscheidenden Berechnungen für dich automatisiert.
+Der Kern des erfolgreichen Tradings ist **diszipliniertes Risikomanagement**. Cachy hilft dir dabei, die komplexen, aber entscheidenden Berechnungen für dich zu automatisieren.
 
 ---
 
