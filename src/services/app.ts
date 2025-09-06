@@ -111,8 +111,6 @@ export const app = {
                         ? values.entryPrice.minus(values.atrValue.times(values.atrMultiplier))
                         : values.entryPrice.plus(values.atrValue.times(values.atrMultiplier));
 
-                    updateTradeStore(state => ({ ...state, stopLossPrice: values.stopLossPrice.toString() }));
-
                     newResults.showAtrFormulaDisplay = true;
                     newResults.atrFormulaText = `SL = ${values.entryPrice.toFixed(4)} ${operator} (${values.atrValue} × ${values.atrMultiplier}) = ${values.stopLossPrice.toFixed(4)}`;
                 } else if (values.atrValue.gt(0) && values.atrMultiplier.gt(0)) {
@@ -259,7 +257,12 @@ export const app = {
         trackCustomEvent('Calculation', 'Success', currentTradeState.tradeType, activeTargets);
         onboardingService.trackFirstCalculation();
 
-        updateTradeStore(state => ({ ...state, currentTradeData: { ...values, ...baseMetrics, ...totalMetrics, tradeType: currentTradeState.tradeType, status: 'Open', calculatedTpDetails } }));
+        // Pass the final calculated stopLossPrice back to the store to ensure UI consistency
+        updateTradeStore(state => ({
+            ...state,
+            currentTradeData: { ...values, ...baseMetrics, ...totalMetrics, tradeType: currentTradeState.tradeType, status: 'Open', calculatedTpDetails },
+            stopLossPrice: values.stopLossPrice.toString()
+        }));
         app.saveSettings();
     },
 
