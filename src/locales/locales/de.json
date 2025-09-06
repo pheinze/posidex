@@ -57,7 +57,7 @@
       "header": "Portfolio",
       "accountSizeLabel": "Kontoguthaben",
       "accountSizePlaceholder": "z.B. 10000",
-      "riskPerTradeLabel": "Risiko/Trade (%)",
+      "riskPerTradeLabel": "Risiko je Trade (%)",
       "riskPerTradePlaceholder": "z.B. 1.5",
       "riskAmountLabel": "Risikobetrag",
       "toggleRiskAmountLockTitle": "Risikobetrag sperren/entsperren"

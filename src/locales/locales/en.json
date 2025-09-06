@@ -57,7 +57,7 @@
       "header": "Portfolio",
       "accountSizeLabel": "Account Size",
       "accountSizePlaceholder": "e.g., 10000",
-      "riskPerTradeLabel": "Risk/Trade (%)",
+      "riskPerTradeLabel": "Risk per Trade (%)",
       "riskPerTradePlaceholder": "e.g., 1.5",
       "riskAmountLabel": "Risk Amount",
       "toggleRiskAmountLockTitle": "Lock/Unlock Risk Amount"
