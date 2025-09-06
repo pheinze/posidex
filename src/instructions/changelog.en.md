@@ -1,9 +1,11 @@
-*feedback@cachy.app*
+**Feedback:** feedback@cachy.app
 
-**support&thanks**: bc1qgrm2kvs27rfkpwtgp5u7w0rlzkgwrxqtls2q4f
+**Support & Thanks (BTC):** `bc1qgrm2kvs27rfkpwtgp5u7w0rlzkgwrxqtls2q4f`
 
-trade with Bitunix => https://www.bitunix.com/register?inviteCode=cw291y
-***
+**Trade with Bitunix:** [https://www.bitunix.com/register?inviteCode=cw291y](https://www.bitunix.com/register?inviteCode=cw291y)
+
+---
+
 # Changelog
 
 ## Version 0.92b1 (September 04, 2025)
@@ -11,6 +13,8 @@ trade with Bitunix => https://www.bitunix.com/register?inviteCode=cw291y
 - **New:** Enhanced locking features: The risk amount in currency can now be locked to calculate the position size and risk percentage.
 - **New:** Added keyboard shortcuts (`Alt+L/S/R/J`) for faster operation.
 - **New:** Modals can now be closed by pressing the `Escape` key or by clicking on the backdrop.
+
+---
 
 ## Version 0.92b (August 22, 2025)
 - **Improvement:** Symbol input field now accepts letters and numbers.
