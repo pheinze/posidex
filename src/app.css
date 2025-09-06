@@ -336,7 +336,7 @@ body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: v
 .result-item { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; padding: 0.75rem 0; border-bottom: 1px solid var(--bg-tertiary); }
 .result-item:last-child { border-bottom: none; }
 .result-label { color: var(--text-secondary); display: flex; align-items: center; gap: 0.5rem; margin-right: 1rem; }
-.input-label { @apply block text-sm font-medium text-[var(--text-secondary)] mb-1; }
+.input-label { @apply block text-xs font-medium text-[var(--text-secondary)] mb-1; }
 .result-value { color: var(--text-primary); font-weight: 600; text-align: right; word-break: break-all; flex-grow: 1; }
 .fade-in { animation: fadeIn 0.5s ease-in-out; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
