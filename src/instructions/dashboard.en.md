@@ -1,61 +1,117 @@
-# Guide: Understanding the Calculations
+# Guide: Master Your Trading with Cachy
 
-This guide explains in detail how the calculations in the app work. Understanding where the numbers come from will help you make the most of the tool for your risk management and trading strategy.
+Welcome to Cachy! This guide is more than just a description; it's your manual for understanding the full power of this tool and taking your trading to the next level.
 
-<p></p>
+The core of successful trading is **disciplined risk management**. Cachy is designed to help you with exactly that by automating the complex but crucial calculations for you.
 
-### Base Metrics
+<hr />
 
-Everything starts with setting up your trade. The following metrics are the foundation for all further calculations.
+### The Standard Workflow: Calculating Position Size
 
-*   **Risk Amount:** This is the maximum amount of money you are willing to lose on this trade.
-    *   **Formula:** `Account Size * (Risk % / 100)`
-    *   **Example:** On a €10,000 account with 1% risk, you are risking €100.
+This is the most common use case. You define what percentage of your capital you want to risk, and Cachy calculates the **exact position size** you need to trade.
 
-*   **Position Size:** This is the quantity of units of the asset (e.g., number of shares or coins) you need to buy or sell to risk exactly your desired risk amount.
-    *   **Formula:** `Risk Amount / |Entry Price - Stop-Loss Price|`
-    *   **Benefit:** This calculation is crucial for ensuring consistent risk in every trade, regardless of market volatility.
+> **Example Scenario:**
+> *   **Your Capital:** €10,000
+> *   **Your Risk per Trade:** 1% (which is €100)
+> *   **Asset:** BTC/USDT
+> *   **Planned Entry:** €50,000
+> *   **Planned Stop-Loss:** €49,500
 
-*   **Order Volume:** The total value of your position in the base currency (e.g., USDT).
-    *   **Formula:** `Position Size * Entry Price`
+<br>
 
-*   **Required Margin:** The capital you actually need to post as collateral (margin) in your account to open the leveraged position.
-    *   **Formula:** `Order Volume / Leverage`
-    *   **Note:** With a leverage of 1 (or no leverage), the margin equals the full order volume.
+**How the Calculation Works:**
 
-*   **Net Loss:** The actual loss if your stop-loss is triggered. It accounts not only for the risk amount but also for the fees to open and close the position.
-    *   **Formula:** `Risk Amount + Entry Fee + Stop-Loss Exit Fee`
+1.  **Risk Amount in €:** First, your percentage risk is converted into a specific monetary amount.
+    > `Capital * (Risk % / 100)`
+    >
+    > *Example: €10,000 * (1 / 100) = **€100***
 
-*   **Break-Even Price:** The price at which your trade makes neither a profit nor a loss, as the potential gains exactly cover the trading fees.
-    *   **Benefit:** A useful reference point to know when your trade becomes profitable.
+2.  **Risk per Unit:** Next, the app calculates how much you would lose per unit purchased (e.g., per "piece" of BTC) if your stop-loss is triggered.
+    > `|Entry Price - Stop-Loss Price|`
+    >
+    > *Example: |€50,000 - €49,500| = **€500***
 
-*   **Liquidation Price:** (Leveraged trades only) The price at which your position is automatically closed by the exchange because your margin capital is depleted.
-    *   **Warning:** This price should always be far from your stop-loss to avoid an unwanted liquidation.
+3.  **The Magic Formula: Your Position Size:** Now, your total risk amount is divided by the risk per unit. The result is the exact quantity of units (here: BTC) you need to buy.
+    > `Risk Amount / Risk per Unit`
+    >
+    > *Example: €100 / €500 = **0.2***
 
-<p></p>
+**Result:** You need to buy exactly **0.2 BTC** to risk exactly €100.
 
-### Take-Profit (TP) Target Metrics
+**The Benefit for You:** No more guesswork. No "approximately." You know, down to the cent, that you are adhering to your risk limit, no matter how volatile the market is.
 
-Individual metrics are calculated for each take-profit target.
+<hr />
 
-*   **Net Profit:** The net gain for a partial sale at a TP target. It accounts for the proportional fees.
-    *   **Formula:** `Gross Profit of the Part - Proportional Entry Fee - Exit Fee`
+### Alternative Workflows: The Lock Functions
 
-*   **Risk/Reward Ratio:** Shows how much profit you are making in relation to the risk taken for that portion of the position.
-    *   **Formula:** `Net Profit / Proportional Risk Amount`
-    *   **Benefit:** An R/R of 2:1 means the potential profit of this partial sale is twice the risk taken for it.
+Sometimes you want to perform the calculation the other way around. That's what the **lock buttons** (🔒) next to the Risk Amount and Position Size fields are for.
 
-*   **Return on Capital (ROC):** Shows the percentage return on the margin capital used for this partial sale.
-    *   **Formula:** `(Net Profit / (Required Margin * Sell Portion %)) * 100`
+#### Scenario 1: Locking the Risk Amount
 
-<p></p>
+*   **When to use it?** When you think in **fixed monetary amounts** ("I'll risk €50 on this trade") instead of percentages.
+*   **How it works:**
+    1.  Enter your desired risk amount (e.g., €50) into the "Risk Amount" field and click the lock icon.
+    2.  The app will now automatically adjust the "Risk per Trade (%)" field for you.
+    3.  All other calculations proceed as usual.
+*   **Your Advantage:** Flexibility for traders who prefer to plan their risk in their currency rather than as a percentage.
 
-### Total Trade Metrics
+<br>
 
-These metrics summarize the performance of the entire trade across all take-profit targets.
+#### Scenario 2: Locking the Position Size
 
-*   **Total Net Profit:** The sum of the net profits from all your partial sales.
-*   **Weighted R/R:** The average risk/reward ratio of the entire trade, weighted by the percentage share of each target.
-*   **Max Potential Profit:** The net profit you would make if you sold 100% of your position at the best of your set TP targets.
+*   **When to use it?** When you want to trade a **fixed position size** (e.g., always 1 whole share, always 0.5 ETH).
+*   **How it works:**
+    1.  Lock the "Position Size" field and enter your desired size.
+    2.  Now, adjust your entry and stop-loss.
+    3.  The app now calculates **backwards** what your risk (in % and €) is with this position size and stop-loss.
+*   **Your Advantage:** Perfect for strategies based on fixed trade sizes. You immediately see the risk consequences of your plan.
 
-By understanding these calculations, you can make more informed trading decisions and plan your strategy with precision.
+<hr />
+
+### Stop-Loss for Pros: The ATR Mode
+
+Setting a stop-loss is an art. The **ATR (Average True Range)** mode helps you by considering the current market volatility.
+
+**What is the ATR?**
+The ATR measures the **average price fluctuation** over a specific period (e.g., the last 14 days). A high ATR means high volatility; a low ATR means low volatility.
+
+**How Cachy Calculates the ATR:**
+Cachy fetches the candle data (High, Low, Close) for the last 15 periods for the chosen timeframe (e.g., 1D for 15 days). For each of the last 14 periods, the **"True Range"** is calculated, which is the largest of the following three values:
+1.  `Current High - Current Low`
+2.  `|Current High - Previous Close|`
+3.  `|Current Low - Previous Close|`
+
+The ATR is then the **average** of these 14 "True Range" values.
+
+**How to Use the ATR Stop-Loss:**
+1.  Activate the **"ATR Stop-Loss"** switch.
+2.  Choose the mode:
+    *   **Auto:** Cachy automatically fetches the current ATR value for the selected symbol and timeframe from the exchange.
+    *   **Manual:** You enter your own ATR value.
+3.  Enter a **Multiplier**. A common value is 2.
+4.  The stop-loss is now calculated automatically:
+    > **Long Trade:** `Stop-Loss = Entry Price - (ATR Value * Multiplier)`
+    >
+    > **Short Trade:** `Stop-Loss = Entry Price + (ATR Value * Multiplier)`
+
+**Your Advantage:** Your stop-loss is not arbitrary but intelligently adapts to the current market conditions. In high volatility, it gives the trade more room to breathe; in low volatility, it sits tighter to the price.
+
+<hr />
+
+### Understanding the Risk/Reward Ratio (R/R)
+
+The R/R is one of the most important metrics in trading. It tells you how much profit you expect in relation to your risk.
+
+> An **R/R of 1:1** means: you risk €100 to win €100.
+>
+> An **R/R of 3:1** means: you risk €100 to win €300.
+
+**How Cachy Displays R/R:**
+*   **Individual R/R:** For each Take-Profit (TP) target, you see its own R/R. This allows you to assess the attractiveness of each individual target.
+*   **Weighted R/R:** This is the average R/R for your entire trade, taking into account the percentage of your position you sell at each target.
+
+**Your Advantage:** Cachy essentially forces you to think about your R/R. Trades with an R/R below 1:1 are often not profitable in the long run. With this tool, you can ensure that your potential profits systematically exceed your losses.
+
+<hr />
+
+**Conclusion:** Cachy is your partner for disciplined, data-driven trading. It takes the error-prone calculations off your hands, allowing you to focus on what matters: **your strategy and finding good trading setups.**

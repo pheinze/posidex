@@ -1,61 +1,117 @@
-# Anleitung: Die Berechnungen verstehen
+# Anleitung: Meistere dein Trading mit Cachy
 
-Diese Anleitung erklärt detailliert, wie die Berechnungen in der App funktionieren. Wenn Sie verstehen, wie die Zahlen zustande kommen, können Sie das Tool optimal für Ihr Risikomanagement und Ihre Handelsstrategie nutzen.
+Willkommen bei Cachy! Diese Anleitung ist mehr als nur eine Beschreibung; sie ist Ihr Leitfaden, um die volle Leistungsfähigkeit dieses Tools zu verstehen und Ihr Trading auf das nächste Level zu heben.
 
-<p></p>
+Der Kern des erfolgreichen Tradings ist **diszipliniertes Risikomanagement**. Cachy wurde entwickelt, um Ihnen genau dabei zu helfen, indem es die komplexen, aber entscheidenden Berechnungen für Sie automatisiert.
 
-### Grundlegende Kennzahlen (Base Metrics)
+<hr />
 
-Alles beginnt mit der Einrichtung Ihres Trades. Die folgenden Kennzahlen sind die Grundlage für alle weiteren Berechnungen.
+### Der Standard-Workflow: Die Positionsgröße berechnen
 
-*   **Risikobetrag (Risk Amount):** Dies ist der Geldbetrag, den Sie bei diesem Trade maximal zu verlieren bereit sind.
-    *   **Formel:** `Kontogröße * (Risiko % / 100)`
-    *   **Beispiel:** Bei einem 10.000 € Konto und 1 % Risiko riskieren Sie 100 €.
+Dies ist der häufigste Anwendungsfall. Sie geben vor, wie viel Prozent Ihres Kapitals Sie riskieren möchten, und Cachy berechnet die **exakte Positionsgröße**, die Sie handeln müssen.
 
-*   **Positionsgröße (Position Size):** Dies ist die Menge der Einheiten des Assets (z.B. Anzahl an Aktien oder Coins), die Sie kaufen oder verkaufen müssen, um genau Ihren gewünschten Risikobetrag zu riskieren.
-    *   **Formel:** `Risikobetrag / |Einstiegspreis - Stop-Loss-Preis|`
-    *   **Nutzen:** Diese Berechnung ist entscheidend, um in jedem Trade ein konsistentes Risiko zu gewährleisten, unabhängig von der Volatilität des Marktes.
+> **Beispiel-Szenario:**
+> *   **Ihr Kapital:** 10.000 €
+> *   **Ihr Risiko pro Trade:** 1 % (also 100 €)
+> *   **Asset:** BTC/USDT
+> *   **Geplanter Einstieg:** 50.000 €
+> *   **Geplanter Stop-Loss:** 49.500 €
 
-*   **Ordervolumen (Order Volume):** Der Gesamtwert Ihrer Position in der Basiswährung (z.B. USDT).
-    *   **Formel:** `Positionsgröße * Einstiegspreis`
+<br>
 
-*   **Benötigte Margin (Required Margin):** Das Kapital, das Sie tatsächlich auf Ihrem Konto als Sicherheit (Margin) für die Eröffnung der gehebelten Position hinterlegen müssen.
-    *   **Formel:** `Ordervolumen / Hebel`
-    *   **Hinweis:** Bei einem Hebel von 1 (oder ohne Hebel) entspricht die Margin dem vollen Ordervolumen.
+**So funktioniert die Berechnung:**
 
-*   **Nettoverlust (Net Loss):** Der tatsächliche Verlust, wenn Ihr Stop-Loss ausgelöst wird. Er berücksichtigt nicht nur den Risikobetrag, sondern auch die Gebühren für die Eröffnung und Schließung der Position.
-    *   **Formel:** `Risikobetrag + Einstiegsgebühr + Stop-Loss-Ausstiegsgebühr`
+1.  **Risikobetrag in €:** Zuerst wird Ihr prozentuales Risiko in einen konkreten Geldbetrag umgerechnet.
+    > `Kapital * (Risiko % / 100)`
+    >
+    > *Beispiel: 10.000 € * (1 / 100) = **100 €***
 
-*   **Break-Even-Preis (Break-Even Price):** Der Preis, bei dem Ihr Trade weder Gewinn noch Verlust macht, da die potenziellen Gewinne genau die Handelsgebühren decken.
-    *   **Nutzen:** Ein nützlicher Anhaltspunkt, um zu wissen, ab wann Ihr Trade profitabel wird.
+2.  **Risiko pro Anteil (Unit):** Als Nächstes berechnet die App, wie viel Sie pro gekaufter Einheit (z.B. pro "Stück" BTC) verlieren würden, wenn Ihr Stop-Loss ausgelöst wird.
+    > `|Einstiegspreis - Stop-Loss-Preis|`
+    >
+    > *Beispiel: |50.000 € - 49.500 €| = **500 €***
 
-*   **Liquidationspreis (Liquidation Price):** (Nur bei Hebel-Trades) Der Preis, bei dem Ihre Position von der Börse automatisch geschlossen wird, weil Ihr Margin-Kapital aufgebraucht ist.
-    *   **Warnung:** Dieser Preis sollte immer weit von Ihrem Stop-Loss entfernt sein, um eine ungewollte Liquidation zu vermeiden.
+3.  **Die magische Formel: Ihre Positionsgröße:** Jetzt wird Ihr gesamtes Risiko durch das Risiko pro Anteil geteilt. Das Ergebnis ist die exakte Menge an Anteilen (hier: BTC), die Sie kaufen müssen.
+    > `Risikobetrag / Risiko pro Anteil`
+    >
+    > *Beispiel: 100 € / 500 € = **0,2***
 
-<p></p>
+**Ergebnis:** Sie müssen genau **0,2 BTC** kaufen, um exakt 100 € zu riskieren.
 
-### Kennzahlen der Take-Profit-Ziele (TP)
+**Der Nutzen für Sie:** Kein Raten mehr. Kein "ungefähr". Sie wissen auf den Cent genau, dass Sie Ihr Risikolimit einhalten, egal wie volatil der Markt ist.
 
-Für jedes einzelne Take-Profit-Ziel werden individuelle Metriken berechnet.
+<hr />
 
-*   **Nettogewinn (Net Profit):** Der Reingewinn für einen Teilverkauf an einem TP-Ziel. Er berücksichtigt die anteiligen Gebühren.
-    *   **Formel:** `Bruttogewinn des Teils - Anteilige Einstiegsgebühr - Ausstiegsgebühr`
+### Alternative Workflows: Die Sperr-Funktionen
 
-*   **Chance-Risiko-Verhältnis (Risk/Reward Ratio):** Zeigt, wie viel Gewinn Sie im Verhältnis zum eingegangenen Risiko für diesen Teil der Position erzielen.
-    *   **Formel:** `Nettogewinn / Anteiliger Risikobetrag`
-    *   **Nutzen:** Ein R/R von 2:1 bedeutet, dass der potenzielle Gewinn dieses Teilverkaufs doppelt so hoch ist wie das dafür eingegangene Risiko.
+Manchmal möchten Sie die Berechnung andersherum durchführen. Dafür gibt es die **Sperr-Buttons** (🔒) neben dem Risikobetrag und der Positionsgröße.
 
-*   **Kapitalrendite (Return on Capital - ROC):** Zeigt die prozentuale Rendite auf das eingesetzte Margin-Kapital für diesen Teilverkauf.
-    *   **Formel:** `(Nettogewinn / (Benötigte Margin * Verkaufsanteil %)) * 100`
+#### Szenario 1: Risikobetrag sperren
 
-<p></p>
+*   **Wann nutzen?** Wenn Sie in **festen Geldbeträgen** denken ("Ich riskiere heute 50 €") anstatt in Prozent.
+*   **Wie es funktioniert:**
+    1.  Geben Sie Ihren gewünschten Risikobetrag (z.B. 50 €) in das Feld "Risk Amount" ein und klicken Sie auf das Schloss-Symbol.
+    2.  Die App passt nun automatisch das Feld "Risiko pro Trade (%)" für Sie an.
+    3.  Alle anderen Berechnungen laufen wie gewohnt ab.
+*   **Ihr Vorteil:** Flexibilität für Trader, die ihr Risiko lieber in ihrer Währung als in Prozent planen.
 
-### Gesamt-Kennzahlen des Trades (Total Metrics)
+<br>
 
-Diese Metriken fassen die Performance des gesamten Trades über alle Take-Profit-Ziele hinweg zusammen.
+#### Szenario 2: Positionsgröße sperren
 
-*   **Gesamter Nettogewinn (Total Net Profit):** Die Summe der Nettogewinne aller Ihrer Teilverkäufe.
-*   **Gewichtetes CRV (Weighted R/R):** Das durchschnittliche Chance-Risiko-Verhältnis des gesamten Trades, gewichtet nach dem prozentualen Anteil jedes Ziels.
-*   **Maximal potenzieller Gewinn (Max Potential Profit):** Der Nettogewinn, den Sie erzielen würden, wenn Sie 100% Ihrer Position am besten Ihrer gesetzten TP-Ziele verkaufen würden.
+*   **Wann nutzen?** Wenn Sie eine **feste Positionsgröße** handeln möchten (z.B. immer 1 ganze Aktie, immer 0.5 ETH).
+*   **Wie es funktioniert:**
+    1.  Sperren Sie das Feld "Position Size" und geben Sie Ihre gewünschte Größe ein.
+    2.  Passen Sie nun Ihren Einstieg und Stop-Loss an.
+    3.  Die App berechnet jetzt **rückwärts**, wie hoch Ihr Risiko (in % und €) bei dieser Positionsgröße und diesem Stop-Loss ist.
+*   **Ihr Vorteil:** Perfekt für Strategien, die auf festen Handelsgrößen basieren. Sie sehen sofort die Risiko-Konsequenzen Ihrer Planung.
 
-Indem Sie diese Berechnungen verstehen, können Sie fundiertere Handelsentscheidungen treffen und Ihre Strategie präzise planen.
+<hr />
+
+### Stop-Loss für Profis: Der ATR-Modus
+
+Einen Stop-Loss zu setzen ist eine Kunst. Der **ATR (Average True Range)** Modus hilft Ihnen dabei, indem er die aktuelle Marktvolatilität berücksichtigt.
+
+**Was ist der ATR?**
+Der ATR misst die **durchschnittliche Preisschwankung** über einen bestimmten Zeitraum (z.B. die letzten 14 Tage). Ein hoher ATR bedeutet hohe Volatilität, ein niedriger ATR bedeutet geringe Volatilität.
+
+**Wie Cachy den ATR berechnet:**
+Cachy holt sich die Kerzendaten (Hoch, Tief, Schlusskurs) der letzten 15 Perioden für das gewählte Zeitfenster (z.B. 1D für 15 Tage). Für jede der letzten 14 Perioden wird die **"True Range"** berechnet, was der größte der folgenden drei Werte ist:
+1.  `Aktuelles Hoch - Aktuelles Tief`
+2.  `|Aktuelles Hoch - Vorheriger Schlusskurs|`
+3.  `|Aktuelles Tief - Vorheriger Schlusskurs|`
+
+Der ATR ist dann der **Durchschnitt** dieser 14 "True Range"-Werte.
+
+**So nutzen Sie den ATR Stop-Loss:**
+1.  Aktivieren Sie den Schalter **"ATR Stop-Loss"**.
+2.  Wählen Sie den Modus:
+    *   **Auto:** Cachy holt den aktuellen ATR-Wert für das gewählte Symbol und Zeitfenster automatisch von der Börse.
+    *   **Manual:** Sie geben einen eigenen ATR-Wert ein.
+3.  Geben Sie einen **Multiplikator** ein. Ein üblicher Wert ist 2.
+4.  Der Stop-Loss wird nun automatisch berechnet:
+    > **Long-Trade:** `Stop-Loss = Einstiegspreis - (ATR-Wert * Multiplikator)`
+    >
+    > **Short-Trade:** `Stop-Loss = Einstiegspreis + (ATR-Wert * Multiplikator)`
+
+**Ihr Vorteil:** Ihr Stop-Loss ist nicht willkürlich, sondern passt sich intelligent der aktuellen Marktlage an. Bei hoher Volatilität gibt er dem Trade mehr Raum zum Atmen, bei niedriger Volatilität sitzt er enger am Preis.
+
+<hr />
+
+### Das Chance-Risiko-Verhältnis (CRV / R-R) verstehen
+
+Das CRV ist eine der wichtigsten Kennzahlen im Trading. Es sagt Ihnen, wie viel Gewinn Sie im Verhältnis zu Ihrem Risiko erwarten.
+
+> **CRV von 1:1** bedeutet: Sie riskieren 100 €, um 100 € zu gewinnen.
+>
+> **CRV von 3:1** bedeutet: Sie riskieren 100 €, um 300 € zu gewinnen.
+
+**Wie Cachy das CRV anzeigt:**
+*   **Individuelles CRV:** Für jedes Take-Profit (TP) Ziel sehen Sie ein eigenes CRV. So können Sie die Attraktivität jedes einzelnen Ziels bewerten.
+*   **Gewichtetes CRV (Weighted R/R):** Dies ist das durchschnittliche CRV für Ihren gesamten Trade, unter Berücksichtigung der prozentualen Anteile, die Sie an den jeweiligen Zielen verkaufen.
+
+**Ihr Vorteil:** Cachy zwingt Sie quasi dazu, über Ihr CRV nachzudenken. Trades mit einem CRV unter 1:1 sind oft langfristig nicht profitabel. Mit diesem Tool können Sie sicherstellen, dass Ihre potenziellen Gewinne Ihre Verluste systematisch übersteigen.
+
+<hr />
+
+**Fazit:** Cachy ist Ihr Partner für diszipliniertes, datengestütztes Trading. Es nimmt Ihnen die fehleranfälligen Berechnungen ab und ermöglicht es Ihnen, sich auf das zu konzentrieren, was zählt: **Ihre Strategie und das Finden guter Trading-Setups.**
