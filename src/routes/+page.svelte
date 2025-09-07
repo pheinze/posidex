@@ -19,6 +19,7 @@
     import { loadInstruction } from '../services/markdownLoader';
     import { formatDynamicDecimal } from '../utils/utils';
     import { trackClick } from '../lib/actions';
+    import { createBackup, restoreFromBackup } from '../services/backupService';
     
     import type { IndividualTpResult } from '../stores/types';
     import SummaryResults from '../components/results/SummaryResults.svelte';
@@ -27,6 +28,7 @@
     import JournalView from '../components/shared/JournalView.svelte';
     import CachyIcon from '../components/shared/CachyIcon.svelte';
 
+    let fileInput: HTMLInputElement;
     let changelogContent = '';
     let guideContent = '';
 
@@ -150,9 +152,61 @@
             }
         }
     }
+
+    function handleBackupClick() {
+        createBackup();
+        trackClick({
+            detail: { category: 'Backup', action: 'Click', name: 'CreateBackup' }
+        });
+    }
+
+    function handleRestoreClick() {
+        fileInput.click();
+    }
+
+    function handleFileSelected(event: Event) {
+        const input = event.target as HTMLInputElement;
+        const file = input.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const content = e.target?.result as string;
+
+            modalManager.showConfirm(
+                $_('app.restoreConfirmTitle'),
+                $_('app.restoreConfirmMessage'),
+                (confirmed) => {
+                    if (confirmed) {
+                        const result = restoreFromBackup(content);
+                        if (result.success) {
+                            uiStore.showFeedback('save'); // Re-use save feedback for now
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 1000);
+                        } else {
+                            uiStore.showError(result.message);
+                        }
+                    }
+                    // Reset file input so the same file can be selected again
+                    input.value = '';
+                }
+            );
+        };
+        reader.onerror = () => {
+            uiStore.showError('app.fileReadError');
+        };
+        reader.readAsText(file);
+
+        trackClick({
+            detail: { category: 'Backup', action: 'Click', name: 'RestoreBackup' }
+        });
+    }
 </script>
 
 <svelte:window on:keydown={handleKeydown} />
+
+<input type="file" class="hidden" bind:this={fileInput} on:change={handleFileSelected} accept=".json,application/json" />
 
 <main class="my-8 w-full max-w-4xl mx-auto calculator-wrapper rounded-2xl shadow-2xl p-6 sm:p-8 fade-in">
 
@@ -290,8 +344,16 @@
                 <button id="show-dashboard-readme-btn" class="font-bold p-3 rounded-lg btn-secondary-action" title="{$_('dashboard.showInstructionsTitle')}" aria-label="{$_('dashboard.showInstructionsAriaLabel')}" on:click={() => app.uiManager.showReadme('dashboard')} use:trackClick={{ category: 'Navigation', action: 'Click', name: 'ShowInstructions' }}>{@html icons.book}</button>
                 {#if $uiStore.showSaveFeedback}<span id="save-feedback" class="save-feedback" class:visible={$uiStore.showSaveFeedback}>{$_('dashboard.savedFeedback')}</span>{/if}
             </div>
-            <div class="mt-4">
+            <div class="mt-4 flex justify-between items-center">
                 <LanguageSwitcher />
+                <div class="flex items-center gap-2">
+                    <button id="backup-btn" class="text-sm bg-[var(--btn-default-bg)] hover:bg-[var(--btn-default-hover-bg)] text-[var(--btn-default-text)] font-bold py-2.5 px-2.5 rounded-lg" title="{$_('app.backupButtonTitle')}" aria-label="{$_('app.backupButtonAriaLabel')}" on:click={handleBackupClick}>
+                        {@html icons.export}
+                    </button>
+                    <button id="restore-btn" class="text-sm bg-[var(--btn-default-bg)] hover:bg-[var(--btn-default-hover-bg)] text-[var(--btn-default-text)] font-bold py-2.5 px-2.5 rounded-lg" title="{$_('app.restoreButtonTitle')}" aria-label="{$_('app.restoreButtonAriaLabel')}" on:click={handleRestoreClick}>
+                        {@html icons.import}
+                    </button>
+                </div>
             </div>
         </footer>
     </section>

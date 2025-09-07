@@ -7,7 +7,14 @@
     "closeChangelogAriaLabel": "Close Changelog",
     "guideButton": "Guide",
     "guideTitle": "Guide",
-    "closeGuideAriaLabel": "Close Guide"
+    "closeGuideAriaLabel": "Close Guide",
+    "backupButtonTitle": "Create a backup of all settings and data",
+    "backupButtonAriaLabel": "Create Backup",
+    "restoreButtonTitle": "Restore data from a backup file",
+    "restoreButtonAriaLabel": "Restore Backup",
+    "restoreConfirmTitle": "Restore Backup?",
+    "restoreConfirmMessage": "Are you sure you want to restore from this backup? All your current settings, presets, and journal entries will be overwritten. This action cannot be undone.",
+    "fileReadError": "Error reading the selected file."
   },
   "dashboard": {
     "presetLoad": "Load Preset...",

@@ -7,7 +7,14 @@
     "closeChangelogAriaLabel": "Changelog schließen",
     "guideButton": "Anleitung",
     "guideTitle": "Anleitung",
-    "closeGuideAriaLabel": "Anleitung schließen"
+    "closeGuideAriaLabel": "Anleitung schließen",
+    "backupButtonTitle": "Ein Backup aller Einstellungen und Daten erstellen",
+    "backupButtonAriaLabel": "Backup erstellen",
+    "restoreButtonTitle": "Daten aus einer Backup-Datei wiederherstellen",
+    "restoreButtonAriaLabel": "Backup wiederherstellen",
+    "restoreConfirmTitle": "Backup wiederherstellen?",
+    "restoreConfirmMessage": "Möchten Sie dieses Backup wirklich wiederherstellen? Alle Ihre aktuellen Einstellungen, Presets und Journaleinträge werden unwiderruflich überschrieben. Diese Aktion kann nicht rückgängig gemacht werden.",
+    "fileReadError": "Fehler beim Lesen der ausgewählten Datei."
   },
   "dashboard": {
     "presetLoad": "Preset laden...",
