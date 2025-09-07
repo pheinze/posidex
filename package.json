@@ -5,7 +5,8 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
-		"build": "vite build",
+		"build": "npm run build:web && npx cap sync android && cd android && ./gradlew assembleDebug && cd ..",
+		"build:web": "vite build",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
@@ -13,6 +14,9 @@
 		"test": "vitest"
 	},
 	"devDependencies": {
+		"@capacitor/android": "^7.4.3",
+		"@capacitor/cli": "^7.4.3",
+		"@capacitor/core": "^7.4.3",
 		"@sveltejs/adapter-auto": "^6.0.0",
 		"@sveltejs/adapter-static": "^3.0.9",
 		"@sveltejs/kit": "^2.27.3",
