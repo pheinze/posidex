@@ -1,16 +1,30 @@
 <script lang="ts">
     import { CONSTANTS } from '../../lib/constants';
     import { updateTradeStore } from '../../stores/tradeStore';
-    import { numberInput } from '../../utils/inputUtils'; // Import the action
+    import { numberInput } from '../../utils/inputUtils';
     import { _ } from '../../locales/i18n';
     import { trackClick } from '../../lib/actions';
 
     export let tradeType: string;
-    export let leverage: string;
-    export let fees: string;
+    export let leverage: number | null;
+    export let fees: number | null;
 
     function setTradeType(type: string) {
         updateTradeStore(s => ({ ...s, tradeType: type }));
+    }
+
+    const format = (val: number | null) => (val === null || val === undefined) ? '' : String(val);
+
+    function handleLeverageInput(e: Event) {
+        const target = e.target as HTMLInputElement;
+        const value = target.value;
+        updateTradeStore(s => ({ ...s, leverage: value === '' ? null : parseFloat(value) }));
+    }
+
+    function handleFeesInput(e: Event) {
+        const target = e.target as HTMLInputElement;
+        const value = target.value;
+        updateTradeStore(s => ({ ...s, fees: value === '' ? null : parseFloat(value) }));
     }
 </script>
 
@@ -36,8 +50,24 @@
             >{$_('dashboard.generalInputs.shortButton')}</button>
         </div>
         <div class="grid grid-cols-2 gap-4">
-            <input id="leverage-input" type="text" inputmode="decimal" use:numberInput={{ noDecimals: true, maxValue: 125, minValue: 1 }} bind:value={leverage} class="input-field w-full h-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.generalInputs.leveragePlaceholder')}">
-            <input id="fees-input" type="text" inputmode="decimal" use:numberInput={{ maxDecimalPlaces: 4 }} bind:value={fees} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.generalInputs.feesPlaceholder')}">
+            <input
+                id="leverage-input"
+                type="text"
+                use:numberInput={{ noDecimals: true, maxValue: 125, minValue: 1 }}
+                value={format(leverage)}
+                on:input={handleLeverageInput}
+                class="input-field w-full h-full px-4 py-2 rounded-md"
+                placeholder="{$_('dashboard.generalInputs.leveragePlaceholder')}"
+            >
+            <input
+                id="fees-input"
+                type="text"
+                use:numberInput={{ maxDecimalPlaces: 4 }}
+                value={format(fees)}
+                on:input={handleFeesInput}
+                class="input-field w-full px-4 py-2 rounded-md"
+                placeholder="{$_('dashboard.generalInputs.feesPlaceholder')}"
+            >
         </div>
     </div>
 </div>

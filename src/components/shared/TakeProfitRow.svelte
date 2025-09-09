@@ -1,30 +1,60 @@
 <script lang="ts">
     import { icons } from '../../lib/constants';
-    import { createEventDispatcher, onMount } from 'svelte';
+    import { createEventDispatcher } from 'svelte';
     import { numberInput } from '../../utils/inputUtils';
     import { _ } from '../../locales/i18n';
     import { trackClick } from '../../lib/actions';
+    import { updateTradeStore, tradeStore } from '../../stores/tradeStore';
+    import { app } from '../../services/app';
+    import { get } from 'svelte/store';
 
     const dispatch = createEventDispatcher();
 
     export let index: number;
-    export let price: string;
-    export let percent: string;
+    export let price: number | null;
+    export let percent: number | null;
     export let isLocked: boolean;
     export let tpDetail: any | undefined = undefined;
 
-    let percentInput: HTMLInputElement;
-
     function toggleLock() {
-        dispatch('lockToggle', { index, isLocked: !isLocked });
+        const newLockState = !isLocked;
+        const currentTargets = get(tradeStore).targets;
+        if (currentTargets[index]) {
+            currentTargets[index].isLocked = newLockState;
+            updateTradeStore(s => ({ ...s, targets: currentTargets }));
+            app.adjustTpPercentages(index);
+        }
     }
 
     function removeRow() {
         dispatch('remove', index);
     }
 
-    function handleInput() {
-        dispatch('input', { index, price, percent, isLocked });
+    const format = (val: number | null) => (val === null || val === undefined) ? '' : String(val);
+
+    function handlePriceInput(e: Event) {
+        const target = e.target as HTMLInputElement;
+        const value = target.value;
+        const newPrice = value === '' ? null : parseFloat(value);
+
+        const currentTargets = get(tradeStore).targets;
+        if (currentTargets[index]) {
+            currentTargets[index].price = newPrice;
+            updateTradeStore(s => ({...s, targets: currentTargets}));
+        }
+    }
+
+    function handlePercentInput(e: Event) {
+        const target = e.target as HTMLInputElement;
+        const value = target.value;
+        const newPercent = value === '' ? null : parseFloat(value);
+
+        const currentTargets = get(tradeStore).targets;
+        if (currentTargets[index]) {
+            currentTargets[index].percent = newPercent;
+            updateTradeStore(s => ({...s, targets: currentTargets}));
+            app.adjustTpPercentages(index);
+        }
     }
 </script>
 
@@ -44,14 +74,20 @@
             {/if}
         </div>
         <div class="grid grid-cols-2 gap-2">
-            <input type="text" inputmode="decimal" use:numberInput={{ maxDecimalPlaces: 4 }} bind:value={price} on:input={handleInput} class="tp-price input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.takeProfitRow.pricePlaceholder')}" id="tp-price-{index}">
             <input
                 type="text"
-                inputmode="decimal"
+                use:numberInput={{ maxDecimalPlaces: 4 }}
+                value={format(price)}
+                on:input={handlePriceInput}
+                class="tp-price input-field w-full px-4 py-2 rounded-md"
+                placeholder="{$_('dashboard.takeProfitRow.pricePlaceholder')}"
+                id="tp-price-{index}"
+            >
+            <input
+                type="text"
                 use:numberInput={{ noDecimals: true, isPercentage: true, minValue: 0, maxValue: 100 }}
-                bind:value={percent}
-                bind:this={percentInput}
-                on:input={handleInput}
+                value={format(percent)}
+                on:input={handlePercentInput}
                 class="tp-percent input-field w-full px-4 py-2 rounded-md"
                 class:locked-input={isLocked}
                 disabled={isLocked}

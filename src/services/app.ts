@@ -45,19 +45,16 @@ interface CSVTradeEntry {
     'TP4 %'?: string;
     'TP5 Preis'?: string;
     'TP5 %'?: string;
-    [key: string]: string | undefined; // For dynamic access to TP keys
+    [key: string]: string | undefined;
 }
 
 export const app = {
-    calculator: calculator, // Expose calculator for use in Svelte components
+    calculator: calculator,
     uiManager: uiManager,
 
 
     init: () => {
         if (browser) {
-            // The theme is now handled by SSR in +layout.server.ts and +layout.svelte
-            // No need to re-apply it client-side on init, as it would cause a flash.
-            // The setTheme function is still used when the user explicitly changes the theme via UI.
             app.loadSettings();
             app.populatePresetLoader();
             app.calculateAndDisplay();
@@ -74,12 +71,12 @@ export const app = {
                 accountSize: parseDecimal(currentTradeState.accountSize),
                 riskPercentage: parseDecimal(currentTradeState.riskPercentage),
                 entryPrice: parseDecimal(currentTradeState.entryPrice),
-                leverage: parseDecimal(currentTradeState.leverage || CONSTANTS.DEFAULT_LEVERAGE),
-                fees: parseDecimal(currentTradeState.fees || CONSTANTS.DEFAULT_FEES),
+                leverage: parseDecimal(currentTradeState.leverage || parseFloat(CONSTANTS.DEFAULT_LEVERAGE)),
+                fees: parseDecimal(currentTradeState.fees || parseFloat(CONSTANTS.DEFAULT_FEES)),
                 symbol: currentTradeState.symbol || '',
                 useAtrSl: currentTradeState.useAtrSl,
                 atrValue: parseDecimal(currentTradeState.atrValue),
-                atrMultiplier: parseDecimal(currentTradeState.atrMultiplier || CONSTANTS.DEFAULT_ATR_MULTIPLIER),
+                atrMultiplier: parseDecimal(currentTradeState.atrMultiplier || parseFloat(CONSTANTS.DEFAULT_ATR_MULTIPLIER)),
                 stopLossPrice: parseDecimal(currentTradeState.stopLossPrice),
                 targets: currentTradeState.targets.map(t => ({ price: parseDecimal(t.price), percent: parseDecimal(t.percent), isLocked: t.isLocked })),
                 totalPercentSold: new Decimal(0)
@@ -185,7 +182,7 @@ export const app = {
             const riskAmount = parseDecimal(currentTradeState.riskAmount);
             if (riskAmount.gt(0) && values.accountSize.gt(0)) {
                 const newRiskPercentage = riskAmount.div(values.accountSize).times(100);
-                updateTradeStore(state => ({ ...state, riskPercentage: newRiskPercentage.toFixed(4) }));
+                updateTradeStore(state => ({ ...state, riskPercentage: newRiskPercentage.toNumber() }));
                 values.riskPercentage = newRiskPercentage;
             }
             baseMetrics = calculator.calculateBaseMetrics(values, currentTradeState.tradeType);
@@ -200,7 +197,7 @@ export const app = {
             const riskAmount = riskPerUnit.times(currentTradeState.lockedPositionSize);
             const newRiskPercentage = values.accountSize.isZero() ? new Decimal(0) : riskAmount.div(values.accountSize).times(100);
 
-            updateTradeStore(state => ({ ...state, riskPercentage: newRiskPercentage.toFixed(2), riskAmount: riskAmount.toFixed(2) }));
+            updateTradeStore(state => ({ ...state, riskPercentage: newRiskPercentage.toNumber(), riskAmount: riskAmount.toNumber() }));
             values.riskPercentage = newRiskPercentage;
 
             baseMetrics = calculator.calculateBaseMetrics(values, currentTradeState.tradeType);
@@ -210,7 +207,7 @@ export const app = {
             baseMetrics = calculator.calculateBaseMetrics(values, currentTradeState.tradeType);
             if (baseMetrics) {
                 const finalMetrics = baseMetrics;
-                updateTradeStore(state => ({ ...state, riskAmount: finalMetrics.riskAmount.toFixed(2) }));
+                updateTradeStore(state => ({ ...state, riskAmount: finalMetrics.riskAmount.toNumber() }));
             }
         }
 
@@ -257,11 +254,10 @@ export const app = {
         trackCustomEvent('Calculation', 'Success', currentTradeState.tradeType, activeTargets);
         onboardingService.trackFirstCalculation();
 
-        // Pass the final calculated stopLossPrice back to the store to ensure UI consistency
         updateTradeStore(state => ({
             ...state,
             currentTradeData: { ...values, ...baseMetrics, ...totalMetrics, tradeType: currentTradeState.tradeType, status: 'Open', calculatedTpDetails },
-            stopLossPrice: values.stopLossPrice.toString()
+            stopLossPrice: values.stopLossPrice.toNumber()
         }));
         app.saveSettings();
     },
@@ -379,21 +375,20 @@ export const app = {
             if (settings) {
                 updateTradeStore(state => ({
                     ...state,
-                    accountSize: settings.accountSize || '',
-                    riskPercentage: settings.riskPercentage || '',
-                    leverage: settings.leverage || CONSTANTS.DEFAULT_LEVERAGE,
-                    fees: settings.fees || CONSTANTS.DEFAULT_FEES,
+                    accountSize: settings.accountSize || null,
+                    riskPercentage: settings.riskPercentage || null,
+                    leverage: settings.leverage || parseFloat(CONSTANTS.DEFAULT_LEVERAGE),
+                    fees: settings.fees || parseFloat(CONSTANTS.DEFAULT_FEES),
                     symbol: settings.symbol || '',
-                    atrValue: settings.atrValue || '',
-                    atrMultiplier: settings.atrMultiplier || CONSTANTS.DEFAULT_ATR_MULTIPLIER,
+                    atrValue: settings.atrValue || null,
+                    atrMultiplier: settings.atrMultiplier || parseFloat(CONSTANTS.DEFAULT_ATR_MULTIPLIER),
                     useAtrSl: settings.useAtrSl || false,
                     tradeType: settings.tradeType || CONSTANTS.TRADE_TYPE_LONG,
                     targets: settings.targets || [
-                        { price: '', percent: '', isLocked: false },
-                        { price: '', percent: '', isLocked: false },
-                        { price: '', percent: '', isLocked: false }
+                        { price: null, percent: 50, isLocked: false },
+                        { price: null, percent: 25, isLocked: false },
+                        { price: null, percent: 25, isLocked: false }
                     ],
-                    // selectedPreset: presetName, // THIS LINE IS REMOVED
                 }));
                 toggleAtrInputs(settings.useAtrSl || false);
                 return;
@@ -405,18 +400,19 @@ export const app = {
     savePreset: async () => {
         if (!browser) return;
         const presetName = await modalManager.show("Preset speichern", "Geben Sie einen Namen für Ihr Preset ein:", "prompt");
-        if (!presetName) return;
-        try {
-            const presets = JSON.parse(localStorage.getItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY) || '{}');
-            if (presets[presetName] && !(await modalManager.show("Überschreiben?", `Preset \"${presetName}\" existiert bereits. Möchten Sie es überschreiben?`, "confirm"))) return;
-            presets[presetName] = app.getInputsAsObject();
-            localStorage.setItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY, JSON.stringify(presets));
-            uiStore.showFeedback('save');
-            app.populatePresetLoader();
-            updatePresetStore(state => ({ ...state, selectedPreset: presetName }));
-        } catch (e) {
-            console.error("Fehler beim Speichern des Presets:", e);
-            uiStore.showError("Preset konnte nicht gespeichert werden. Der lokale Speicher ist möglicherweise voll oder blockiert.");
+        if (typeof presetName === 'string' && presetName) {
+            try {
+                const presets = JSON.parse(localStorage.getItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY) || '{}');
+                if (presets[presetName] && !(await modalManager.show("Überschreiben?", `Preset \"${presetName}\" existiert bereits. Möchten Sie es überschreiben?`, "confirm"))) return;
+                presets[presetName] = app.getInputsAsObject();
+                localStorage.setItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY, JSON.stringify(presets));
+                uiStore.showFeedback('save');
+                app.populatePresetLoader();
+                updatePresetStore(state => ({ ...state, selectedPreset: presetName }));
+            } catch (e) {
+                console.error("Fehler beim Speichern des Presets:", e);
+                uiStore.showError("Preset konnte nicht gespeichert werden. Der lokale Speicher ist möglicherweise voll oder blockiert.");
+            }
         }
     },
     deletePreset: async () => {
@@ -443,19 +439,19 @@ export const app = {
                 resetAllInputs();
                 updateTradeStore(state => ({
                     ...state,
-                    accountSize: preset.accountSize || '',
-                    riskPercentage: preset.riskPercentage || '',
-                    leverage: preset.leverage || CONSTANTS.DEFAULT_LEVERAGE,
-                    fees: preset.fees || CONSTANTS.DEFAULT_FEES,
+                    accountSize: preset.accountSize || null,
+                    riskPercentage: preset.riskPercentage || null,
+                    leverage: preset.leverage || parseFloat(CONSTANTS.DEFAULT_LEVERAGE),
+                    fees: preset.fees || parseFloat(CONSTANTS.DEFAULT_FEES),
                     symbol: preset.symbol || '',
-                    atrValue: preset.atrValue || '',
-                    atrMultiplier: preset.atrMultiplier || CONSTANTS.DEFAULT_ATR_MULTIPLIER,
+                    atrValue: preset.atrValue || null,
+                    atrMultiplier: preset.atrMultiplier || parseFloat(CONSTANTS.DEFAULT_ATR_MULTIPLIER),
                     useAtrSl: preset.useAtrSl || false,
                     tradeType: preset.tradeType || CONSTANTS.TRADE_TYPE_LONG,
                     targets: preset.targets || [
-                        { price: '', percent: '', isLocked: false },
-                        { price: '', percent: '', isLocked: false },
-                        { price: '', percent: '', isLocked: false }
+                        { price: null, percent: 50, isLocked: false },
+                        { price: null, percent: 25, isLocked: false },
+                        { price: null, percent: 25, isLocked: false }
                     ],
                 }));
                 updatePresetStore(state => ({ ...state, selectedPreset: presetName }));
@@ -595,8 +591,8 @@ export const app = {
         uiStore.update(state => ({ ...state, isPriceFetching: true }));
         try {
             const price = await apiService.fetchBinancePrice(symbol);
-            updateTradeStore(state => ({ ...state, entryPrice: price.toDP(4).toString() }));
-            uiStore.showFeedback('copy', 700); // Reusing copy feedback for price loaded animation
+            updateTradeStore(state => ({ ...state, entryPrice: price.toDP(4).toNumber() }));
+            uiStore.showFeedback('copy', 700);
             app.calculateAndDisplay();
         } catch (error: any) {
             uiStore.showError(error.message);
@@ -609,7 +605,7 @@ export const app = {
         updateTradeStore(state => ({
             ...state,
             atrMode: mode,
-            atrValue: mode === 'auto' ? '' : state.atrValue // Clear ATR value when switching to auto
+            atrValue: mode === 'auto' ? null : state.atrValue
         }));
         app.calculateAndDisplay();
     },
@@ -631,16 +627,16 @@ export const app = {
             uiStore.showError("Bitte geben Sie ein Symbol ein.");
             return;
         }
-        uiStore.update(state => ({ ...state, isPriceFetching: true })); // Reuse for loading spinner
+        uiStore.update(state => ({ ...state, isPriceFetching: true }));
         try {
             const klines = await apiService.fetchKlines(symbol, currentTradeState.atrTimeframe);
             const atr = calculator.calculateATR(klines);
             if (atr.lte(0)) {
                 throw new Error("ATR konnte nicht berechnet werden. Prüfen Sie das Symbol oder den Zeitrahmen.");
             }
-            updateTradeStore(state => ({ ...state, atrValue: atr.toDP(4).toString() }));
+            updateTradeStore(state => ({ ...state, atrValue: atr.toDP(4).toNumber() }));
             app.calculateAndDisplay();
-            uiStore.showFeedback('copy', 700); // Reusing copy feedback for loaded animation
+            uiStore.showFeedback('copy', 700);
         } catch (error: any) {
             uiStore.showError(error.message);
         } finally {
@@ -676,7 +672,6 @@ export const app = {
             ...state,
             isPositionSizeLocked: shouldBeLocked,
             lockedPositionSize: shouldBeLocked ? parseDecimal(currentResultsState.positionSize) : null,
-            // Enforce mutual exclusion
             isRiskAmountLocked: false,
         }));
 
@@ -695,7 +690,6 @@ export const app = {
         updateTradeStore(state => ({
             ...state,
             isRiskAmountLocked: shouldBeLocked,
-            // Enforce mutual exclusion
             isPositionSizeLocked: false,
             lockedPositionSize: null,
         }));
@@ -703,7 +697,7 @@ export const app = {
         app.calculateAndDisplay();
     },
 
-    addTakeProfitRow: (price: string = '', percent: string = '', isLocked = false) => {
+    addTakeProfitRow: (price: number | null = null, percent: number | null = null, isLocked = false) => {
         updateTradeStore(state => ({
             ...state,
             targets: [...state.targets, { price, percent, isLocked }]
@@ -711,8 +705,6 @@ export const app = {
     },
     adjustTpPercentages: (changedIndex: number | null) => {
         const currentAppState = get(tradeStore);
-
-        // Guard clause: If the target that triggered the change is locked, do nothing.
         if (changedIndex !== null && currentAppState.targets[changedIndex].isLocked) {
             return;
         }
@@ -734,20 +726,17 @@ export const app = {
 
         const otherUnlocked = decTargets.filter((t: any) => !t.isLocked && t.originalIndex !== changedIndex);
 
-        // Edge Case: No other fields to adjust, so revert the change on the current field.
         if (otherUnlocked.length === 0) {
             if (changedIndex !== null) {
                 decTargets[changedIndex].percent = decTargets[changedIndex].percent.plus(diff);
             }
         }
-        // --- Handle Surplus (diff > 0): A value was decreased ---
         else if (diff.gt(ZERO)) {
             const share = diff.div(otherUnlocked.length);
             otherUnlocked.forEach((t: any) => {
                 decTargets[t.originalIndex].percent = decTargets[t.originalIndex].percent.plus(share);
             });
         }
-        // --- Handle Deficit (diff < 0): A value was increased ---
         else {
             let deficit = diff.abs();
             for (let i = otherUnlocked.length - 1; i >= 0; i--) {
@@ -761,27 +750,24 @@ export const app = {
             }
         }
 
-        // --- Final Rounding and Store Update ---
         let finalTargets = decTargets.map((t: any) => ({
             ...t,
-            percent: t.percent.toDecimalPlaces(0, Decimal.ROUND_HALF_UP).toFixed(0)
+            percent: t.percent.toDecimalPlaces(0, Decimal.ROUND_HALF_UP)
         }));
 
-        let finalSum = finalTargets.reduce((sum: Decimal, t: any) => sum.plus(parseDecimal(t.percent)), ZERO);
+        let finalSum = finalTargets.reduce((sum: Decimal, t: any) => sum.plus(t.percent), ZERO);
         let roundingDiff = ONE_HUNDRED.minus(finalSum);
 
         if (!roundingDiff.isZero()) {
-            // Adjust the first available unlocked target that is not the one the user just changed
-            let targetToAdjust = finalTargets.find((t: any, i: number) => !t.isLocked && i !== changedIndex && parseDecimal(t.percent).plus(roundingDiff).gte(0));
-            // If none found, try the one the user changed (as a last resort)
+            let targetToAdjust = finalTargets.find((t: any, i: number) => !t.isLocked && i !== changedIndex && t.percent.plus(roundingDiff).gte(0));
             if (!targetToAdjust) {
-                targetToAdjust = finalTargets.find((t: any, i: number) => !t.isLocked && parseDecimal(t.percent).plus(roundingDiff).gte(0));
+                targetToAdjust = finalTargets.find((t: any, i: number) => !t.isLocked && t.percent.plus(roundingDiff).gte(0));
             }
             if (targetToAdjust) {
-                targetToAdjust.percent = parseDecimal(targetToAdjust.percent).plus(roundingDiff).toFixed(0);
+                targetToAdjust.percent = targetToAdjust.percent.plus(roundingDiff);
             }
         }
 
-        updateTradeStore(state => ({ ...state, targets: finalTargets.map((t: { price: string; percent: string; isLocked: boolean; }) => ({price: t.price, percent: t.percent, isLocked: t.isLocked})) }));
+        updateTradeStore(state => ({ ...state, targets: finalTargets.map((t: { price: any; percent: any; isLocked: any; }) => ({price: t.price, percent: t.percent.toNumber(), isLocked: t.isLocked})) }));
     },
 };

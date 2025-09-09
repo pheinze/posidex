@@ -47,20 +47,20 @@ export interface TotalMetrics {
 export interface AppState {
     // Inputs
     tradeType: string;
-    accountSize: string;
-    riskPercentage: string;
-    entryPrice: string;
-    stopLossPrice: string;
-    leverage: string;
-    fees: string;
+    accountSize: number | null;
+    riskPercentage: number | null;
+    entryPrice: number | null;
+    stopLossPrice: number | null;
+    leverage: number | null;
+    fees: number | null;
     symbol: string;
-    atrValue: string;
-    atrMultiplier: string;
+    atrValue: number | null;
+    atrMultiplier: number | null;
     useAtrSl: boolean;
     atrMode: 'manual' | 'auto';
     atrTimeframe: string;
     tradeNotes: string;
-    targets: Array<{ price: string; percent: string; isLocked: boolean }>;
+    targets: Array<{ price: number | null; percent: number | null; isLocked: boolean }>;
 
     // Calculated Results
     positionSize: string;
@@ -81,7 +81,7 @@ export interface AppState {
     isPositionSizeLocked: boolean;
     lockedPositionSize: Decimal | null;
     isRiskAmountLocked: boolean;
-    riskAmount: string;
+    riskAmount: number | null;
     errorMessage: string;
     showErrorMessage: boolean;
     showTotalMetricsGroup: boolean;

@@ -10,9 +10,23 @@ export function debounce<T extends (...args: any[]) => void>(func: T, delay: num
 }
 
 export function parseDecimal(value: string | number | null | undefined): Decimal {
-    if (value === null || value === undefined || value === '') return new Decimal(0);
-    const stringValue = String(value).replace(',', '.');
-    if (isNaN(stringValue as any) || stringValue.trim() === '') return new Decimal(0);
+    if (value === null || value === undefined) {
+        return new Decimal(0);
+    }
+    // Convert to string to handle both numbers and strings uniformly
+    const stringValue = String(value).replace(',', '.').trim();
+
+    // If the string is empty after trimming, it's a 0.
+    if (stringValue === '') {
+        return new Decimal(0);
+    }
+
+    // Check if the result is a finite number
+    if (!isFinite(Number(stringValue))) {
+        return new Decimal(0);
+    }
+
+    // If all checks pass, create the new Decimal
     return new Decimal(stringValue);
 }
 

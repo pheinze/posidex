@@ -5,10 +5,10 @@
     import { Decimal } from 'decimal.js';
     import { _ } from '../../locales/i18n';
 
-    export let entryPrice: string;
-    export let stopLossPrice: string;
+    export let entryPrice: number | null;
+    export let stopLossPrice: number | null;
     export let tradeType: string;
-    export let targets: Array<{ price: string; percent: string; isLocked: boolean }>;
+    export let targets: Array<{ price: number | null; percent: number | null; isLocked: boolean }>;
     export let calculatedTpDetails: any[];
 
     let visualBarData: VisualBarData = { visualBarContent: [], markers: [] };

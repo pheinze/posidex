@@ -19,6 +19,7 @@
     import { loadInstruction } from '../services/markdownLoader';
     import { formatDynamicDecimal } from '../utils/utils';
     import { trackClick } from '../lib/actions';
+import { trackCustomEvent } from '../services/trackingService';
     import { createBackup, restoreFromBackup } from '../services/backupService';
     
     import type { IndividualTpResult } from '../stores/types';
@@ -92,7 +93,7 @@
         uiStore.showError(e.detail);
     }
 
-    function handleTargetsChange(event: CustomEvent<Array<{ price: string; percent: string; isLocked: boolean }>>) {
+    function handleTargetsChange(event: CustomEvent<Array<{ price: number | null; percent: number | null; isLocked: boolean }>>) {
         updateTradeStore(s => ({ ...s, targets: event.detail }));
     }
 
@@ -155,9 +156,7 @@
 
     function handleBackupClick() {
         createBackup();
-        trackClick({
-            detail: { category: 'Backup', action: 'Click', name: 'CreateBackup' }
-        });
+        trackCustomEvent('Backup', 'Click', 'CreateBackup');
     }
 
     function handleRestoreClick() {
@@ -173,34 +172,32 @@
         reader.onload = (e) => {
             const content = e.target?.result as string;
 
-            modalManager.showConfirm(
+            modalManager.show(
                 $_('app.restoreConfirmTitle'),
                 $_('app.restoreConfirmMessage'),
-                (confirmed) => {
-                    if (confirmed) {
-                        const result = restoreFromBackup(content);
-                        if (result.success) {
-                            uiStore.showFeedback('save'); // Re-use save feedback for now
-                            setTimeout(() => {
-                                window.location.reload();
-                            }, 1000);
-                        } else {
-                            uiStore.showError(result.message);
-                        }
+                'confirm'
+            ).then((confirmed) => {
+                if (confirmed) {
+                    const result = restoreFromBackup(content);
+                    if (result.success) {
+                        uiStore.showFeedback('save'); // Re-use save feedback for now
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    } else {
+                        uiStore.showError(result.message);
                     }
-                    // Reset file input so the same file can be selected again
-                    input.value = '';
                 }
-            );
+                // Reset file input so the same file can be selected again
+                input.value = '';
+            });
         };
         reader.onerror = () => {
             uiStore.showError('app.fileReadError');
         };
         reader.readAsText(file);
 
-        trackClick({
-            detail: { category: 'Backup', action: 'Click', name: 'RestoreBackup' }
-        });
+        trackCustomEvent('Backup', 'Click', 'RestoreBackup');
     }
 </script>
 

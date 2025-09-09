@@ -8,7 +8,7 @@
 
     const dispatch = createEventDispatcher();
 
-    export let targets: Array<{ price: string; percent: string; isLocked: boolean }>;
+    export let targets: Array<{ price: number | null; percent: number | null; isLocked: boolean }>;
     export let calculatedTpDetails: any[] = [];
 
     function addTakeProfitRow() {
@@ -20,23 +20,6 @@
         // Dispatch the index to be removed. The parent component will handle the logic.
         dispatch('remove', index);
     }
-
-    function handleInput(event: CustomEvent<{ index: number; price: string; percent: string; isLocked: boolean }>) {
-        const { index, price, percent, isLocked } = event.detail;
-        targets[index] = { price, percent, isLocked };
-        app.adjustTpPercentages(index); // Re-adjust percentages after input
-        dispatch('change', targets);
-    }
-
-    function handleLockToggle(event: CustomEvent<{ index: number; isLocked: boolean }>) {
-        const { index, isLocked } = event.detail;
-        targets[index].isLocked = isLocked;
-        app.adjustTpPercentages(index); // Re-adjust percentages after lock/unlock
-        dispatch('change', targets);
-    }
-
-    // Initial adjustment when component mounts or targets prop changes
-    // This is now handled by the reactive statement in +page.svelte and app.calculateAndDisplay
 </script>
 
 <section class="mt-4 md:col-span-2">
@@ -54,13 +37,11 @@
             {@const tpDetail = calculatedTpDetails.find(d => d.index === i)}
             <TakeProfitRow
                 index={i}
-                bind:price={target.price}
-                bind:percent={target.percent}
-                bind:isLocked={target.isLocked}
+                price={target.price}
+                percent={target.percent}
+                isLocked={target.isLocked}
                 tpDetail={tpDetail}
                 on:remove={handleRemove}
-                on:input={handleInput}
-                on:lockToggle={handleLockToggle}
             />
         {/each}
     </div>
