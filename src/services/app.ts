@@ -338,23 +338,19 @@ export const app = {
         const tradeIndex = journalData.findIndex(t => t.id == id);
         if (tradeIndex === -1) return;
 
-        // If input is cleared, set realizedPnl to null
-        if (pnl === null || pnl.trim() === '') {
-            journalData[tradeIndex].realizedPnl = null;
-        } else {
-            const pnlValue = parseFloat(pnl);
-            if (isNaN(pnlValue)) {
-                uiStore.showError("Invalid number entered for P/L.");
-                // Do not update, let the UI revert to the old value
-                journalStore.set([...journalData]);
-                return;
-            }
-            journalData[tradeIndex].realizedPnl = new Decimal(pnlValue);
-        }
+        try {
+            // If input is empty or null, set realizedPnl to null. Otherwise, create a new Decimal.
+            // The Decimal constructor will throw an error for invalid numbers (e.g., "--" or "1.2.3").
+            journalData[tradeIndex].realizedPnl = (pnl === null || pnl.trim() === '') ? null : new Decimal(pnl);
 
-        app.saveJournal(journalData);
-        journalStore.set(journalData); // This will trigger reactivity
-        trackCustomEvent('Journal', 'UpdatePnl');
+            app.saveJournal(journalData);
+            journalStore.set([...journalData]);
+            trackCustomEvent('Journal', 'UpdatePnl');
+        } catch (error) {
+            uiStore.showError("Invalid number entered for P/L.");
+            // Revert the store to the original state to undo the visual change in the input
+            journalStore.set([...journalData]);
+        }
     },
     deleteTrade: (id: number) => {
         const d = app.getJournal().filter(t => t.id != id);

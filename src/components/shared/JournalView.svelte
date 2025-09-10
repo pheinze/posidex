@@ -7,6 +7,9 @@
     import { icons, CONSTANTS } from '../../lib/constants';
     import { browser } from '$app/environment';
     import { numberInput } from '../../utils/inputUtils';
+    import { tick } from 'svelte';
+
+    let editingTradeId: number | null = null;
 
     $: filteredTrades = $journalStore.filter(trade =>
         trade.symbol.toLowerCase().includes($tradeStore.journalSearchQuery.toLowerCase()) &&
@@ -20,6 +23,13 @@
                 app.importFromCSV(file);
             }
         }
+    }
+
+    function focus(node: HTMLInputElement) {
+        tick().then(() => {
+            node.focus();
+            node.select();
+        });
     }
 </script>
 
@@ -51,7 +61,23 @@
                                 <td>{trade.entryPrice.toFixed(4)}</td>
                                 <td>{trade.stopLossPrice.toFixed(4)}</td>
                                 <td class="{trade.totalNetProfit.gt(0) ? 'text-[var(--success-color)]' : trade.totalNetProfit.lt(0) ? 'text-[var(--danger-color)]' : ''}">{trade.totalNetProfit.toFixed(2)}</td>
-                                <td><input type="text" class="input-field w-24 px-2 py-1" placeholder="P/L" value={trade.realizedPnl} use:numberInput={{ maxDecimalPlaces: 4 }} on:input={(e) => app.updateRealizedPnl(trade.id, (e.target as HTMLInputElement).value)} /></td>
+                                <td class="p-2">
+                                    {#if editingTradeId === trade.id}
+                                        <input
+                                            type="text"
+                                            class="input-field w-24 px-2 py-1"
+                                            value={trade.realizedPnl}
+                                            use:numberInput={{ maxDecimalPlaces: 4 }}
+                                            use:focus
+                                            on:blur={(e) => { app.updateRealizedPnl(trade.id, (e.target as HTMLInputElement).value); editingTradeId = null; }}
+                                            on:keydown={(e) => { if (e.key === 'Enter') { (e.target as HTMLInputElement).blur(); } else if (e.key === 'Escape') { editingTradeId = null; } }}
+                                        />
+                                    {:else}
+                                        <button type="button" class="input-field-placeholder text-left w-full h-full min-h-[34px] px-2 py-1" on:click={() => editingTradeId = trade.id}>
+                                            {trade.realizedPnl?.toFixed(2) || '-'}
+                                        </button>
+                                    {/if}
+                                </td>
                                 <td class="{trade.totalRR.gte(2) ? 'text-[var(--success-color)]' : trade.totalRR.gte(1.5) ? 'text-[var(--warning-color)]' : 'text-[var(--danger-color)]'}">{trade.totalRR.toFixed(2)}</td>
                                 <td>
                                     <select class="status-select input-field p-1" data-id="{trade.id}" on:change={(e) => app.updateTradeStatus(trade.id, (e.target as HTMLSelectElement).value)}>
@@ -98,7 +124,21 @@
                             </div>
                             <div>
                                 <div class="text-sm">Realized P/L</div>
-                                <input type="text" class="input-field w-full px-2 py-1 mt-1" placeholder="Enter P/L" value={trade.realizedPnl} use:numberInput={{ maxDecimalPlaces: 4 }} on:input={(e) => app.updateRealizedPnl(trade.id, (e.target as HTMLInputElement).value)} />
+                                {#if editingTradeId === trade.id}
+                                    <input
+                                        type="text"
+                                        class="input-field w-full px-2 py-1 mt-1"
+                                        value={trade.realizedPnl}
+                                        use:numberInput={{ maxDecimalPlaces: 4 }}
+                                        use:focus
+                                        on:blur={(e) => { app.updateRealizedPnl(trade.id, (e.target as HTMLInputElement).value); editingTradeId = null; }}
+                                        on:keydown={(e) => { if (e.key === 'Enter') { (e.target as HTMLInputElement).blur(); } else if (e.key === 'Escape') { editingTradeId = null; } }}
+                                    />
+                                {:else}
+                                    <button type="button" class="input-field-placeholder mt-1 text-left w-full" on:click={() => editingTradeId = trade.id}>
+                                        {trade.realizedPnl?.toFixed(2) || '-'}
+                                    </button>
+                                {/if}
                             </div>
                         </div>
                         <div class="mt-4 flex justify-between items-center">
@@ -143,3 +183,10 @@
         </div>
     </div>
 </div>
+
+<style>
+    .input-field-placeholder {
+        @apply w-full px-2 py-1 h-[34px] border border-transparent rounded-md cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700;
+        line-height: 1.5; /* Adjust to vertically center text if needed */
+    }
+</style>
