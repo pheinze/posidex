@@ -1,8 +1,9 @@
 <script lang="ts">
 	import favicon from '../assets/favicon.svg';
-	import { tradeStore } from '../stores/tradeStore';
+	import { tradeStore, type initialTradeState } from '../stores/tradeStore';
 	import { uiStore } from '../stores/uiStore';
 	import { onMount } from 'svelte';
+	import superjson from '$lib/superjson';
 
 	let { children, data } = $props();
 
@@ -11,7 +12,8 @@
 	import { CONSTANTS } from '../lib/constants';
 
 	onMount(() => {
-		tradeStore.set(data.initialTradeState);
+		const deserializedState = superjson.deserialize<typeof initialTradeState>(data.serializedInitialTradeState);
+		tradeStore.set(deserializedState);
 
 		// The server provides a theme from the cookie.
 		// On the client, we prioritize localStorage as it might be more up-to-date
