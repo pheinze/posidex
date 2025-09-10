@@ -40,7 +40,7 @@ export interface TotalMetrics {
     totalNetProfit: Decimal;
     totalRR: Decimal;
     totalFees: Decimal;
-    maxPotentialProfit: Decimal;
+    profitAtBestTarget: Decimal;
     riskAmount: Decimal;
 }
 
@@ -74,7 +74,7 @@ export interface AppState {
     totalPercentSold: string;
     riskAmountCurrency: string;
     totalFees: string;
-    maxPotentialProfit: string;
+    profitAtBestTarget: string;
     calculatedTpDetails: IndividualTpResult[];
 
     // UI State
@@ -122,8 +122,9 @@ export interface JournalEntry {
     totalRR: Decimal;
     totalNetProfit: Decimal;
     riskAmount: Decimal;
+    netLoss: Decimal;
     totalFees: Decimal;
-    maxPotentialProfit: Decimal;
+    profitAtBestTarget: Decimal;
     notes: string;
     targets: Array<{ price: Decimal; percent: Decimal; isLocked: boolean }>;
     calculatedTpDetails: IndividualTpResult[];

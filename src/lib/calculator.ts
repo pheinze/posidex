@@ -29,35 +29,36 @@ export const calculator = {
     },
 
     calculateATR(klines: Kline[], period: number = 14): Decimal {
-        // We need at least `period + 1` klines to calculate `period` true ranges.
         if (klines.length < period + 1) {
             return new Decimal(0); // Not enough data to calculate ATR.
         }
 
+        // 1. Calculate all True Ranges
         const trueRanges: Decimal[] = [];
-        // Loop starts at 1 because each True Range calculation needs the previous kline (at i-1).
-        // We calculate TR for the last `period` candles available.
-        const relevantKlines = klines.slice(-(period + 1));
-
-        for (let i = 1; i < relevantKlines.length; i++) {
-            const kline = relevantKlines[i];
-            const prevKline = relevantKlines[i - 1];
-
+        for (let i = 1; i < klines.length; i++) {
+            const kline = klines[i];
+            const prevKline = klines[i - 1];
             const highLow = kline.high.minus(kline.low);
             const highPrevClose = kline.high.minus(prevKline.close).abs();
             const lowPrevClose = kline.low.minus(prevKline.close).abs();
-
             const trueRange = Decimal.max(highLow, highPrevClose, lowPrevClose);
             trueRanges.push(trueRange);
         }
 
-        if (trueRanges.length === 0) {
-            return new Decimal(0);
+        if (trueRanges.length < period) {
+            return new Decimal(0); // Not enough True Ranges for a full period.
         }
 
-        // The ATR is the average of the true ranges.
-        const sumOfTrueRanges = trueRanges.reduce((sum, val) => sum.plus(val), new Decimal(0));
-        return sumOfTrueRanges.div(trueRanges.length);
+        // 2. Calculate the initial ATR as the SMA of the first 'period' TRs
+        let atr = trueRanges.slice(0, period).reduce((sum, val) => sum.plus(val), new Decimal(0)).div(period);
+
+        // 3. Apply Wilder's Smoothing for the rest of the TRs
+        for (let i = period; i < trueRanges.length; i++) {
+            const currentTR = trueRanges[i];
+            atr = atr.times(period - 1).plus(currentTR).div(period);
+        }
+
+        return atr;
     },
 
     calculateIndividualTp(tpPrice: Decimal, currentTpPercent: Decimal, baseMetrics: BaseMetrics, values: TradeValues, index: number): IndividualTpResult {
@@ -101,17 +102,17 @@ export const calculator = {
         });
         
         const validTpPrices = targets.filter(t => t.price.gt(0)).map(t => t.price);
-        let maxPotentialProfit = new Decimal(0);
+        let profitAtBestTarget = new Decimal(0);
         if (validTpPrices.length > 0) {
             const bestTpPrice = tradeType === CONSTANTS.TRADE_TYPE_LONG ? Decimal.max(...validTpPrices) : Decimal.min(...validTpPrices);
             const gainPerUnitFull = bestTpPrice.minus(values.entryPrice).abs();
             const grossProfitFull = gainPerUnitFull.times(positionSize);
             const exitFeeFull = positionSize.times(bestTpPrice).times(values.fees.div(100));
-            maxPotentialProfit = grossProfitFull.minus(entryFee).minus(exitFeeFull);
+            profitAtBestTarget = grossProfitFull.minus(entryFee).minus(exitFeeFull);
         }
 
-        const totalRR = values.totalPercentSold.gt(0) ? weightedRRSum.div(values.totalPercentSold.div(100)) : new Decimal(0);
-        return { totalNetProfit, totalRR, totalFees, maxPotentialProfit, riskAmount };
+        const totalRR = riskAmount.gt(0) ? totalNetProfit.div(riskAmount) : new Decimal(0);
+        return { totalNetProfit, totalRR, totalFees, profitAtBestTarget, riskAmount };
     },
     calculatePerformanceStats(journalData: JournalEntry[]) {
         const closedTrades = journalData.filter(t => t.status === 'Won' || t.status === 'Lost');
@@ -125,12 +126,12 @@ export const calculator = {
         
         const totalProfit = wonTrades.reduce((sum, t) => sum.plus(new Decimal(t.totalNetProfit || 0)), new Decimal(0));
         const totalLoss = lostTrades.reduce((sum, t) => sum.plus(new Decimal(t.riskAmount || 0)), new Decimal(0));
-        const profitFactor = totalLoss.gt(0) ? totalProfit.dividedBy(totalLoss) : totalProfit.gt(0) ? new Decimal(Infinity) : new Decimal(0);
+        const profitFactor = totalLoss.gt(0) ? totalProfit.dividedBy(totalLoss) : null;
         
         const avgRR = totalTrades > 0 ? closedTrades.reduce((sum, t) => sum.plus(new Decimal(t.totalRR || 0)), new Decimal(0)).dividedBy(totalTrades) : new Decimal(0);
         const avgWin = wonTrades.length > 0 ? totalProfit.dividedBy(wonTrades.length) : new Decimal(0);
         const avgLossOnly = lostTrades.length > 0 ? totalLoss.dividedBy(lostTrades.length) : new Decimal(0);
-        const winLossRatio = avgLossOnly.gt(0) ? avgWin.dividedBy(avgLossOnly) : (avgWin.gt(0) ? new Decimal(Infinity) : new Decimal(0));
+        const winLossRatio = avgLossOnly.gt(0) ? avgWin.dividedBy(avgLossOnly) : null;
 
         const largestProfit = wonTrades.length > 0 ? Decimal.max(0, ...wonTrades.map(t => new Decimal(t.totalNetProfit || 0))) : new Decimal(0);
         const largestLoss = lostTrades.length > 0 ? Decimal.max(0, ...lostTrades.map(t => new Decimal(t.riskAmount || 0))) : new Decimal(0);
@@ -148,7 +149,7 @@ export const calculator = {
 
         let cumulativeProfit = new Decimal(0), peakEquity = new Decimal(0), maxDrawdown = new Decimal(0);
         sortedClosedTrades.forEach(trade => {
-            cumulativeProfit = trade.status === 'Won' ? cumulativeProfit.plus(new Decimal(trade.totalNetProfit || 0)) : cumulativeProfit.minus(new Decimal(trade.riskAmount || 0));
+            cumulativeProfit = trade.status === 'Won' ? cumulativeProfit.plus(new Decimal(trade.totalNetProfit || 0)) : cumulativeProfit.minus(new Decimal(trade.netLoss || 0));
             if (cumulativeProfit.gt(peakEquity)) peakEquity = cumulativeProfit;
             const drawdown = peakEquity.minus(cumulativeProfit);
             if (drawdown.gt(maxDrawdown)) maxDrawdown = drawdown;
@@ -206,7 +207,7 @@ export const calculator = {
                 symbolPerformance[trade.symbol].wonTrades++;
                 symbolPerformance[trade.symbol].totalProfitLoss = symbolPerformance[trade.symbol].totalProfitLoss.plus(new Decimal(trade.totalNetProfit || 0));
             } else {
-                symbolPerformance[trade.symbol].totalProfitLoss = symbolPerformance[trade.symbol].totalProfitLoss.minus(new Decimal(trade.riskAmount || 0));
+                symbolPerformance[trade.symbol].totalProfitLoss = symbolPerformance[trade.symbol].totalProfitLoss.minus(new Decimal(trade.netLoss || 0));
             }
         });
         return symbolPerformance;
