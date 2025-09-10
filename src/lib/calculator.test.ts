@@ -37,7 +37,7 @@ describe('calculator', () => {
     // netLoss = 10 + 1 + 0.99 = 11.99
     // The test expects 10.20, which is incorrect based on the formula. Let's adjust the expected value to 11.99.
     expect(result?.breakEvenPrice.toFixed(2)).toBe('100.20');
-    expect(result?.liquidationPrice.toFixed(2)).toBe('90.00');
+    expect(result?.estimatedLiquidationPrice.toFixed(2)).toBe('90.00');
   });
 
   it('should correctly calculate base metrics for a SHORT trade', () => {
@@ -65,7 +65,7 @@ describe('calculator', () => {
     expect(result?.requiredMargin.toFixed(2)).toBe('100.00'); // (10 * 100) / 10 = 100
     expect(result?.netLoss.toFixed(2)).toBe('12.01'); // RiskAmount (10) + EntryFee (1) + SLExitFee (10*101*0.001 = 1.01) = 10 + 1 + 1.01 = 12.01
     expect(result?.breakEvenPrice.toFixed(2)).toBe('99.80');
-    expect(result?.liquidationPrice.toFixed(2)).toBe('110.00');
+    expect(result?.estimatedLiquidationPrice.toFixed(2)).toBe('110.00');
   });
 
   // Test für calculateIndividualTp
@@ -75,7 +75,7 @@ describe('calculator', () => {
       requiredMargin: new Decimal(100),
       netLoss: new Decimal(10),
       breakEvenPrice: new Decimal(100.20),
-      liquidationPrice: new Decimal(90),
+      estimatedLiquidationPrice: new Decimal(90),
       entryFee: new Decimal(1),
       riskAmount: new Decimal(10),
     };
@@ -109,10 +109,12 @@ describe('calculator', () => {
     // Let's adjust the expected value to 23.98 (rounded up from 23.975)
     // With the corrected RRR logic, the expected value is now ~4.00
     // netRiskOnPart = (100-99)*(10*0.5) + (0.5) + (10*0.5*99*0.001) = 5 + 0.5 + 0.495 = 5.995
-    // RRR = 23.975 / 5.995 = 3.999...
-    expect(result.riskRewardRatio.toFixed(2)).toBe('4.00');
+    // feeAdjustedRRR = 23.975 / 5.995 = 3.999...
+    expect(result.feeAdjustedRRR.toFixed(2)).toBe('4.00');
+    // Standard RRR = (105-100) / (100-99) = 5 / 1 = 5
+    expect(result.riskRewardRatio.toFixed(2)).toBe('5.00');
     expect(result.priceChangePercent.toFixed(2)).toBe('5.00');
-    expect(result.returnOnCapital.toFixed(2)).toBe('47.95'); // 23.975 / (100 * 0.5) * 100 = 23.975 / 50 * 100 = 47.95
+    expect(result.partialROC.toFixed(2)).toBe('47.95'); // 23.975 / (100 * 0.5) * 100 = 23.975 / 50 * 100 = 47.95
     expect(result.partialVolume.toFixed(2)).toBe('5.00');
   });
 
@@ -125,7 +127,7 @@ describe('calculator', () => {
       requiredMargin: new Decimal(100),
       netLoss: new Decimal(10),
       breakEvenPrice: new Decimal(100.20),
-      liquidationPrice: new Decimal(90),
+      estimatedLiquidationPrice: new Decimal(90),
     };
     const values = {
       accountSize: new Decimal(1000),
@@ -153,6 +155,7 @@ describe('calculator', () => {
     // totalNetProfit = 72.93, riskAmount = 10
     // totalRR = 72.93 / 10 = 7.293
     expect(result.totalRR.toFixed(2)).toBe('7.29');
+    expect(result.totalROC.toFixed(2)).toBe('72.93'); // totalNetProfit / requiredMargin * 100
     expect(result.totalFees.toFixed(2)).toBe('2.08');
     expect(result.profitAtBestTarget.toFixed(2)).toBe('97.90');
     expect(result.riskAmount.toFixed(2)).toBe('10.00');
@@ -171,8 +174,10 @@ describe('calculator', () => {
     expect(stats).not.toBeNull();
     expect(stats?.totalTrades).toBe(3);
     expect(stats?.winRate.toFixed(2)).toBe('66.67');
-    expect(stats?.profitFactor.toFixed(2)).toBe('8.00'); // (50+30)/10 = 8. This is based on gross profit/loss, not net. The definition might need revisiting, but for now, we test the existing logic.
-    expect(stats?.expectancy.toFixed(2)).toBe('23.33');
+    // totalProfit = 80, totalLoss = 12.01 (from netLoss) -> profitFactor = 80 / 12.01 = 6.66
+    expect(stats?.profitFactor.toFixed(2)).toBe('6.66');
+    // expectancy = (0.666 * 40) - (0.333 * 12.01) = 26.66 - 4.00 = 22.66
+    expect(stats?.expectancy.toFixed(2)).toBe('22.66');
     expect(stats?.avgRMultiple.toFixed(2)).toBe('2.33'); // (5 + (-1) + 3) / 3 = 7/3 = 2.333
     expect(stats?.maxDrawdown.toFixed(2)).toBe('12.01'); // Drawdown now correctly uses netLoss
   });
@@ -228,16 +233,16 @@ describe('calculator', () => {
 
 describe('Correct RRR and Stats Calculation', () => {
 
-  it('should calculate RRR based on actual risk per unit, not proportional monetary risk', () => {
+  it('should calculate standard RRR and fee-adjusted RRR correctly', () => {
     // Setup a simple trade: Entry 100, SL 90, TP 120. Risk per unit is 10, Gain per unit is 20. Gross R/R is 2.0.
     const baseMetrics = {
       positionSize: new Decimal(10),
       requiredMargin: new Decimal(100),
-      netLoss: new Decimal(102.1), // 10*10 (risk) + 10*100*0.001 (entry fee) + 10*90*0.001 (sl fee) = 100 + 1 + 0.9 = 101.9
+      netLoss: new Decimal(102.1),
       breakEvenPrice: new Decimal(100.20),
-      liquidationPrice: new Decimal(90),
+      estimatedLiquidationPrice: new Decimal(90),
       entryFee: new Decimal(1),
-      riskAmount: new Decimal(100), // User wants to risk $100 total
+      riskAmount: new Decimal(100),
     };
     const values = {
       accountSize: new Decimal(10000),
@@ -254,28 +259,21 @@ describe('Correct RRR and Stats Calculation', () => {
       totalPercentSold: new Decimal(0),
     };
     const tpPrice = new Decimal(120);
-    const currentTpPercent = new Decimal(50); // Selling 50% of the position
+    const currentTpPercent = new Decimal(50);
 
     const result = calculator.calculateIndividualTp(tpPrice, currentTpPercent, baseMetrics, values, 0);
 
-    // Flawed logic calculates:
-    // riskForPart = riskAmount * (currentTpPercent / 100) = 100 * 0.5 = 50
-    // netProfit = (120-100)*(10*0.5) - (10*0.5*100*0.001) - (10*0.5*120*0.001) = 20*5 - 0.5 - 0.6 = 100 - 1.1 = 98.9
-    // flawed RRR = 98.9 / 50 = 1.978
-
-    // Correct logic should be:
-    // netProfit = 98.9 (as calculated above)
+    // 1. Test the new standard RRR (Gross RRR)
+    // gainPerUnit = 120 - 100 = 20
     // riskPerUnit = 100 - 90 = 10
-    // positionPart = 10 * 0.5 = 5
-    // grossRiskPart = riskPerUnit * positionPart = 10 * 5 = 50
-    // entryFeePart = 0.5 (as calculated above)
-    // slFeePart = 5 * 90 * 0.001 = 0.45
-    // netRiskPart = 50 + 0.5 + 0.45 = 50.95
-    // Correct RRR = 98.9 / 50.95 = 1.941
+    // RRR = 20 / 10 = 2
+    expect(result.riskRewardRatio.toFixed(3)).toBe('2.000');
 
-    // The test should assert the correct RRR, not the flawed one.
-    // We expect the test to FAIL initially, and PASS after the fix.
-    expect(result.riskRewardRatio.toFixed(3)).toBe('1.941');
+    // 2. Test the old, renamed fee-adjusted RRR
+    // netProfit = (120-100)*(10*0.5) - (10*0.5*100*0.001) - (10*0.5*120*0.001) = 100 - 0.5 - 0.6 = 98.9
+    // netRiskOnPart = (100-90)*(10*0.5) + (10*0.5*100*0.001) + (10*0.5*90*0.001) = 50 + 0.5 + 0.45 = 50.95
+    // feeAdjustedRRR = 98.9 / 50.95 = 1.9411...
+    expect(result.feeAdjustedRRR.toFixed(3)).toBe('1.941');
   });
 
   it('should return null for ratios when there are no losses', () => {

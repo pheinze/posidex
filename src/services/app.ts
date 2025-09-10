@@ -220,7 +220,7 @@ export const app = {
         newResults.positionSize = formatDynamicDecimal(baseMetrics.positionSize, 4);
         newResults.requiredMargin = formatDynamicDecimal(baseMetrics.requiredMargin, 2);
         newResults.netLoss = `-${formatDynamicDecimal(baseMetrics.netLoss, 2)}`;
-        newResults.liquidationPrice = values.leverage.gt(1) ? formatDynamicDecimal(baseMetrics.liquidationPrice) : 'N/A';
+        newResults.estimatedLiquidationPrice = values.leverage.gt(1) ? formatDynamicDecimal(baseMetrics.estimatedLiquidationPrice) : 'N/A';
         newResults.breakEvenPrice = formatDynamicDecimal(baseMetrics.breakEvenPrice);
         newResults.entryFee = formatDynamicDecimal(baseMetrics.entryFee, 4);
 
@@ -243,6 +243,7 @@ export const app = {
             newResults.riskAmountCurrency = `-${formatDynamicDecimal(totalMetrics.riskAmount, 2)}`;
             newResults.totalFees = formatDynamicDecimal(totalMetrics.totalFees, 2);
             newResults.maxPotentialProfit = `+${formatDynamicDecimal(totalMetrics.maxPotentialProfit, 2)}`;
+            newResults.totalROC = formatDynamicDecimal(totalMetrics.totalROC, 2);
             newResults.showTotalMetricsGroup = true;
         } else {
             newResults.showTotalMetricsGroup = false;

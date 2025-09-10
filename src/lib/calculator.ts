@@ -21,11 +21,11 @@ export const calculator = {
             ? values.entryPrice.times(feeFactor.plus(1)).div(new Decimal(1).minus(feeFactor))
             : values.entryPrice.times(new Decimal(1).minus(feeFactor)).div(feeFactor.plus(1));
 
-        const liquidationPrice = values.leverage.gt(0) ? (tradeType === CONSTANTS.TRADE_TYPE_LONG
+        const estimatedLiquidationPrice = values.leverage.gt(0) ? (tradeType === CONSTANTS.TRADE_TYPE_LONG
             ? values.entryPrice.times(new Decimal(1).minus(new Decimal(1).div(values.leverage)))
             : values.entryPrice.times(new Decimal(1).plus(new Decimal(1).div(values.leverage)))) : new Decimal(0);
         
-        return { positionSize, requiredMargin, netLoss, breakEvenPrice, liquidationPrice, entryFee, riskAmount };
+        return { positionSize, requiredMargin, netLoss, breakEvenPrice, estimatedLiquidationPrice, entryFee, riskAmount };
     },
 
     calculateATR(klines: Kline[], period: number = 14): Decimal {
@@ -70,34 +70,32 @@ export const calculator = {
         const entryFeePart = positionPart.times(values.entryPrice).times(values.fees.div(100));
         const netProfit = grossProfitPart.minus(entryFeePart).minus(exitFee);
 
-        // --- CORRECTED RRR LOGIC ---
-        // Calculate the actual net risk for this part of the position
+        // --- FEE-ADJUSTED RRR (OLD LOGIC) ---
         const riskPerUnit = values.entryPrice.minus(values.stopLossPrice).abs();
         const grossRiskOnPart = riskPerUnit.times(positionPart);
         const slExitFeeOnPart = positionPart.times(values.stopLossPrice).times(values.fees.div(100));
         const netRiskOnPart = grossRiskOnPart.plus(entryFeePart).plus(slExitFeeOnPart);
+        const feeAdjustedRRR = netRiskOnPart.gt(0) ? netProfit.div(netRiskOnPart) : new Decimal(0);
 
-        const riskRewardRatio = netRiskOnPart.gt(0) ? netProfit.div(netRiskOnPart) : new Decimal(0);
-        // --- END OF CORRECTION ---
+        // --- STANDARD GROSS RRR (NEW LOGIC) ---
+        const riskRewardRatio = riskPerUnit.gt(0) ? gainPerUnit.div(riskPerUnit) : new Decimal(0);
 
         const priceChangePercent = values.entryPrice.gt(0) ? tpPrice.minus(values.entryPrice).div(values.entryPrice).times(100) : new Decimal(0);
-        const returnOnCapital = requiredMargin.gt(0) && currentTpPercent.gt(0) ? netProfit.div(requiredMargin.times(currentTpPercent.div(100))).times(100) : new Decimal(0);
-        return { netProfit, riskRewardRatio, priceChangePercent, returnOnCapital, partialVolume: positionPart, exitFee, index: index, percentSold: currentTpPercent };
+        const partialROC = requiredMargin.gt(0) && currentTpPercent.gt(0) ? netProfit.div(requiredMargin.times(currentTpPercent.div(100))).times(100) : new Decimal(0);
+        return { netProfit, feeAdjustedRRR, riskRewardRatio, priceChangePercent, partialROC, partialVolume: positionPart, exitFee, index: index, percentSold: currentTpPercent };
     },
     calculateTotalMetrics(targets: Array<{ price: Decimal; percent: Decimal; }>, baseMetrics: BaseMetrics, values: TradeValues, tradeType: string): TotalMetrics {
-        const { positionSize, entryFee, riskAmount } = baseMetrics;
+        const { positionSize, entryFee, riskAmount, requiredMargin } = baseMetrics;
         let totalNetProfit = new Decimal(0);
-        let weightedRRSum = new Decimal(0);
         let totalFees = new Decimal(0);
 
         targets.forEach((tp, index) => {
             if (tp.price.gt(0) && tp.percent.gt(0)) {
-                const { netProfit, riskRewardRatio } = this.calculateIndividualTp(tp.price, tp.percent, baseMetrics, values, index);
+                const { netProfit } = this.calculateIndividualTp(tp.price, tp.percent, baseMetrics, values, index);
                 totalNetProfit = totalNetProfit.plus(netProfit);
                 const entryFeePart = positionSize.times(tp.percent.div(100)).times(values.entryPrice).times(values.fees.div(100));
                 const exitFeePart = positionSize.times(tp.percent.div(100)).times(tp.price).times(values.fees.div(100));
                 totalFees = totalFees.plus(entryFeePart).plus(exitFeePart);
-                weightedRRSum = weightedRRSum.plus(riskRewardRatio.times(tp.percent.div(100)));
             }
         });
         
@@ -112,7 +110,8 @@ export const calculator = {
         }
 
         const totalRR = riskAmount.gt(0) ? totalNetProfit.div(riskAmount) : new Decimal(0);
-        return { totalNetProfit, totalRR, totalFees, profitAtBestTarget, riskAmount };
+        const totalROC = requiredMargin.gt(0) ? totalNetProfit.div(requiredMargin).times(100) : new Decimal(0);
+        return { totalNetProfit, totalRR, totalFees, profitAtBestTarget, riskAmount, totalROC };
     },
     calculatePerformanceStats(journalData: JournalEntry[]) {
         const closedTrades = journalData.filter(t => t.status === 'Won' || t.status === 'Lost');
@@ -125,7 +124,7 @@ export const calculator = {
         const winRate = totalTrades > 0 ? (wonTrades.length / totalTrades) * 100 : 0;
         
         const totalProfit = wonTrades.reduce((sum, t) => sum.plus(new Decimal(t.totalNetProfit || 0)), new Decimal(0));
-        const totalLoss = lostTrades.reduce((sum, t) => sum.plus(new Decimal(t.riskAmount || 0)), new Decimal(0));
+        const totalLoss = lostTrades.reduce((sum, t) => sum.plus(new Decimal(t.netLoss || 0)), new Decimal(0));
         const profitFactor = totalLoss.gt(0) ? totalProfit.dividedBy(totalLoss) : null;
         
         const avgRR = totalTrades > 0 ? closedTrades.reduce((sum, t) => sum.plus(new Decimal(t.totalRR || 0)), new Decimal(0)).dividedBy(totalTrades) : new Decimal(0);
@@ -163,10 +162,10 @@ export const calculator = {
         closedTrades.forEach(trade => {
             if (trade.tradeType === CONSTANTS.TRADE_TYPE_LONG) {
                 if (trade.status === 'Won') totalProfitLong = totalProfitLong.plus(new Decimal(trade.totalNetProfit || 0));
-                else totalLossLong = totalLossLong.plus(new Decimal(trade.riskAmount || 0));
+                else totalLossLong = totalLossLong.plus(new Decimal(trade.netLoss || 0));
             } else {
                 if (trade.status === 'Won') totalProfitShort = totalProfitShort.plus(new Decimal(trade.totalNetProfit || 0));
-                else totalLossShort = totalLossShort.plus(new Decimal(trade.riskAmount || 0));
+                else totalLossShort = totalLossShort.plus(new Decimal(trade.netLoss || 0));
             }
         });
 

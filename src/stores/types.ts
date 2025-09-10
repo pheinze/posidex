@@ -20,16 +20,17 @@ export interface BaseMetrics {
     requiredMargin: Decimal;
     netLoss: Decimal;
     breakEvenPrice: Decimal;
-    liquidationPrice: Decimal;
+    estimatedLiquidationPrice: Decimal;
     entryFee: Decimal;
     riskAmount: Decimal;
 }
 
 export interface IndividualTpResult {
     netProfit: Decimal;
-    riskRewardRatio: Decimal;
+    feeAdjustedRRR: Decimal; // Renamed from riskRewardRatio
+    riskRewardRatio: Decimal; // The new, standard RRR
     priceChangePercent: Decimal;
-    returnOnCapital: Decimal;
+    partialROC: Decimal; // Renamed from returnOnCapital
     partialVolume: Decimal;
     exitFee: Decimal;
     index: number;
@@ -42,6 +43,7 @@ export interface TotalMetrics {
     totalFees: Decimal;
     profitAtBestTarget: Decimal;
     riskAmount: Decimal;
+    totalROC: Decimal; // The new, total Return on Capital
 }
 
 export interface AppState {
@@ -67,7 +69,7 @@ export interface AppState {
     requiredMargin: string;
     netLoss: string;
     entryFee: string;
-    liquidationPrice: string;
+    estimatedLiquidationPrice: string;
     breakEvenPrice: string;
     totalRR: string;
     totalNetProfit: string;

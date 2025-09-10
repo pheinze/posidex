@@ -297,7 +297,7 @@ import { trackCustomEvent } from '../services/trackingService';
                 netLoss={$resultsStore.netLoss}
                 requiredMargin={$resultsStore.requiredMargin}
                 entryFee={$resultsStore.entryFee}
-                liquidationPrice={$resultsStore.liquidationPrice}
+                estimatedLiquidationPrice={$resultsStore.estimatedLiquidationPrice}
                 breakEvenPrice={$resultsStore.breakEvenPrice}
                 on:toggleLock={() => app.togglePositionSizeLock()}
                 on:copy={() => uiStore.showFeedback('copy')}
@@ -310,6 +310,7 @@ import { trackCustomEvent } from '../services/trackingService';
                     <div class="result-item"><span class="result-label">{$_('dashboard.maxPotentialProfit')}<Tooltip text={$_('dashboard.maxPotentialProfitTooltip')} /></span><span id="maxPotentialProfit" class="result-value" style:color="var(--success-color)">{$resultsStore.maxPotentialProfit}</span></div>
                     <div class="result-item"><span class="result-label">{$_('dashboard.weightedRR')}<Tooltip text={$_('dashboard.weightedRRTooltip')} /></span><span id="totalRR" class="result-value">{$resultsStore.totalRR}</span></div>
                     <div class="result-item"><span class="result-label">{$_('dashboard.totalNetProfit')}<Tooltip text={$_('dashboard.totalNetProfitTooltip')} /></span><span id="totalNetProfit" class="result-value" style:color="var(--success-color)">{$resultsStore.totalNetProfit}</span></div>
+                    <div class="result-item"><span class="result-label">{$_('dashboard.totalReturnOnCapital')}<Tooltip text={$_('dashboard.returnOnCapitalTooltip')} /></span><span id="totalROC" class="result-value" style:color="var(--success-color)">{$resultsStore.totalROC}%</span></div>
                     <div class="result-item"><span class="result-label">{$_('dashboard.soldPosition')}<Tooltip text={$_('dashboard.soldPositionTooltip')} /></span><span id="totalPercentSold" class="result-value">{$resultsStore.totalPercentSold}</span></div>
                 </div>
             {/if}
@@ -321,7 +322,7 @@ import { trackCustomEvent } from '../services/trackingService';
                     <div class="result-item"><span class="result-label">{$_('dashboard.riskRewardRatio')}</span><span class="result-value" style:color={tpDetail.riskRewardRatio.gte(2) ? 'var(--success-color)' : tpDetail.riskRewardRatio.gte(1.5) ? 'var(--warning-color)' : 'var(--danger-color)'}>{formatDynamicDecimal(tpDetail.riskRewardRatio, 2)}</span></div>
                     <div class="result-item"><span class="result-label">{$_('dashboard.netProfit')}<Tooltip text={$_('dashboard.netProfitTooltip')} /></span><span class="result-value" style:color="var(--success-color)">+{formatDynamicDecimal(tpDetail.netProfit, 2)}</span></div>
                     <div class="result-item"><span class="result-label">{$_('dashboard.priceChange')}<Tooltip text={$_('dashboard.priceChangeTooltip')} /></span><span class="result-value" style:color={tpDetail.priceChangePercent.gt(0) ? 'var(--success-color)' : 'var(--danger-color)'}>{formatDynamicDecimal(tpDetail.priceChangePercent, 2)}%</span></div>
-                    <div class="result-item"><span class="result-label">{$_('dashboard.returnOnCapital')}<Tooltip text={$_('dashboard.returnOnCapitalTooltip')} /></span><span class="result-value" style:color={tpDetail.returnOnCapital.gt(0) ? 'var(--success-color)' : 'var(--danger-color)'}>{formatDynamicDecimal(tpDetail.returnOnCapital, 2)}%</span></div>
+                    <div class="result-item"><span class="result-label">{$_('dashboard.returnOnCapital')}<Tooltip text={$_('dashboard.returnOnCapitalTooltip')} /></span><span class="result-value" style:color={tpDetail.partialROC.gt(0) ? 'var(--success-color)' : 'var(--danger-color)'}>{formatDynamicDecimal(tpDetail.partialROC, 2)}%</span></div>
                     <div class="result-item"><span class="result-label">{$_('dashboard.partialVolume')}<Tooltip text={$_('dashboard.partialVolumeTooltip')} /></span><span class="result-value">{formatDynamicDecimal(tpDetail.partialVolume, 4)}</span></div>
                     <div class="result-item"><span class="result-label">{$_('dashboard.exitFeeLabel')}</span><span class="result-value">{formatDynamicDecimal(tpDetail.exitFee, 4)}</span></div>
                 </div>

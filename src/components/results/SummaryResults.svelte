@@ -14,7 +14,7 @@
     export let requiredMargin: string;
     export let entryFee: string;
     export let profitAtBestTarget: string;
-    export let liquidationPrice: string;
+    export let estimatedLiquidationPrice: string;
     export let breakEvenPrice: string;
 
     function handleCopy() {
@@ -54,7 +54,7 @@
     <div class="result-item"><div class="result-label">{$_('dashboard.summaryResults.entryFeeLabel')}</div><span id="entryFee" class="result-value">{entryFee}</span></div>
     <div class="result-item">
         <span class="result-label">{$_('dashboard.summaryResults.estimatedLiquidationPriceLabel')}<Tooltip text={$_('dashboard.summaryResults.estimatedLiquidationPriceTooltip')} /></span>
-        <span id="liquidationPrice" class="result-value">{liquidationPrice}</span>
+        <span id="liquidationPrice" class="result-value">{estimatedLiquidationPrice}</span>
     </div>
     <div class="result-item"><span class="result-label">{$_('dashboard.summaryResults.breakEvenPriceLabel')}<Tooltip text={$_('dashboard.summaryResults.breakEvenPriceTooltip')} /></span><span id="breakEvenPrice" class="result-value" style:color="var(--warning-color)">{breakEvenPrice}</span></div>
 </div>

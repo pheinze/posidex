@@ -6,7 +6,7 @@ export const initialResultsState: Pick<AppState,
     'requiredMargin' |
     'netLoss' |
     'entryFee' |
-    'liquidationPrice' |
+    'estimatedLiquidationPrice' |
     'breakEvenPrice' |
     'totalRR' |
     'totalNetProfit' |
@@ -15,6 +15,7 @@ export const initialResultsState: Pick<AppState,
     'totalFees' |
     'maxPotentialProfit' |
     'calculatedTpDetails' |
+    'totalROC' |
     'showTotalMetricsGroup' |
     'showAtrFormulaDisplay' |
     'atrFormulaText' |
@@ -24,7 +25,7 @@ export const initialResultsState: Pick<AppState,
     requiredMargin: '-',
     netLoss: '-',
     entryFee: '-',
-    liquidationPrice: '-',
+    estimatedLiquidationPrice: '-',
     breakEvenPrice: '-',
     totalRR: '-',
     totalNetProfit: '-',
@@ -33,6 +34,7 @@ export const initialResultsState: Pick<AppState,
     totalFees: '-',
     maxPotentialProfit: '-',
     calculatedTpDetails: [],
+    totalROC: '-',
     showTotalMetricsGroup: false,
     showAtrFormulaDisplay: false,
     atrFormulaText: '',
