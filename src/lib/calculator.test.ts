@@ -287,6 +287,96 @@ describe('calculator', () => {
   });
 });
 
+describe('Bugfix Verification Tests', () => {
+  it('should calculate totalRR based on net loss (Net/Net R:R)', () => {
+    const baseMetrics = {
+      positionSize: new Decimal(1),
+      entryFee: new Decimal(1),
+      riskAmount: new Decimal(100), // Gross risk
+      netLoss: new Decimal(102),     // Net risk (includes fees)
+      requiredMargin: new Decimal(1000),
+      breakEvenPrice: new Decimal(100.20),
+      estimatedLiquidationPrice: new Decimal(90),
+    };
+    const values = {
+      entryPrice: new Decimal(10000),
+      stopLossPrice: new Decimal(9900),
+      fees: new Decimal(0.1),
+      // Other values are not relevant for this specific test
+    } as any;
+    const targets = [{ price: new Decimal(10204), percent: new Decimal(100) }];
+
+    // Let's trace the calculation for this test.
+    // grossProfit = (10204 - 10000) * 1 = 204
+    // entryFeePart = 10000 * 1 * 0.001 = 10
+    // exitFee = 10204 * 1 * 0.001 = 10.204
+    // totalNetProfit = 204 - 10 - 10.204 = 183.796
+    // netLoss from baseMetrics is 102.
+    // totalRR = 183.796 / 102 = 1.8019...
+    const result = calculator.calculateTotalMetrics(targets, baseMetrics, values, CONSTANTS.TRADE_TYPE_LONG);
+    expect(result.totalNetProfit.toDP(3).equals(new Decimal('183.796'))).toBe(true);
+    expect(result.totalRR.toDP(2).equals(new Decimal('1.80'))).toBe(true);
+  });
+
+  it('should exclude breakeven trades from win rate calculation', () => {
+    const journalData = [
+      { status: 'Won', realizedPnl: new Decimal(100) },
+      { status: 'Lost', realizedPnl: new Decimal(-50) },
+      { status: 'Lost', realizedPnl: new Decimal(0) }, // Breakeven trade
+    ] as any;
+
+    const stats = calculator.calculatePerformanceStats(journalData);
+    expect(stats).not.toBeNull();
+    // Total trades for winrate are wins + losses. Breakeven is excluded.
+    expect(stats?.totalTrades).toBe(2);
+    // Winrate is 1 win / 2 trades = 50%
+    expect(new Decimal(stats?.winRate!).toDP(2).equals(new Decimal('50.00'))).toBe(true);
+  });
+
+  it('should cap profit calculation at 100% of the position', () => {
+    const baseMetrics = {
+      positionSize: new Decimal(10),
+      entryFee: new Decimal(1),
+      riskAmount: new Decimal(10),
+      requiredMargin: new Decimal(100),
+      netLoss: new Decimal(12),
+    } as any;
+    const values = {
+      entryPrice: new Decimal(100),
+      stopLossPrice: new Decimal(99),
+      fees: new Decimal(0.1),
+    } as any;
+    // Targets sum to 120%. The calculation should ignore the last 20%.
+    const targets = [
+      { price: new Decimal(110), percent: new Decimal(60) },
+      { price: new Decimal(120), percent: new Decimal(60) },
+    ];
+
+    // Manually calculate expected profit for 100%
+    // Part 1: 60% at price 110. Position part = 6. Profit = (110-100)*6 = 60. EntryFeePart=0.6, ExitFee=0.66. Net=58.74
+    // Part 2: 40% at price 120. Position part = 4. Profit = (120-100)*4 = 80. EntryFeePart=0.4, ExitFee=0.48. Net=79.12
+    // Total Net Profit = 58.74 + 79.12 = 137.86
+    const result = calculator.calculateTotalMetrics(targets, baseMetrics, values, CONSTANTS.TRADE_TYPE_LONG);
+    expect(result.totalNetProfit.toDP(2).equals(new Decimal('137.86'))).toBe(true);
+  });
+
+  it('should handle 100% fees without division by zero', () => {
+    const values = {
+      accountSize: new Decimal(1000),
+      riskPercentage: new Decimal(1),
+      entryPrice: new Decimal(100),
+      stopLossPrice: new Decimal(99),
+      leverage: new Decimal(1),
+      fees: new Decimal(100), // 100% fees
+    } as any;
+
+    const result = calculator.calculateBaseMetrics(values, CONSTANTS.TRADE_TYPE_LONG);
+    expect(result).not.toBeNull();
+    // With 100% fees, the break-even price for a long trade is infinite.
+    expect(result?.breakEvenPrice.isFinite()).toBe(false);
+  });
+});
+
 
 describe('Correct RRR and Stats Calculation', () => {
 

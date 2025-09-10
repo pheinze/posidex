@@ -17,9 +17,13 @@ export const calculator = {
         const netLoss = riskAmount.plus(entryFee).plus(slExitFee);
         
         const feeFactor = values.fees.div(100);
-        const breakEvenPrice = tradeType === CONSTANTS.TRADE_TYPE_LONG
-            ? values.entryPrice.times(feeFactor.plus(1)).div(new Decimal(1).minus(feeFactor))
-            : values.entryPrice.times(new Decimal(1).minus(feeFactor)).div(feeFactor.plus(1));
+        let breakEvenPrice;
+        if (tradeType === CONSTANTS.TRADE_TYPE_LONG) {
+            const denominator = new Decimal(1).minus(feeFactor);
+            breakEvenPrice = denominator.isZero() ? new Decimal(Infinity) : values.entryPrice.times(feeFactor.plus(1)).div(denominator);
+        } else {
+            breakEvenPrice = values.entryPrice.times(new Decimal(1).minus(feeFactor)).div(feeFactor.plus(1));
+        }
 
         const estimatedLiquidationPrice = values.leverage.gt(0) ? (tradeType === CONSTANTS.TRADE_TYPE_LONG
             ? values.entryPrice.times(new Decimal(1).minus(new Decimal(1).div(values.leverage)))
@@ -100,11 +104,14 @@ export const calculator = {
 
         // Calculate profit and exit fees from TPs
         targets.forEach((tp, index) => {
-            if (tp.price.gt(0) && tp.percent.gt(0)) {
-                const individualResult = this.calculateIndividualTp(tp.price, tp.percent, baseMetrics, values, index, tradeType);
+            if (tp.price.gt(0) && tp.percent.gt(0) && totalPercentSoldAtTp.lt(100)) {
+                const remainingPercent = new Decimal(100).minus(totalPercentSoldAtTp);
+                const percentToProcess = Decimal.min(tp.percent, remainingPercent);
+
+                const individualResult = this.calculateIndividualTp(tp.price, percentToProcess, baseMetrics, values, index, tradeType);
                 totalNetProfit = totalNetProfit.plus(individualResult.netProfit);
                 totalFees = totalFees.plus(individualResult.exitFee);
-                totalPercentSoldAtTp = totalPercentSoldAtTp.plus(tp.percent);
+                totalPercentSoldAtTp = totalPercentSoldAtTp.plus(percentToProcess);
             }
         });
 
@@ -129,7 +136,7 @@ export const calculator = {
             totalNetProfit = totalNetProfit.minus(netLossOnSlPart);
         }
 
-        const totalRR = riskAmount.gt(0) ? totalNetProfit.div(riskAmount) : new Decimal(0);
+        const totalRR = baseMetrics.netLoss.gt(0) ? totalNetProfit.div(baseMetrics.netLoss) : new Decimal(0);
         const totalROC = requiredMargin.gt(0) ? totalNetProfit.div(requiredMargin).times(100) : new Decimal(0);
         return { totalNetProfit, totalRR, totalFees, riskAmount, totalROC };
     },
@@ -152,8 +159,8 @@ export const calculator = {
         }));
 
         const wonTrades = tradesWithPnl.filter(t => t.realizedPnlValue.gt(0));
-        const lostTrades = tradesWithPnl.filter(t => t.realizedPnlValue.lte(0));
-        const totalTrades = tradesWithPnl.length;
+        const lostTrades = tradesWithPnl.filter(t => t.realizedPnlValue.lt(0));
+        const totalTrades = wonTrades.length + lostTrades.length; // Exclude breakeven trades
         const winRate = totalTrades > 0 ? (wonTrades.length / totalTrades) * 100 : 0;
         
         const totalProfit = wonTrades.reduce((sum, t) => sum.plus(t.realizedPnlValue), new Decimal(0));
@@ -246,10 +253,12 @@ export const calculator = {
                 const realizedPnl = new Decimal(trade.realizedPnl);
                 symbolPerformance[trade.symbol].totalProfitLoss = symbolPerformance[trade.symbol].totalProfitLoss.plus(realizedPnl);
 
-                // Only count trades with realizedPnl for win rate and total trades
-                symbolPerformance[trade.symbol].totalTrades++;
-                if (realizedPnl.gt(0)) {
-                    symbolPerformance[trade.symbol].wonTrades++;
+                // Only count trades with a non-zero P/L for win rate calculation
+                if (!realizedPnl.isZero()) {
+                    symbolPerformance[trade.symbol].totalTrades++;
+                    if (realizedPnl.gt(0)) {
+                        symbolPerformance[trade.symbol].wonTrades++;
+                    }
                 }
             }
         });
