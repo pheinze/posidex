@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { calculator } from './calculator';
 import { Decimal } from 'decimal.js';
 import { CONSTANTS } from './constants';
+import type { BaseMetrics, JournalEntry, TradeValues } from '../stores/types';
 
 describe('calculator', () => {
 
@@ -226,7 +227,7 @@ describe('calculator', () => {
     expect(stats).not.toBeNull();
     if (!stats) return; // Type guard
     expect(stats.totalTrades).toBe(2); // Ignores the first trade
-    expect(new Decimal(stats.winRate).toDP(2).equals(new Decimal('50.00'))).toBe(true);
+    expect(stats.winRate.toDP(2).equals(new Decimal('50.00'))).toBe(true);
     expect(stats.profitFactor?.toDP(2).equals(new Decimal('3.50'))).toBe(true);
     expect(stats.avgRMultiple.toDP(2).equals(new Decimal('1.25'))).toBe(true);
     expect(stats.maxDrawdown.toDP(2).equals(new Decimal('10.00'))).toBe(true);
@@ -251,7 +252,7 @@ describe('calculator', () => {
     expect(symbolStats['BTCUSDT']).not.toBeUndefined();
     expect(symbolStats['BTCUSDT'].totalTrades).toBe(2);
     expect(symbolStats['BTCUSDT'].wonTrades).toBe(1);
-    expect(symbolStats['BTCUSDT'].totalProfitLoss.toFixed(2)).toBe('30.00');
+    expect(symbolStats['BTCUSDT'].totalProfitLoss.toDP(2).equals(new Decimal('30.00'))).toBe(true);
 
     // ETH: 1 win, 0 losses (one trade ignored). Total P/L = 40
     expect(symbolStats['ETHUSDT']).not.toBeUndefined();
@@ -303,7 +304,7 @@ describe('Bugfix Verification Tests', () => {
       stopLossPrice: new Decimal(9900),
       fees: new Decimal(0.1),
       // Other values are not relevant for this specific test
-    } as any;
+    } as TradeValues;
     const targets = [{ price: new Decimal(10204), percent: new Decimal(100) }];
 
     // Let's trace the calculation for this test.
@@ -319,18 +320,19 @@ describe('Bugfix Verification Tests', () => {
   });
 
   it('should exclude breakeven trades from win rate calculation', () => {
-    const journalData = [
+    const journalData: Partial<JournalEntry>[] = [
       { status: 'Won', realizedPnl: new Decimal(100) },
       { status: 'Lost', realizedPnl: new Decimal(-50) },
       { status: 'Lost', realizedPnl: new Decimal(0) }, // Breakeven trade
-    ] as any;
+    ];
 
-    const stats = calculator.calculatePerformanceStats(journalData);
+    const stats = calculator.calculatePerformanceStats(journalData as JournalEntry[]);
     expect(stats).not.toBeNull();
+    if (!stats) return;
     // Total trades for winrate are wins + losses. Breakeven is excluded.
-    expect(stats?.totalTrades).toBe(2);
+    expect(stats.totalTrades).toBe(2);
     // Winrate is 1 win / 2 trades = 50%
-    expect(new Decimal(stats?.winRate!).toDP(2).equals(new Decimal('50.00'))).toBe(true);
+    expect(stats.winRate.toDP(2).equals(new Decimal('50.00'))).toBe(true);
   });
 
   it('should cap profit calculation at 100% of the position', () => {
@@ -340,12 +342,12 @@ describe('Bugfix Verification Tests', () => {
       riskAmount: new Decimal(10),
       requiredMargin: new Decimal(100),
       netLoss: new Decimal(12),
-    } as any;
+    } as BaseMetrics;
     const values = {
       entryPrice: new Decimal(100),
       stopLossPrice: new Decimal(99),
       fees: new Decimal(0.1),
-    } as any;
+    } as TradeValues;
     // Targets sum to 120%. The calculation should ignore the last 20%.
     const targets = [
       { price: new Decimal(110), percent: new Decimal(60) },
@@ -368,12 +370,28 @@ describe('Bugfix Verification Tests', () => {
       stopLossPrice: new Decimal(99),
       leverage: new Decimal(1),
       fees: new Decimal(100), // 100% fees
-    } as any;
+    } as TradeValues;
 
     const result = calculator.calculateBaseMetrics(values, CONSTANTS.TRADE_TYPE_LONG);
     expect(result).not.toBeNull();
     // With 100% fees, the break-even price for a long trade is infinite.
     expect(result?.breakEvenPrice.isFinite()).toBe(false);
+  });
+
+  it('should correctly calculate streaks including breakeven trades', () => {
+    const journalData = [
+      { status: 'Won', realizedPnl: new Decimal(100), date: '2023-01-01' },   // W
+      { status: 'Won', realizedPnl: new Decimal(150), date: '2023-01-02' },   // W -> longest W is 2
+      { status: 'Lost', realizedPnl: new Decimal(-50), date: '2023-01-03' },  // L -> longest L is 1
+      { status: 'Lost', realizedPnl: new Decimal(0), date: '2023-01-04' },    // B -> streaks reset
+      { status: 'Won', realizedPnl: new Decimal(100), date: '2023-01-05' },   // W -> current streak is W1
+    ] as JournalEntry[];
+
+    const stats = calculator.calculatePerformanceStats(journalData);
+    expect(stats).not.toBeNull();
+    expect(stats?.longestWinningStreak).toBe(2);
+    expect(stats?.longestLosingStreak).toBe(1);
+    expect(stats?.currentStreakText).toBe('W1');
   });
 });
 
@@ -421,8 +439,8 @@ describe('Correct RRR and Stats Calculation', () => {
       { id: 2, status: 'Won', realizedPnl: undefined, totalNetProfit: new Decimal(30), riskAmount: new Decimal(10), netLoss: new Decimal(12), date: '2024-01-03', tradeType: 'long', symbol: 'BTC' },
     ];
 
-    // @ts-ignore
-    const stats = calculator.calculatePerformanceStats(journalData);
+    // @ts-expect-error - Testing invalid data shape
+    const stats = calculator.calculatePerformanceStats(journalData as JournalEntry[]);
 
     // With no valid trades, the entire stats object should be null.
     expect(stats).toBeNull();

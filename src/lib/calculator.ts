@@ -160,8 +160,8 @@ export const calculator = {
 
         const wonTrades = tradesWithPnl.filter(t => t.realizedPnlValue.gt(0));
         const lostTrades = tradesWithPnl.filter(t => t.realizedPnlValue.lt(0));
-        const totalTrades = wonTrades.length + lostTrades.length; // Exclude breakeven trades
-        const winRate = totalTrades > 0 ? (wonTrades.length / totalTrades) * 100 : 0;
+        const totalTrades = wonTrades.length + lostTrades.length;
+        const winRate = totalTrades > 0 ? new Decimal(wonTrades.length).div(totalTrades).times(100) : new Decimal(0);
         
         const totalProfit = wonTrades.reduce((sum, t) => sum.plus(t.realizedPnlValue), new Decimal(0));
         const totalLoss = lostTrades.reduce((sum, t) => sum.plus(t.realizedPnlValue.abs()), new Decimal(0));
@@ -194,8 +194,8 @@ export const calculator = {
         });
 
         const recoveryFactor = maxDrawdown.gt(0) ? cumulativeProfit.dividedBy(maxDrawdown) : new Decimal(0);
-        const lossRate = totalTrades > 0 ? (lostTrades.length / totalTrades) * 100 : 0;
-        const expectancy = (new Decimal(winRate/100).times(avgWin)).minus(new Decimal(lossRate/100).times(avgLossOnly));
+        const lossRate = totalTrades > 0 ? new Decimal(lostTrades.length).div(totalTrades).times(100) : new Decimal(0);
+        const expectancy = (winRate.div(100).times(avgWin)).minus(lossRate.div(100).times(avgLossOnly));
 
         let totalProfitLong = new Decimal(0), totalLossLong = new Decimal(0), totalProfitShort = new Decimal(0), totalLossShort = new Decimal(0);
         tradesWithPnl.forEach(trade => {
@@ -208,57 +208,65 @@ export const calculator = {
             }
         });
 
-        let longestWinningStreak = 0, currentWinningStreak = 0, longestLosingStreak = 0, currentLosingStreak = 0, currentStreakText = 'N/A';
+        let longestWinningStreak = 0, currentWinningStreak = 0, longestLosingStreak = 0, currentLosingStreak = 0;
         tradesWithPnl.forEach(trade => {
-            if (trade.realizedPnlValue.gt(0)) {
+            if (trade.realizedPnlValue.gt(0)) { // Win
                 currentWinningStreak++;
                 currentLosingStreak = 0;
                 if (currentWinningStreak > longestWinningStreak) longestWinningStreak = currentWinningStreak;
-            } else {
+            } else if (trade.realizedPnlValue.lt(0)) { // Loss
                 currentLosingStreak++;
                 currentWinningStreak = 0;
                 if (currentLosingStreak > longestLosingStreak) longestLosingStreak = currentLosingStreak;
+            } else { // Breakeven
+                currentWinningStreak = 0;
+                currentLosingStreak = 0;
             }
         });
+
+        let currentStreakText = 'N/A';
         if (tradesWithPnl.length > 0) {
-            const lastIsWin = tradesWithPnl[tradesWithPnl.length - 1].realizedPnlValue.gt(0);
+            const lastTrade = tradesWithPnl[tradesWithPnl.length - 1];
             let streak = 0;
+            const lastPnl = lastTrade.realizedPnlValue;
+            const streakType = lastPnl.gt(0) ? 'W' : lastPnl.lt(0) ? 'L' : 'B';
+
             for (let i = tradesWithPnl.length - 1; i >= 0; i--) {
-                if ((lastIsWin && tradesWithPnl[i].realizedPnlValue.gt(0)) || (!lastIsWin && tradesWithPnl[i].realizedPnlValue.lte(0))) streak++;
-                else break;
+                const currentPnl = tradesWithPnl[i].realizedPnlValue;
+                const currentType = currentPnl.gt(0) ? 'W' : currentPnl.lt(0) ? 'L' : 'B';
+                if (currentType === streakType) {
+                    streak++;
+                } else {
+                    break;
+                }
             }
-            currentStreakText = `${lastIsWin ? 'W' : 'L'}${streak}`;
+            currentStreakText = `${streakType}${streak}`;
         }
 
         return { totalTrades, winRate, profitFactor, expectancy, avgRMultiple, avgWin, avgLossOnly, winLossRatio, largestProfit, largestLoss, maxDrawdown, recoveryFactor, currentStreakText, longestWinningStreak, longestLosingStreak, totalProfitLong, totalLossLong, totalProfitShort, totalLossShort };
     },
     calculateSymbolPerformance(journalData: JournalEntry[]) {
-        const closedTrades = journalData.filter(t => t.status === 'Won' || t.status === 'Lost');
-        const symbolPerformance: { [key: string]: { totalTrades: number; wonTrades: number; totalProfitLoss: Decimal; totalPlannedProfitLoss: Decimal; } } = {};
+        const validTrades = journalData.filter(t =>
+            (t.status === 'Won' || t.status === 'Lost') &&
+            t.realizedPnl !== null &&
+            t.realizedPnl !== undefined
+        );
+        const symbolPerformance: { [key: string]: { totalTrades: number; wonTrades: number; totalProfitLoss: Decimal; } } = {};
 
-        closedTrades.forEach(trade => {
+        validTrades.forEach(trade => {
             if (!trade.symbol) return;
             if (!symbolPerformance[trade.symbol]) {
-                symbolPerformance[trade.symbol] = { totalTrades: 0, wonTrades: 0, totalProfitLoss: new Decimal(0), totalPlannedProfitLoss: new Decimal(0) };
+                symbolPerformance[trade.symbol] = { totalTrades: 0, wonTrades: 0, totalProfitLoss: new Decimal(0) };
             }
 
-            // Calculate planned P/L (old logic)
-            const plannedPnl = trade.status === 'Won'
-                ? new Decimal(trade.totalNetProfit || 0)
-                : new Decimal(trade.netLoss || 0).negated();
-            symbolPerformance[trade.symbol].totalPlannedProfitLoss = symbolPerformance[trade.symbol].totalPlannedProfitLoss.plus(plannedPnl);
+            const realizedPnl = new Decimal(trade.realizedPnl!);
+            symbolPerformance[trade.symbol].totalProfitLoss = symbolPerformance[trade.symbol].totalProfitLoss.plus(realizedPnl);
 
-            // Calculate realized P/L (new logic)
-            if (trade.realizedPnl !== null && trade.realizedPnl !== undefined) {
-                const realizedPnl = new Decimal(trade.realizedPnl);
-                symbolPerformance[trade.symbol].totalProfitLoss = symbolPerformance[trade.symbol].totalProfitLoss.plus(realizedPnl);
-
-                // Only count trades with a non-zero P/L for win rate calculation
-                if (!realizedPnl.isZero()) {
-                    symbolPerformance[trade.symbol].totalTrades++;
-                    if (realizedPnl.gt(0)) {
-                        symbolPerformance[trade.symbol].wonTrades++;
-                    }
+            // Only count trades with a non-zero P/L for win rate calculation
+            if (!realizedPnl.isZero()) {
+                symbolPerformance[trade.symbol].totalTrades++;
+                if (realizedPnl.gt(0)) {
+                    symbolPerformance[trade.symbol].wonTrades++;
                 }
             }
         });
