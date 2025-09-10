@@ -61,7 +61,7 @@ export const calculator = {
         return atr;
     },
 
-    calculateIndividualTp(tpPrice: Decimal, currentTpPercent: Decimal, baseMetrics: BaseMetrics, values: TradeValues, index: number): IndividualTpResult {
+    calculateIndividualTp(tpPrice: Decimal, currentTpPercent: Decimal, baseMetrics: BaseMetrics, values: TradeValues, index: number, tradeType: string): IndividualTpResult {
         const { positionSize, requiredMargin } = baseMetrics;
         const gainPerUnit = tpPrice.minus(values.entryPrice).abs();
         const positionPart = positionSize.times(currentTpPercent.div(100));
@@ -80,7 +80,15 @@ export const calculator = {
         // --- STANDARD GROSS RRR (NEW LOGIC) ---
         const riskRewardRatio = riskPerUnit.gt(0) ? gainPerUnit.div(riskPerUnit) : new Decimal(0);
 
-        const priceChangePercent = values.entryPrice.gt(0) ? tpPrice.minus(values.entryPrice).div(values.entryPrice).times(100) : new Decimal(0);
+        let priceChangePercent = new Decimal(0);
+        if (values.entryPrice.gt(0)) {
+            if (tradeType === CONSTANTS.TRADE_TYPE_LONG) {
+                priceChangePercent = tpPrice.minus(values.entryPrice).div(values.entryPrice).times(100);
+            } else {
+                priceChangePercent = values.entryPrice.minus(tpPrice).div(values.entryPrice).times(100);
+            }
+        }
+
         const partialROC = requiredMargin.gt(0) && currentTpPercent.gt(0) ? netProfit.div(requiredMargin.times(currentTpPercent.div(100))).times(100) : new Decimal(0);
         return { netProfit, feeAdjustedRRR, riskRewardRatio, priceChangePercent, partialROC, partialVolume: positionPart, exitFee, index: index, percentSold: currentTpPercent };
     },
@@ -91,7 +99,7 @@ export const calculator = {
 
         targets.forEach((tp, index) => {
             if (tp.price.gt(0) && tp.percent.gt(0)) {
-                const { netProfit } = this.calculateIndividualTp(tp.price, tp.percent, baseMetrics, values, index);
+                const { netProfit } = this.calculateIndividualTp(tp.price, tp.percent, baseMetrics, values, index, tradeType);
                 totalNetProfit = totalNetProfit.plus(netProfit);
                 const entryFeePart = positionSize.times(tp.percent.div(100)).times(values.entryPrice).times(values.fees.div(100));
                 const exitFeePart = positionSize.times(tp.percent.div(100)).times(tp.price).times(values.fees.div(100));

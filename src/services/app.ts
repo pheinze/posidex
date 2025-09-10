@@ -227,10 +227,8 @@ export const app = {
         const calculatedTpDetails: IndividualTpResult[] = [];
         values.targets.forEach((tp, index) => {
             if (tp.price.gt(0) && tp.percent.gt(0)) {
-                const details = calculator.calculateIndividualTp(tp.price, tp.percent, baseMetrics, values, index);
-                if ((currentTradeState.tradeType === 'long' && tp.price.gt(values.entryPrice)) || (currentTradeState.tradeType === 'short' && tp.price.lt(values.entryPrice))) {
-                   calculatedTpDetails.push(details);
-                }
+                const details = calculator.calculateIndividualTp(tp.price, tp.percent, baseMetrics, values, index, currentTradeState.tradeType);
+                calculatedTpDetails.push(details);
             }
         });
         newResults.calculatedTpDetails = calculatedTpDetails;
@@ -734,7 +732,7 @@ export const app = {
     },
     adjustTpPercentages: (changedIndex: number | null) => {
         const currentAppState = get(tradeStore);
-        if (changedIndex !== null && currentAppState.targets[changedIndex].isLocked) {
+        if (changedIndex !== null && currentAppState.targets[changedIndex]?.isLocked) {
             return;
         }
 
@@ -742,64 +740,58 @@ export const app = {
         const ONE_HUNDRED = new Decimal(100);
         const ZERO = new Decimal(0);
 
-        type DecimalTarget = { price: Decimal; percent: Decimal; isLocked: boolean; originalIndex: number };
-
-        const decTargets: DecimalTarget[] = targets.map((t: { price: number | null; percent: number | null; isLocked: boolean }, i: number) => ({
-            price: parseDecimal(t.price),
+        const decTargets = targets.map((t: any) => ({
+            price: t.price,
             percent: parseDecimal(t.percent),
             isLocked: t.isLocked,
-            originalIndex: i
         }));
 
-        const totalSum = decTargets.reduce((sum, t) => sum.plus(t.percent), ZERO);
-        const diff = ONE_HUNDRED.minus(totalSum);
+        const lockedSum = decTargets
+            .filter((t: any) => t.isLocked)
+            .reduce((sum: Decimal, t: any) => sum.plus(t.percent), ZERO);
 
-        if (diff.isZero()) return;
+        if (lockedSum.gt(ONE_HUNDRED)) return;
 
-        const otherUnlocked = decTargets.filter(t => !t.isLocked && t.originalIndex !== changedIndex);
+        const unlockedTargets = decTargets.filter((t: any) => !t.isLocked);
+        if (unlockedTargets.length === 0) return;
 
-        if (otherUnlocked.length === 0) {
-            if (changedIndex !== null) {
-                decTargets[changedIndex].percent = decTargets[changedIndex].percent.plus(diff);
+        const unlockedTargetSum = ONE_HUNDRED.minus(lockedSum);
+        const unlockedCurrentSum = unlockedTargets.reduce((sum: Decimal, t: any) => sum.plus(t.percent), ZERO);
+
+        if (unlockedCurrentSum.equals(unlockedTargetSum) && unlockedTargets.every((t: any) => t.percent.isInteger())) {
+            return;
+        }
+
+        // Distribute proportionally
+        if (unlockedCurrentSum.isZero()) {
+            if (unlockedTargetSum.gt(0)) {
+                const share = unlockedTargetSum.div(unlockedTargets.length);
+                unlockedTargets.forEach((t: any) => t.percent = share);
             }
-        }
-        else if (diff.gt(ZERO)) {
-            const share = diff.div(otherUnlocked.length);
-            otherUnlocked.forEach(t => {
-                decTargets[t.originalIndex].percent = decTargets[t.originalIndex].percent.plus(share);
-            });
-        }
-        else {
-            let deficit = diff.abs();
-            for (let i = otherUnlocked.length - 1; i >= 0; i--) {
-                if (deficit.isZero()) break;
-                const target = otherUnlocked[i];
-                const originalTarget = decTargets[target.originalIndex];
-                const reduction = Decimal.min(deficit, originalTarget.percent);
-
-                originalTarget.percent = originalTarget.percent.minus(reduction);
-                deficit = deficit.minus(reduction);
-            }
+        } else {
+            const scalingFactor = unlockedTargetSum.div(unlockedCurrentSum);
+            unlockedTargets.forEach((t: any) => t.percent = t.percent.times(scalingFactor));
         }
 
-        let finalTargets = decTargets.map(t => ({
-            ...t,
-            percent: t.percent.toDecimalPlaces(0, Decimal.ROUND_HALF_UP)
+        // Round while preserving the sum
+        let roundedSum = ZERO;
+        for (let i = 0; i < unlockedTargets.length - 1; i++) {
+            const rounded = unlockedTargets[i].percent.toDecimalPlaces(0, Decimal.ROUND_HALF_UP);
+            unlockedTargets[i].percent = rounded;
+            roundedSum = roundedSum.plus(rounded);
+        }
+
+        if (unlockedTargets.length > 0) {
+            const lastTarget = unlockedTargets[unlockedTargets.length - 1];
+            lastTarget.percent = unlockedTargetSum.minus(roundedSum).toDecimalPlaces(0, Decimal.ROUND_HALF_UP);
+        }
+
+        const finalTargets = decTargets.map((t: any) => ({
+            price: t.price,
+            percent: t.percent.toNumber(),
+            isLocked: t.isLocked
         }));
 
-        let finalSum = finalTargets.reduce((sum, t) => sum.plus(t.percent), ZERO);
-        let roundingDiff = ONE_HUNDRED.minus(finalSum);
-
-        if (!roundingDiff.isZero()) {
-            let targetToAdjust = finalTargets.find((t, i) => !t.isLocked && i !== changedIndex && t.percent.plus(roundingDiff).gte(0));
-            if (!targetToAdjust) {
-                targetToAdjust = finalTargets.find(t => !t.isLocked && t.percent.plus(roundingDiff).gte(0));
-            }
-            if (targetToAdjust) {
-                targetToAdjust.percent = targetToAdjust.percent.plus(roundingDiff);
-            }
-        }
-
-        updateTradeStore(state => ({ ...state, targets: finalTargets.map(t => ({price: t.price.toNumber(), percent: t.percent.toNumber(), isLocked: t.isLocked})) }));
+        updateTradeStore(state => ({ ...state, targets: finalTargets }));
     },
 };

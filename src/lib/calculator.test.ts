@@ -69,7 +69,7 @@ describe('calculator', () => {
   });
 
   // Test für calculateIndividualTp
-  it('should correctly calculate individual TP metrics', () => {
+  it('should correctly calculate individual TP metrics for a LONG trade', () => {
     const baseMetrics = {
       positionSize: new Decimal(10),
       requiredMargin: new Decimal(100),
@@ -96,7 +96,7 @@ describe('calculator', () => {
     const tpPrice = new Decimal(105);
     const currentTpPercent = new Decimal(50);
 
-    const result = calculator.calculateIndividualTp(tpPrice, currentTpPercent, baseMetrics, values, 0);
+    const result = calculator.calculateIndividualTp(tpPrice, currentTpPercent, baseMetrics, values, 0, CONSTANTS.TRADE_TYPE_LONG);
 
     expect(result.netProfit.toFixed(2)).toBe('23.98'); // (105-100)*10*0.5 - (10*100*0.001*0.5) - (10*105*0.001*0.5) = 25 - 0.5 - 0.525 = 23.975
     // Re-evaluating netProfit: (gainPerUnit * positionPart) - (entryFeePart + tpExitFeePart)
@@ -116,6 +116,41 @@ describe('calculator', () => {
     expect(result.priceChangePercent.toFixed(2)).toBe('5.00');
     expect(result.partialROC.toFixed(2)).toBe('47.95'); // 23.975 / (100 * 0.5) * 100 = 23.975 / 50 * 100 = 47.95
     expect(result.partialVolume.toFixed(2)).toBe('5.00');
+  });
+
+  it('should correctly calculate priceChangePercent for a SHORT trade', () => {
+    const baseMetrics = {
+      positionSize: new Decimal(10),
+      requiredMargin: new Decimal(100),
+      netLoss: new Decimal(10),
+      breakEvenPrice: new Decimal(99.80),
+      estimatedLiquidationPrice: new Decimal(110),
+      entryFee: new Decimal(1),
+      riskAmount: new Decimal(10),
+    };
+    const values = {
+      accountSize: new Decimal(1000),
+      riskPercentage: new Decimal(1),
+      entryPrice: new Decimal(100),
+      stopLossPrice: new Decimal(101),
+      leverage: new Decimal(10),
+      fees: new Decimal(0.1),
+      symbol: 'BTCUSDT',
+      useAtrSl: false,
+      atrValue: new Decimal(0),
+      atrMultiplier: new Decimal(0),
+      targets: [],
+      totalPercentSold: new Decimal(0),
+    };
+    const tpPrice = new Decimal(95);
+    const currentTpPercent = new Decimal(100);
+
+    const result = calculator.calculateIndividualTp(tpPrice, currentTpPercent, baseMetrics, values, 0, CONSTANTS.TRADE_TYPE_SHORT);
+
+    // For a short trade from 100 to 95, the price change is 5%. It should be positive.
+    expect(result.priceChangePercent.toFixed(2)).toBe('5.00');
+    // RRR should be (100-95) / (101-100) = 5
+    expect(result.riskRewardRatio.toFixed(2)).toBe('5.00');
   });
 
   // Test für calculateTotalMetrics
@@ -270,7 +305,7 @@ describe('Correct RRR and Stats Calculation', () => {
     const tpPrice = new Decimal(120);
     const currentTpPercent = new Decimal(50);
 
-    const result = calculator.calculateIndividualTp(tpPrice, currentTpPercent, baseMetrics, values, 0);
+    const result = calculator.calculateIndividualTp(tpPrice, currentTpPercent, baseMetrics, values, 0, CONSTANTS.TRADE_TYPE_LONG);
 
     // 1. Test the new standard RRR (Gross RRR)
     // gainPerUnit = 120 - 100 = 20
