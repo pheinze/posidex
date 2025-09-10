@@ -37,20 +37,29 @@ export function numberInput(node: HTMLInputElement, options: NumberInputOptions)
         const originalValue = value;
         const cursorPosition = inputElement.selectionStart;
 
+        // First, replace all commas with dots.
         value = value.replace(/,/g, '.');
 
+        // Sanitize the value by building it character by character.
         let sanitizedValue = '';
         let hasDecimal = false;
-        for (const char of value) {
+
+        for (let i = 0; i < value.length; i++) {
+            const char = value[i];
+
             if (/\d/.test(char)) {
                 sanitizedValue += char;
             } else if (char === '.' && !hasDecimal) {
                 sanitizedValue += char;
                 hasDecimal = true;
+            } else if (char === '-' && i === 0) { // Only allow minus sign at the very beginning.
+                sanitizedValue += char;
             }
         }
+
         value = sanitizedValue;
 
+        // Only update the DOM if the value has changed, to avoid infinite loops.
         if (value !== originalValue) {
             const diff = value.length - originalValue.length;
             inputElement.value = value;
@@ -84,6 +93,17 @@ export function numberInput(node: HTMLInputElement, options: NumberInputOptions)
         const isAllowedKey = allowedKeys.includes(event.key);
         const isDecimalSeparator = event.key === '.' || event.key === ',';
         const isDigit = /^[0-9]$/.test(event.key);
+        const isMinus = event.key === '-';
+
+        // Allow minus sign only at the beginning and if not already present
+        if (isMinus) {
+            if (node.selectionStart === 0 && !node.value.includes('-')) {
+                return; // Allow the key press
+            } else {
+                event.preventDefault();
+                return;
+            }
+        }
 
         if (noDecimals && isDecimalSeparator) {
             event.preventDefault();
@@ -95,7 +115,7 @@ export function numberInput(node: HTMLInputElement, options: NumberInputOptions)
             return;
         }
 
-        if (!isDigit && !isAllowedKey && !isShortcut && !isDecimalSeparator) {
+        if (!isDigit && !isAllowedKey && !isShortcut && !isDecimalSeparator && !isMinus) {
             event.preventDefault();
             return;
         }

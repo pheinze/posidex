@@ -110,4 +110,48 @@ describe('numberInput Svelte Action', () => {
         input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp' }));
         expect(input.value).toBe('100');
     });
+
+    // --- Negative Number Handling ---
+    describe('Negative Number Handling', () => {
+        it('should allow a leading minus sign to be typed', () => {
+            const { input } = setupTest('');
+            const event = new KeyboardEvent('keydown', { key: '-', cancelable: true });
+            const preventDefaultSpy = vi.spyOn(event, 'preventDefault');
+            input.dispatchEvent(event);
+            expect(preventDefaultSpy).not.toHaveBeenCalled();
+        });
+
+        it('should correctly process and sanitize a negative number input', () => {
+            const { input } = setupTest('');
+
+            // Simulate user typing "-a1b.2c"
+            input.value = '-a1b.2c';
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+
+            expect(input.value).toBe('-1.2');
+        });
+
+        it('should strip a minus sign from the middle of the input', () => {
+            const { input } = setupTest('12-3.4');
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+            expect(input.value).toBe('123.4');
+        });
+
+        it('should prevent typing a minus sign if one already exists', () => {
+            const { input } = setupTest('-123');
+            const event = new KeyboardEvent('keydown', { key: '-', cancelable: true });
+            const preventDefaultSpy = vi.spyOn(event, 'preventDefault');
+            input.dispatchEvent(event);
+            expect(preventDefaultSpy).toHaveBeenCalled();
+        });
+
+        it('should prevent typing a minus sign if the cursor is not at the start', () => {
+            const { input } = setupTest('123');
+            input.selectionStart = 1; // Move cursor after the '1'
+            const event = new KeyboardEvent('keydown', { key: '-', cancelable: true });
+            const preventDefaultSpy = vi.spyOn(event, 'preventDefault');
+            input.dispatchEvent(event);
+            expect(preventDefaultSpy).toHaveBeenCalled();
+        });
+    });
 });
