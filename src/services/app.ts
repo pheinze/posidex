@@ -323,43 +323,38 @@ export const app = {
         onboardingService.trackFirstJournalSave();
         uiStore.showFeedback('save');
     },
-    updateTradeStatus: async (id: number, newStatus: string) => {
+    updateTradeStatus: (id: number, newStatus: string) => {
+        const journalData = app.getJournal();
+        const tradeIndex = journalData.findIndex(t => t.id == id);
+        if (tradeIndex !== -1) {
+            journalData[tradeIndex].status = newStatus;
+            app.saveJournal(journalData);
+            journalStore.set(journalData);
+            trackCustomEvent('Journal', 'UpdateStatus', newStatus);
+        }
+    },
+    updateRealizedPnl: (id: number, pnl: string | null) => {
         const journalData = app.getJournal();
         const tradeIndex = journalData.findIndex(t => t.id == id);
         if (tradeIndex === -1) return;
 
-        if (newStatus === 'Won' || newStatus === 'Lost') {
-            const result = await modalManager.show(
-                `Trade ${newStatus}`,
-                `Enter the final Net P/L for this trade (e.g., 150.50 for profit, -75.25 for loss):`,
-                'prompt'
-            );
-
-            if (result === null || result === false) {
-                // User cancelled, refresh UI to revert dropdown
-                journalStore.set([...journalData]);
-                return;
-            }
-
-            const pnlValue = parseFloat(result as string);
+        // If input is cleared, set realizedPnl to null
+        if (pnl === null || pnl.trim() === '') {
+            journalData[tradeIndex].realizedPnl = null;
+        } else {
+            const pnlValue = parseFloat(pnl);
             if (isNaN(pnlValue)) {
                 uiStore.showError("Invalid number entered for P/L.");
-                // Refresh UI to revert dropdown
+                // Do not update, let the UI revert to the old value
                 journalStore.set([...journalData]);
                 return;
             }
-
             journalData[tradeIndex].realizedPnl = new Decimal(pnlValue);
-            journalData[tradeIndex].status = newStatus;
-
-        } else { // e.g., setting back to 'Open'
-            journalData[tradeIndex].status = newStatus;
-            journalData[tradeIndex].realizedPnl = null;
         }
 
         app.saveJournal(journalData);
-        journalStore.set(journalData);
-        trackCustomEvent('Journal', 'UpdateStatus', newStatus);
+        journalStore.set(journalData); // This will trigger reactivity
+        trackCustomEvent('Journal', 'UpdatePnl');
     },
     deleteTrade: (id: number) => {
         const d = app.getJournal().filter(t => t.id != id);

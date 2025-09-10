@@ -40,7 +40,7 @@
             <!-- Desktop Table -->
             <div class="hidden md:block">
                 <table class="journal-table w-full">
-                    <thead><tr><th>{$_('journal.date')}</th><th>{$_('journal.symbol')}</th><th>{$_('journal.type')}</th><th>{$_('journal.entry')}</th><th>{$_('journal.sl')}</th><th>P/L</th><th>{$_('journal.rr')}</th><th>{$_('journal.status')}</th><th>{$_('journal.notes')}</th><th>{$_('journal.action')}</th></tr></thead>
+                    <thead><tr><th>{$_('journal.date')}</th><th>{$_('journal.symbol')}</th><th>{$_('journal.type')}</th><th>{$_('journal.entry')}</th><th>{$_('journal.sl')}</th><th>Planned P/L</th><th>Realized P/L</th><th>{$_('journal.rr')}</th><th>{$_('journal.status')}</th><th>{$_('journal.notes')}</th><th>{$_('journal.action')}</th></tr></thead>
                     <tbody>
                         {#each filteredTrades as trade}
                             <tr>
@@ -50,6 +50,7 @@
                                 <td>{trade.entryPrice.toFixed(4)}</td>
                                 <td>{trade.stopLossPrice.toFixed(4)}</td>
                                 <td class="{trade.totalNetProfit.gt(0) ? 'text-[var(--success-color)]' : trade.totalNetProfit.lt(0) ? 'text-[var(--danger-color)]' : ''}">{trade.totalNetProfit.toFixed(2)}</td>
+                                <td><input type="number" class="input-field w-24 p-1" placeholder="Enter P/L" value={trade.realizedPnl} on:blur={(e) => app.updateRealizedPnl(trade.id, (e.target as HTMLInputElement).value)} /></td>
                                 <td class="{trade.totalRR.gte(2) ? 'text-[var(--success-color)]' : trade.totalRR.gte(1.5) ? 'text-[var(--warning-color)]' : 'text-[var(--danger-color)]'}">{trade.totalRR.toFixed(2)}</td>
                                 <td>
                                     <select class="status-select input-field p-1" data-id="{trade.id}" on:change={(e) => app.updateTradeStatus(trade.id, (e.target as HTMLSelectElement).value)}>
@@ -85,15 +86,21 @@
                                 <div class="text-xs text-[var(--text-secondary)]">P/L</div>
                             </div>
                         </div>
-                        <div class="mt-4 flex justify-between items-center">
+                        <div class="mt-4 grid grid-cols-2 gap-4">
                             <div>
                                 <div class="text-sm">Status</div>
-                                <select class="status-select input-field p-1 mt-1" data-id="{trade.id}" on:change={(e) => app.updateTradeStatus(trade.id, (e.target as HTMLSelectElement).value)}>
+                                <select class="status-select input-field p-1 mt-1 w-full" data-id="{trade.id}" on:change={(e) => app.updateTradeStatus(trade.id, (e.target as HTMLSelectElement).value)}>
                                     <option value="Open" selected={trade.status === 'Open'}>{$_('journal.filterOpen')}</option>
                                     <option value="Won" selected={trade.status === 'Won'}>{$_('journal.filterWon')}</option>
                                     <option value="Lost" selected={trade.status === 'Lost'}>{$_('journal.filterLost')}</option>
                                 </select>
                             </div>
+                            <div>
+                                <div class="text-sm">Realized P/L</div>
+                                <input type="number" class="input-field w-full p-1 mt-1" placeholder="Enter P/L" value={trade.realizedPnl} on:blur={(e) => app.updateRealizedPnl(trade.id, (e.target as HTMLInputElement).value)} />
+                            </div>
+                        </div>
+                        <div class="mt-4 flex justify-between items-center">
                             <div class="text-right">
                                 <div class="text-sm text-slate-400">{new Date(trade.date).toLocaleString('de-DE', {day:'2-digit', month: '2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit'})}</div>
                                 <button class="delete-trade-btn text-[var(--danger-color)] hover:opacity-80 p-1 rounded-full cursor-pointer mt-1" data-id="{trade.id}" title="{$_('journal.delete')}" on:click={() => app.deleteTrade(trade.id)}>{@html icons.delete}</button>
