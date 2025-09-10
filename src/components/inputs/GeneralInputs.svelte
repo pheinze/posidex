@@ -4,27 +4,28 @@
     import { numberInput } from '../../utils/inputUtils';
     import { _ } from '../../locales/i18n';
     import { trackClick } from '../../lib/actions';
+    import { Decimal } from 'decimal.js';
 
     export let tradeType: string;
-    export let leverage: number | null;
-    export let fees: number | null;
+    export let leverage: Decimal | null;
+    export let fees: Decimal | null;
 
     function setTradeType(type: string) {
         updateTradeStore(s => ({ ...s, tradeType: type }));
     }
 
-    const format = (val: number | null) => (val === null || val === undefined) ? '' : String(val);
+    const format = (val: Decimal | null) => (val === null || val === undefined) ? '' : String(val);
 
     function handleLeverageInput(e: Event) {
         const target = e.target as HTMLInputElement;
         const value = target.value;
-        updateTradeStore(s => ({ ...s, leverage: value === '' ? null : parseFloat(value) }));
+        updateTradeStore(s => ({ ...s, leverage: value === '' ? null : new Decimal(value) }));
     }
 
     function handleFeesInput(e: Event) {
         const target = e.target as HTMLInputElement;
         const value = target.value;
-        updateTradeStore(s => ({ ...s, fees: value === '' ? null : parseFloat(value) }));
+        updateTradeStore(s => ({ ...s, fees: value === '' ? null : new Decimal(value) }));
     }
 </script>
 

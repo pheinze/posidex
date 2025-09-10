@@ -20,6 +20,7 @@
     import { trackClick } from '../lib/actions';
 import { trackCustomEvent } from '../services/trackingService';
     import { createBackup, restoreFromBackup } from '../services/backupService';
+    import { Decimal } from 'decimal.js';
     
     import type { IndividualTpResult } from '../stores/types';
     import SummaryResults from '../components/results/SummaryResults.svelte';
@@ -93,7 +94,7 @@ import { trackCustomEvent } from '../services/trackingService';
         uiStore.showError(e.detail);
     }
 
-    function handleTargetsChange(event: CustomEvent<Array<{ price: number | null; percent: number | null; isLocked: boolean }>>) {
+    function handleTargetsChange(event: CustomEvent<Array<{ price: Decimal | null; percent: Decimal | null; isLocked: boolean }>>) {
         updateTradeStore(s => ({ ...s, targets: event.detail }));
     }
 

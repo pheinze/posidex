@@ -42,8 +42,8 @@ export const uiManager = {
 };
 
 export function updateVisualBar(
-    values: { entryPrice: number | null; stopLossPrice: number | null; tradeType: string },
-    targets: Array<{ price: number | null; percent: number | null; isLocked: boolean }>,
+    values: { entryPrice: Decimal | null; stopLossPrice: Decimal | null; tradeType: string },
+    targets: Array<{ price: Decimal | null; percent: Decimal | null; isLocked: boolean }>,
     calculatedTpDetails: IndividualTpResult[]
 ): VisualBarData {
     const visualBarContent: { type: string; style: { left: string; width: string; }; }[] = [];

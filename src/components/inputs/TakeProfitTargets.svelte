@@ -6,10 +6,11 @@
     import { app } from '../../services/app';
     import { _ } from '../../locales/i18n';
     import type { IndividualTpResult } from '../../stores/types';
+    import { Decimal } from 'decimal.js';
 
     const dispatch = createEventDispatcher();
 
-    export let targets: Array<{ price: number | null; percent: number | null; isLocked: boolean }>;
+    export let targets: Array<{ price: Decimal | null; percent: Decimal | null; isLocked: boolean }>;
     export let calculatedTpDetails: IndividualTpResult[] = [];
 
     function addTakeProfitRow() {

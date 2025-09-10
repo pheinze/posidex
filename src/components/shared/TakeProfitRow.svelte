@@ -8,12 +8,13 @@
     import { app } from '../../services/app';
     import { get } from 'svelte/store';
     import type { IndividualTpResult } from '../../stores/types';
+    import { Decimal } from 'decimal.js';
 
     const dispatch = createEventDispatcher();
 
     export let index: number;
-    export let price: number | null;
-    export let percent: number | null;
+    export let price: Decimal | null;
+    export let percent: Decimal | null;
     export let isLocked: boolean;
     export let tpDetail: IndividualTpResult | undefined = undefined;
 
@@ -31,12 +32,12 @@
         dispatch('remove', index);
     }
 
-    const format = (val: number | null) => (val === null || val === undefined) ? '' : String(val);
+    const format = (val: Decimal | null) => (val === null || val === undefined) ? '' : String(val);
 
     function handlePriceInput(e: Event) {
         const target = e.target as HTMLInputElement;
         const value = target.value;
-        const newPrice = value === '' ? null : parseFloat(value);
+        const newPrice = value === '' ? null : new Decimal(value);
 
         const currentTargets = get(tradeStore).targets;
         if (currentTargets[index]) {
@@ -48,7 +49,7 @@
     function handlePercentInput(e: Event) {
         const target = e.target as HTMLInputElement;
         const value = target.value;
-        const newPercent = value === '' ? null : parseFloat(value);
+        const newPercent = value === '' ? null : new Decimal(value);
 
         const currentTargets = get(tradeStore).targets;
         if (currentTargets[index]) {

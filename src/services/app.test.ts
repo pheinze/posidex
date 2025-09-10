@@ -196,7 +196,7 @@ describe('app service - ATR and Locking Logic', () => {
 
     it('should toggle risk amount lock', () => {
         // Arrange
-        updateTradeStore(state => ({ ...state, riskAmount: 100 }));
+        updateTradeStore(state => ({ ...state, riskAmount: new Decimal(100) }));
         expect(get(tradeStore).isRiskAmountLocked).toBe(false);
 
         // Act

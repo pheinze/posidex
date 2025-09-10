@@ -5,10 +5,11 @@
     import { createEventDispatcher } from 'svelte';
     import { icons } from '../../lib/constants';
     import { updateTradeStore } from '../../stores/tradeStore';
+    import { Decimal } from 'decimal.js';
 
-    export let accountSize: number | null;
-    export let riskPercentage: number | null;
-    export let riskAmount: number | null;
+    export let accountSize: Decimal | null;
+    export let riskPercentage: Decimal | null;
+    export let riskAmount: Decimal | null;
     export let isRiskAmountLocked: boolean;
     export let isPositionSizeLocked: boolean;
 
@@ -18,24 +19,24 @@
         dispatch('toggleRiskAmountLock');
     }
 
-    const format = (val: number | null) => (val === null || val === undefined) ? '' : String(val);
+    const format = (val: Decimal | null) => (val === null || val === undefined) ? '' : String(val);
 
     function handleAccountSizeInput(e: Event) {
         const target = e.target as HTMLInputElement;
         const value = target.value;
-        updateTradeStore(s => ({ ...s, accountSize: value === '' ? null : parseFloat(value) }));
+        updateTradeStore(s => ({ ...s, accountSize: value === '' ? null : new Decimal(value) }));
     }
 
     function handleRiskPercentageInput(e: Event) {
         const target = e.target as HTMLInputElement;
         const value = target.value;
-        updateTradeStore(s => ({ ...s, riskPercentage: value === '' ? null : parseFloat(value) }));
+        updateTradeStore(s => ({ ...s, riskPercentage: value === '' ? null : new Decimal(value) }));
     }
 
     function handleRiskAmountInput(e: Event) {
         const target = e.target as HTMLInputElement;
         const value = target.value;
-        updateTradeStore(s => ({ ...s, riskAmount: value === '' ? null : parseFloat(value) }));
+        updateTradeStore(s => ({ ...s, riskAmount: value === '' ? null : new Decimal(value) }));
     }
 </script>
 

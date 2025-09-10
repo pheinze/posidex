@@ -3,11 +3,12 @@
     import type { VisualBarData } from '../../services/uiManager';
     import { _ } from '../../locales/i18n';
     import type { IndividualTpResult } from '../../stores/types';
+    import { Decimal } from 'decimal.js';
 
-    export let entryPrice: number | null;
-    export let stopLossPrice: number | null;
+    export let entryPrice: Decimal | null;
+    export let stopLossPrice: Decimal | null;
     export let tradeType: string;
-    export let targets: Array<{ price: number | null; percent: number | null; isLocked: boolean }>;
+    export let targets: Array<{ price: Decimal | null; percent: Decimal | null; isLocked: boolean }>;
     export let calculatedTpDetails: IndividualTpResult[];
 
     let visualBarData: VisualBarData = { visualBarContent: [], markers: [] };

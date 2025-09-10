@@ -7,15 +7,16 @@
     import { trackCustomEvent } from '../../services/trackingService';
     import { onboardingService } from '../../services/onboardingService';
     import { updateTradeStore } from '../../stores/tradeStore';
+    import { Decimal } from 'decimal.js';
 
     const dispatch = createEventDispatcher();
 
     export let symbol: string;
-    export let entryPrice: number | null;
+    export let entryPrice: Decimal | null;
     export let useAtrSl: boolean;
-    export let atrValue: number | null;
-    export let atrMultiplier: number | null;
-    export let stopLossPrice: number | null;
+    export let atrValue: Decimal | null;
+    export let atrMultiplier: Decimal | null;
+    export let stopLossPrice: Decimal | null;
     export let atrMode: 'manual' | 'auto';
     export let atrTimeframe: string;
 
@@ -61,30 +62,30 @@
         }
     }
 
-    const format = (val: number | null) => (val === null || val === undefined) ? '' : String(val);
+    const format = (val: Decimal | null) => (val === null || val === undefined) ? '' : String(val);
 
     function handleEntryPriceInput(e: Event) {
         const target = e.target as HTMLInputElement;
         const value = target.value;
-        updateTradeStore(s => ({ ...s, entryPrice: value === '' ? null : parseFloat(value) }));
+        updateTradeStore(s => ({ ...s, entryPrice: value === '' ? null : new Decimal(value) }));
     }
 
     function handleAtrValueInput(e: Event) {
         const target = e.target as HTMLInputElement;
         const value = target.value;
-        updateTradeStore(s => ({ ...s, atrValue: value === '' ? null : parseFloat(value) }));
+        updateTradeStore(s => ({ ...s, atrValue: value === '' ? null : new Decimal(value) }));
     }
 
     function handleAtrMultiplierInput(e: Event) {
         const target = e.target as HTMLInputElement;
         const value = target.value;
-        updateTradeStore(s => ({ ...s, atrMultiplier: value === '' ? null : parseFloat(value) }));
+        updateTradeStore(s => ({ ...s, atrMultiplier: value === '' ? null : new Decimal(value) }));
     }
 
     function handleStopLossPriceInput(e: Event) {
         const target = e.target as HTMLInputElement;
         const value = target.value;
-        updateTradeStore(s => ({ ...s, stopLossPrice: value === '' ? null : parseFloat(value) }));
+        updateTradeStore(s => ({ ...s, stopLossPrice: value === '' ? null : new Decimal(value) }));
     }
 </script>
 
