@@ -7,6 +7,7 @@
     import { updateTradeStore, tradeStore } from '../../stores/tradeStore';
     import { app } from '../../services/app';
     import { get } from 'svelte/store';
+    import type { IndividualTpResult } from '../../stores/types';
 
     const dispatch = createEventDispatcher();
 
@@ -14,7 +15,7 @@
     export let price: number | null;
     export let percent: number | null;
     export let isLocked: boolean;
-    export let tpDetail: any | undefined = undefined;
+    export let tpDetail: IndividualTpResult | undefined = undefined;
 
     function toggleLock() {
         const newLockState = !isLocked;

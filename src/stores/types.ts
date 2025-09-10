@@ -98,7 +98,13 @@ export interface AppState {
     showChangelogModal: boolean; // Added for changelog modal
     journalSearchQuery: string;
     journalFilterStatus: string;
-    currentTradeData: any; // This needs a more specific interface
+    currentTradeData: CurrentTradeData | null;
+}
+
+export interface CurrentTradeData extends TradeValues, BaseMetrics, TotalMetrics {
+    tradeType: string;
+    status: string;
+    calculatedTpDetails: IndividualTpResult[];
 }
 
 export interface JournalEntry {

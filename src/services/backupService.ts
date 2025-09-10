@@ -1,16 +1,8 @@
 import { browser } from '$app/environment';
-import type { AppState, JournalEntry } from '../stores/types';
 import { CONSTANTS } from '../lib/constants';
 
 const BACKUP_VERSION = 1;
 const APP_NAME = 'R-Calculator';
-
-// Define a more specific type for Settings based on what's used in the app
-interface Settings {
-  theme: string;
-  language: string;
-  // Add other settings as they are defined
-}
 
 // The structure for the data payload in the backup
 interface BackupData {

@@ -53,7 +53,7 @@ export const initialTradeState: Pick<AppState,
     riskAmount: null,
     journalSearchQuery: '',
     journalFilterStatus: 'all',
-    currentTradeData: {},
+    currentTradeData: null,
 };
 
 export const tradeStore = writable(initialTradeState);

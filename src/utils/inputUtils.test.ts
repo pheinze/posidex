@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { numberInput } from './inputUtils';
+import { numberInput, type NumberInputOptions } from './inputUtils';
 
 describe('numberInput Svelte Action', () => {
 
-    function setupTest(initialValue: string, options: any = {}) {
+    function setupTest(initialValue: string, options: NumberInputOptions = {}) {
         const input = document.createElement('input');
         input.type = 'text';
         input.value = initialValue;

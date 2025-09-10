@@ -1,11 +1,11 @@
-import { CONSTANTS, themes, themeIcons } from '../lib/constants';
+import { CONSTANTS } from '../lib/constants';
 import { parseDecimal } from '../utils/utils';
 import { modalManager } from './modalManager';
-import { calculator } from '../lib/calculator';
 import { Decimal } from 'decimal.js';
 import { loadInstruction } from './markdownLoader';
 import { _ } from '../locales/i18n';
 import { get } from 'svelte/store';
+import type { IndividualTpResult } from '../stores/types';
 
 interface VisualBarContentItem {
     type: string;
@@ -41,7 +41,11 @@ export const uiManager = {
     }
 };
 
-export function updateVisualBar(values: any, targets: any[], calculatedTpDetails: any[]): VisualBarData {
+export function updateVisualBar(
+    values: { entryPrice: number | null; stopLossPrice: number | null; tradeType: string },
+    targets: Array<{ price: number | null; percent: number | null; isLocked: boolean }>,
+    calculatedTpDetails: IndividualTpResult[]
+): VisualBarData {
     const visualBarContent: { type: string; style: { left: string; width: string; }; }[] = [];
     const markers: VisualBarMarker[] = [];
 

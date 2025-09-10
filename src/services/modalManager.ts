@@ -8,7 +8,7 @@ export interface ModalState {
     type: 'alert' | 'confirm' | 'prompt';
     defaultValue?: string;
     isOpen: boolean;
-    resolve: ((value: any) => void) | null;
+    resolve: ((value: boolean | string) => void) | null;
 }
 
 const modalState = writable<ModalState>({
@@ -21,7 +21,7 @@ const modalState = writable<ModalState>({
 });
 
 export const modalManager = {
-    show(title: string, message: string, type: 'alert' | 'confirm' | 'prompt', defaultValue: string = ''): Promise<any> {
+    show(title: string, message: string, type: 'alert' | 'confirm' | 'prompt', defaultValue: string = ''): Promise<boolean | string> {
         return new Promise((resolve) => {
             if (!browser) { // Only show modal in browser environment
                 console.warn("Modal cannot be shown in SSR environment.");
@@ -39,7 +39,7 @@ export const modalManager = {
             });
         });
     },
-    _handleModalConfirm(result: any) {
+    _handleModalConfirm(result: boolean | string) {
         const currentModalState = get(modalState);
         if (currentModalState.resolve) {
             currentModalState.resolve(result);

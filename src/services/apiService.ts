@@ -18,7 +18,7 @@ export const apiService = {
     async fetchKlines(symbol: string, interval: string, limit: number = 15): Promise<Kline[]> {
         const response = await fetch(`https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`);
         if (!response.ok) throw new Error(`Kerzendaten konnten nicht geladen werden (${response.status})`);
-        const data: [number, string, string, string, string, ...any[]][] = await response.json();
+        const data: [number, string, string, string, string, ...unknown[]][] = await response.json();
 
         // Map the raw array data to a more usable object format
         return data.map(kline => ({

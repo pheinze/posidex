@@ -5,11 +5,12 @@
     import { createEventDispatcher } from 'svelte';
     import { app } from '../../services/app';
     import { _ } from '../../locales/i18n';
+    import type { IndividualTpResult } from '../../stores/types';
 
     const dispatch = createEventDispatcher();
 
     export let targets: Array<{ price: number | null; percent: number | null; isLocked: boolean }>;
-    export let calculatedTpDetails: any[] = [];
+    export let calculatedTpDetails: IndividualTpResult[] = [];
 
     function addTakeProfitRow() {
         app.addTakeProfitRow();

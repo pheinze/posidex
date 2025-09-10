@@ -10,7 +10,7 @@
         modalState = state;
     });
 
-    function handleConfirm(result: any) {
+    function handleConfirm(result: boolean | string) {
         modalManager._handleModalConfirm(result);
     }
 
@@ -46,7 +46,7 @@
                     <button class="font-bold py-2 px-4 rounded-lg bg-[var(--btn-danger-bg)] hover:bg-[var(--btn-danger-hover-bg)] text-[var(--btn-danger-text)]" on:click={() => handleConfirm(true)} use:trackClick={{ category: 'CustomModal', action: 'Click', name: 'ConfirmYes' }}>{$_('dashboard.customModal.yesButton')}</button>
                     <button class="font-bold py-2 px-4 rounded-lg bg-[var(--btn-default-bg)] hover:bg-[var(--btn-default-hover-bg)] text-[var(--btn-default-text)]" on:click={() => handleConfirm(false)} use:trackClick={{ category: 'CustomModal', action: 'Click', name: 'ConfirmNo' }}>{$_('dashboard.customModal.noButton')}</button>
                 {:else}
-                    <button class="btn-modal-ok font-bold py-2 px-4 rounded-lg" on:click={() => handleConfirm(modalState.type === 'prompt' ? modalState.defaultValue : true)} use:trackClick={{ category: 'CustomModal', action: 'Click', name: 'ConfirmOK' }}>{$_('dashboard.customModal.okButton')}</button>
+                    <button class="btn-modal-ok font-bold py-2 px-4 rounded-lg" on:click={() => handleConfirm(modalState.type === 'prompt' ? modalState.defaultValue || '' : true)} use:trackClick={{ category: 'CustomModal', action: 'Click', name: 'ConfirmOK' }}>{$_('dashboard.customModal.okButton')}</button>
                 {/if}
             </div>
         </div>

@@ -1,15 +1,14 @@
 <script lang="ts">
     import { updateVisualBar } from '../../services/uiManager';
     import type { VisualBarData } from '../../services/uiManager';
-    import { parseDecimal } from '../../utils/utils';
-    import { Decimal } from 'decimal.js';
     import { _ } from '../../locales/i18n';
+    import type { IndividualTpResult } from '../../stores/types';
 
     export let entryPrice: number | null;
     export let stopLossPrice: number | null;
     export let tradeType: string;
     export let targets: Array<{ price: number | null; percent: number | null; isLocked: boolean }>;
-    export let calculatedTpDetails: any[];
+    export let calculatedTpDetails: IndividualTpResult[];
 
     let visualBarData: VisualBarData = { visualBarContent: [], markers: [] };
 
@@ -33,7 +32,7 @@
         {#each visualBarData.visualBarContent as item}
             <div class="{item.type}" style="left: {item.style.left}; width: {item.style.width};"></div>
         {/each}
-        {#each visualBarData.markers as marker, i}
+        {#each visualBarData.markers as marker}
             {@const tpDetail = calculatedTpDetails.find(d => d.index === marker.index)}
             <div
                 class="bar-marker {marker.isEntry ? 'entry-marker' : ''} {marker.index !== undefined ? 'tp-marker' : ''}"

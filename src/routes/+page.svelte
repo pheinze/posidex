@@ -10,7 +10,6 @@
     import { tradeStore, updateTradeStore, resetAllInputs, toggleAtrInputs } from '../stores/tradeStore';
     import { resultsStore } from '../stores/resultsStore';
     import { presetStore } from '../stores/presetStore';
-    import { journalStore } from '../stores/journalStore';
     import { uiStore } from '../stores/uiStore';
     import { modalManager } from '../services/modalManager';
     import { onMount } from 'svelte';
@@ -61,6 +60,7 @@ import { trackCustomEvent } from '../services/trackingService';
     // Reactive statement to trigger app.calculateAndDisplay() when relevant inputs change
     $: {
         // Trigger calculation when any of these inputs change
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         $tradeStore.accountSize,
         $tradeStore.riskPercentage,
         $tradeStore.entryPrice,

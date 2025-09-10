@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { CONSTANTS, icons } from '../../lib/constants';
+    import { icons } from '../../lib/constants';
     import { debounce } from '../../utils/utils';
     import { createEventDispatcher } from 'svelte';
     import { numberInput } from '../../utils/inputUtils';

@@ -1,8 +1,9 @@
 import { Decimal } from 'decimal.js';
 
-export function debounce<T extends (...args: any[]) => void>(func: T, delay: number) {
+export function debounce<T extends (...args: unknown[]) => void>(func: T, delay: number) {
     let timeout: ReturnType<typeof setTimeout>;
     return function(this: ThisParameterType<T>, ...args: Parameters<T>) {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
         const context = this;
         clearTimeout(timeout);
         timeout = setTimeout(() => func.apply(context, args), delay);

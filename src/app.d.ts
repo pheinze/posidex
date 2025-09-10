@@ -9,7 +9,7 @@ declare global {
 		// interface Platform {}
 	}
 	interface Window {
-		_mtm: any[];
+		_mtm: unknown[];
 	}
 }
 

@@ -1,7 +1,7 @@
 import { browser } from '$app/environment';
 import { get } from 'svelte/store';
 import { presetStore, updatePresetStore } from '../stores/presetStore';
-import { tradeStore, updateTradeStore } from '../stores/tradeStore';
+import { updateTradeStore } from '../stores/tradeStore';
 import type { AppState } from '../stores/types';
 import { CONSTANTS } from './constants';
 

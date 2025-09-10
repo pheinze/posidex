@@ -1,4 +1,4 @@
-import { _, register, init, getLocaleFromNavigator, getLocaleFromPathname, getLocaleFromQueryString, locale as svelteLocale } from 'svelte-i18n';
+import { _, register, init, getLocaleFromNavigator, locale as svelteLocale } from 'svelte-i18n';
 import { writable } from 'svelte/store';
 
 import * as en from './locales/en.json';

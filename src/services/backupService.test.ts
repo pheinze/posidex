@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { createBackup, restoreFromBackup } from './backupService';
+import { restoreFromBackup } from './backupService';
 import { CONSTANTS } from '../lib/constants';
 
 // Mock the SvelteKit environment module

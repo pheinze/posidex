@@ -1,6 +1,6 @@
 import Decimal from 'decimal.js';
 
-type NumberInputOptions = {
+export type NumberInputOptions = {
     decimalPlaces?: number;
     maxDecimalPlaces?: number;
     isPercentage?: boolean;
@@ -71,7 +71,7 @@ export function numberInput(node: HTMLInputElement, options: NumberInputOptions)
                 const val = new Decimal(rawValue);
                 inputElement.value = val.toString();
             }
-        } catch (e) {
+        } catch {
             // Ignore invalid numbers
         }
     }

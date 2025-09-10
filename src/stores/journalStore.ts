@@ -18,7 +18,7 @@ function loadJournalFromLocalStorage(): JournalEntry[] {
                 }
             });
             if (newTrade.targets && Array.isArray(newTrade.targets)) {
-                newTrade.targets = newTrade.targets.map((tp: any) => ({ ...tp, price: new Decimal(tp.price || 0), percent: new Decimal(tp.percent || 0) }));
+                newTrade.targets = newTrade.targets.map((tp: {price: string | number; percent: string | number}) => ({ ...tp, price: new Decimal(tp.price || 0), percent: new Decimal(tp.percent || 0) }));
             }
             return newTrade as JournalEntry;
         });

@@ -155,9 +155,9 @@ describe('calculator', () => {
   // Test für calculatePerformanceStats (Grundlagen)
   it('should calculate performance stats correctly for closed trades', () => {
     const journalData = [
-      { id: 1, date: '2024-01-01T10:00:00Z', status: 'Won', totalNetProfit: new Decimal(50), riskAmount: new Decimal(10), totalRR: new Decimal(5), tradeType: CONSTANTS.TRADE_TYPE_LONG },
-      { id: 2, date: '2024-01-02T10:00:00Z', status: 'Lost', totalNetProfit: new Decimal(0), riskAmount: new Decimal(10), totalRR: new Decimal(-1), tradeType: CONSTANTS.TRADE_TYPE_SHORT },
-      { id: 3, date: '2024-01-03T10:00:00Z', status: 'Won', totalNetProfit: new Decimal(30), riskAmount: new Decimal(10), totalRR: new Decimal(3), tradeType: CONSTANTS.TRADE_TYPE_LONG },
+      { id: 1, date: '2024-01-01T10:00:00Z', status: 'Won', totalNetProfit: new Decimal(50), riskAmount: new Decimal(10), totalRR: new Decimal(5), tradeType: CONSTANTS.TRADE_TYPE_LONG, symbol: 'BTCUSDT', accountSize: new Decimal(1000), riskPercentage: new Decimal(1), leverage: new Decimal(10), fees: new Decimal(0.1), entryPrice: new Decimal(100), stopLossPrice: new Decimal(90), maxPotentialProfit: new Decimal(100), notes: '', targets: [], calculatedTpDetails: [], totalFees: new Decimal(1) },
+      { id: 2, date: '2024-01-02T10:00:00Z', status: 'Lost', totalNetProfit: new Decimal(0), riskAmount: new Decimal(10), totalRR: new Decimal(-1), tradeType: CONSTANTS.TRADE_TYPE_SHORT, symbol: 'BTCUSDT', accountSize: new Decimal(1000), riskPercentage: new Decimal(1), leverage: new Decimal(10), fees: new Decimal(0.1), entryPrice: new Decimal(100), stopLossPrice: new Decimal(101), maxPotentialProfit: new Decimal(0), notes: '', targets: [], calculatedTpDetails: [], totalFees: new Decimal(1) },
+      { id: 3, date: '2024-01-03T10:00:00Z', status: 'Won', totalNetProfit: new Decimal(30), riskAmount: new Decimal(10), totalRR: new Decimal(3), tradeType: CONSTANTS.TRADE_TYPE_LONG, symbol: 'BTCUSDT', accountSize: new Decimal(1000), riskPercentage: new Decimal(1), leverage: new Decimal(10), fees: new Decimal(0.1), entryPrice: new Decimal(100), stopLossPrice: new Decimal(90), maxPotentialProfit: new Decimal(50), notes: '', targets: [], calculatedTpDetails: [], totalFees: new Decimal(1) },
     ];
 
     const stats = calculator.calculatePerformanceStats(journalData);
@@ -174,10 +174,10 @@ describe('calculator', () => {
   // Test für calculateSymbolPerformance
   it('should calculate symbol performance correctly', () => {
     const journalData = [
-      { id: 1, symbol: 'BTCUSDT', status: 'Won', totalNetProfit: new Decimal(50), riskAmount: new Decimal(10) },
-      { id: 2, symbol: 'ETHUSDT', status: 'Lost', totalNetProfit: new Decimal(0), riskAmount: new Decimal(10) },
-      { id: 3, symbol: 'BTCUSDT', status: 'Won', totalNetProfit: new Decimal(30), riskAmount: new Decimal(10) },
-      { id: 4, symbol: 'ETHUSDT', status: 'Won', totalNetProfit: new Decimal(20), riskAmount: new Decimal(5) },
+      { id: 1, symbol: 'BTCUSDT', status: 'Won', totalNetProfit: new Decimal(50), riskAmount: new Decimal(10), date: '2024-01-01T10:00:00Z', tradeType: 'long', accountSize: new Decimal(1000), riskPercentage: new Decimal(1), leverage: new Decimal(10), fees: new Decimal(0.1), entryPrice: new Decimal(100), stopLossPrice: new Decimal(90), totalRR: new Decimal(5), maxPotentialProfit: new Decimal(100), notes: '', targets: [], calculatedTpDetails: [], totalFees: new Decimal(1) },
+      { id: 2, symbol: 'ETHUSDT', status: 'Lost', totalNetProfit: new Decimal(0), riskAmount: new Decimal(10), date: '2024-01-02T10:00:00Z', tradeType: 'short', accountSize: new Decimal(1000), riskPercentage: new Decimal(1), leverage: new Decimal(10), fees: new Decimal(0.1), entryPrice: new Decimal(2000), stopLossPrice: new Decimal(2020), totalRR: new Decimal(-1), maxPotentialProfit: new Decimal(0), notes: '', targets: [], calculatedTpDetails: [], totalFees: new Decimal(2) },
+      { id: 3, symbol: 'BTCUSDT', status: 'Won', totalNetProfit: new Decimal(30), riskAmount: new Decimal(10), date: '2024-01-03T10:00:00Z', tradeType: 'long', accountSize: new Decimal(1000), riskPercentage: new Decimal(1), leverage: new Decimal(10), fees: new Decimal(0.1), entryPrice: new Decimal(110), stopLossPrice: new Decimal(99), totalRR: new Decimal(3), maxPotentialProfit: new Decimal(50), notes: '', targets: [], calculatedTpDetails: [], totalFees: new Decimal(1.5) },
+      { id: 4, symbol: 'ETHUSDT', status: 'Won', totalNetProfit: new Decimal(20), riskAmount: new Decimal(5), date: '2024-01-04T10:00:00Z', tradeType: 'long', accountSize: new Decimal(1000), riskPercentage: new Decimal(0.5), leverage: new Decimal(10), fees: new Decimal(0.1), entryPrice: new Decimal(2000), stopLossPrice: new Decimal(1990), totalRR: new Decimal(4), maxPotentialProfit: new Decimal(25), notes: '', targets: [], calculatedTpDetails: [], totalFees: new Decimal(1) },
     ];
 
     const symbolStats = calculator.calculateSymbolPerformance(journalData);

@@ -18,7 +18,7 @@ export function trackCustomEvent(category: string, action: string, name?: string
     return;
   }
 
-  const eventData: { [key: string]: any } = {
+  const eventData: { [key: string]: string | number } = {
     event: 'customEvent',
     'custom-event-category': category,
     'custom-event-action': action,

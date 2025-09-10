@@ -1,6 +1,6 @@
 import { Decimal } from 'decimal.js';
 import { CONSTANTS } from './constants';
-import type { TradeValues, BaseMetrics, IndividualTpResult, TotalMetrics } from '../stores/types';
+import type { TradeValues, BaseMetrics, IndividualTpResult, TotalMetrics, JournalEntry } from '../stores/types';
 import type { Kline } from '../services/apiService';
 
 export const calculator = {
@@ -104,7 +104,7 @@ export const calculator = {
         const totalRR = values.totalPercentSold.gt(0) ? weightedRRSum.div(values.totalPercentSold.div(100)) : new Decimal(0);
         return { totalNetProfit, totalRR, totalFees, maxPotentialProfit, riskAmount };
     },
-    calculatePerformanceStats(journalData: any[]) {
+    calculatePerformanceStats(journalData: JournalEntry[]) {
         const closedTrades = journalData.filter(t => t.status === 'Won' || t.status === 'Lost');
         if (closedTrades.length === 0) return null;
 
@@ -184,7 +184,7 @@ export const calculator = {
 
         return { totalTrades, winRate, profitFactor, expectancy, avgRMultiple, avgRR, avgWin, avgLossOnly, winLossRatio, largestProfit, largestLoss, maxDrawdown, recoveryFactor, currentStreakText, longestWinningStreak, longestLosingStreak, totalProfitLong, totalLossLong, totalProfitShort, totalLossShort };
     },
-    calculateSymbolPerformance(journalData: any[]) {
+    calculateSymbolPerformance(journalData: JournalEntry[]) {
         const closedTrades = journalData.filter(t => t.status === 'Won' || t.status === 'Lost');
         const symbolPerformance: { [key: string]: { totalTrades: number; wonTrades: number; totalProfitLoss: Decimal; } } = {};
         closedTrades.forEach(trade => {

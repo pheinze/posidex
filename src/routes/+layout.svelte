@@ -1,6 +1,6 @@
 <script lang="ts">
 	import favicon from '../assets/favicon.svg';
-	import { tradeStore, updateTradeStore } from '../stores/tradeStore';
+	import { tradeStore } from '../stores/tradeStore';
 	import { uiStore } from '../stores/uiStore';
 	import { onMount } from 'svelte';
 

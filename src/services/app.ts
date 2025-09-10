@@ -1,6 +1,6 @@
 import { get } from 'svelte/store';
-import { debounce, parseDecimal, formatDynamicDecimal } from '../utils/utils';
-import { CONSTANTS, themes } from '../lib/constants';
+import { parseDecimal, formatDynamicDecimal } from '../utils/utils';
+import { CONSTANTS } from '../lib/constants';
 import { apiService } from './apiService';
 import { modalManager } from './modalManager';
 import { uiManager } from './uiManager';
@@ -10,7 +10,7 @@ import { resultsStore, initialResultsState } from '../stores/resultsStore';
 import { presetStore, updatePresetStore } from '../stores/presetStore';
 import { journalStore } from '../stores/journalStore';
 import { uiStore } from '../stores/uiStore';
-import type { AppState, JournalEntry, TradeValues, IndividualTpResult, BaseMetrics } from '../stores/types';
+import type { JournalEntry, TradeValues, IndividualTpResult, BaseMetrics } from '../stores/types';
 import { Decimal } from 'decimal.js';
 import { browser } from '$app/environment';
 import { trackCustomEvent } from './trackingService';
@@ -285,12 +285,12 @@ export const app = {
                     }
                 });
                 if (newTrade.targets && Array.isArray(newTrade.targets)) {
-                    newTrade.targets = newTrade.targets.map((tp: any) => ({ ...tp, price: new Decimal(tp.price || 0), percent: new Decimal(tp.percent || 0) }));
+                    newTrade.targets = newTrade.targets.map((tp: { price: string | number; percent: string | number }) => ({ ...tp, price: new Decimal(tp.price || 0), percent: new Decimal(tp.percent || 0) }));
                 }
                 return newTrade as JournalEntry;
             });
-        } catch (e) {
-            console.warn("Could not load journal from localStorage.", e);
+        } catch {
+            console.warn("Could not load journal from localStorage.");
             uiStore.showError("Journal konnte nicht geladen werden.");
             return [];
         }
@@ -299,14 +299,13 @@ export const app = {
         if (!browser) return;
         try {
             localStorage.setItem(CONSTANTS.LOCAL_STORAGE_JOURNAL_KEY, JSON.stringify(d));
-        } catch (e) {
-            console.warn("Could not save journal to localStorage.", e);
+        } catch {
             uiStore.showError("Fehler beim Speichern des Journals. Der lokale Speicher ist möglicherweise voll oder blockiert.");
         }
     },
     addTrade: () => {
         const currentAppState = get(tradeStore);
-        if (!currentAppState.currentTradeData.positionSize || currentAppState.currentTradeData.positionSize.lte(0)) { uiStore.showError("Kann keinen ungültigen Trade speichern."); return; }
+        if (!currentAppState.currentTradeData || !currentAppState.currentTradeData.positionSize || currentAppState.currentTradeData.positionSize.lte(0)) { uiStore.showError("Kann keinen ungültigen Trade speichern."); return; }
         const journalData = app.getJournal();
         journalData.push({ ...currentAppState.currentTradeData, notes: currentAppState.tradeNotes, id: Date.now(), date: new Date().toISOString() } as JournalEntry);
         app.saveJournal(journalData);
@@ -393,8 +392,8 @@ export const app = {
                 toggleAtrInputs(settings.useAtrSl || false);
                 return;
             }
-        } catch (e) {
-            console.warn("Could not load settings from localStorage.", e);
+        } catch {
+            console.warn("Could not load settings from localStorage.");
         }
     },
     savePreset: async () => {
@@ -403,14 +402,13 @@ export const app = {
         if (typeof presetName === 'string' && presetName) {
             try {
                 const presets = JSON.parse(localStorage.getItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY) || '{}');
-                if (presets[presetName] && !(await modalManager.show("Überschreiben?", `Preset \"${presetName}\" existiert bereits. Möchten Sie es überschreiben?`, "confirm"))) return;
+                if (presets[presetName] && !(await modalManager.show("Überschreiben?", `Preset "${presetName}" existiert bereits. Möchten Sie es überschreiben?`, "confirm"))) return;
                 presets[presetName] = app.getInputsAsObject();
                 localStorage.setItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY, JSON.stringify(presets));
                 uiStore.showFeedback('save');
                 app.populatePresetLoader();
                 updatePresetStore(state => ({ ...state, selectedPreset: presetName }));
-            } catch (e) {
-                console.error("Fehler beim Speichern des Presets:", e);
+            } catch {
                 uiStore.showError("Preset konnte nicht gespeichert werden. Der lokale Speicher ist möglicherweise voll oder blockiert.");
             }
         }
@@ -419,14 +417,14 @@ export const app = {
         if (!browser) return;
         const presetName = get(presetStore).selectedPreset;
         if (!presetName) return;
-        if (!(await modalManager.show("Preset löschen", `Preset \"${presetName}\" wirklich löschen?`, "confirm"))) return;
+        if (!(await modalManager.show("Preset löschen", `Preset "${presetName}" wirklich löschen?`, "confirm"))) return;
         try {
             const presets = JSON.parse(localStorage.getItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY) || '{}');
             delete presets[presetName];
             localStorage.setItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY, JSON.stringify(presets));
             app.populatePresetLoader();
             updatePresetStore(state => ({ ...state, selectedPreset: '' }));
-        } catch (e) { uiStore.showError("Preset konnte nicht gelöscht werden."); }
+        } catch { uiStore.showError("Preset konnte nicht gelöscht werden."); }
     },
     loadPreset: (presetName: string) => {
         if (!browser) return;
@@ -458,8 +456,8 @@ export const app = {
                 toggleAtrInputs(preset.useAtrSl || false);
                 return;
             }
-        } catch (e) {
-            console.error("Fehler beim Laden des Presets:", e);
+        } catch (error) {
+            console.error("Fehler beim Laden des Presets:", error);
             uiStore.showError("Preset konnte nicht geladen werden.");
         }
     },
@@ -469,8 +467,8 @@ export const app = {
             const presets = JSON.parse(localStorage.getItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY) || '{}');
             const presetNames = Object.keys(presets);
             updatePresetStore(state => ({ ...state, availablePresets: presetNames }));
-        } catch (e) {
-            console.warn("Could not populate presets from localStorage.", e);
+        } catch {
+            console.warn("Could not populate presets from localStorage.");
             updatePresetStore(state => ({ ...state, availablePresets: [] }));
         }
     },
@@ -558,11 +556,11 @@ export const app = {
                         notes: typedEntry.Notizen ? typedEntry.Notizen.replace(/""/g, '"').slice(1, -1) : '',
                         targets: targets
                     } as JournalEntry;
-                } catch (err) {
+                } catch (err: unknown) {
                     console.warn("Fehler beim Verarbeiten einer Zeile:", entry, err);
                     return null;
                 }
-            }).filter(Boolean) as JournalEntry[];
+            }).filter((entry): entry is JournalEntry => entry !== null);
 
             if (entries.length > 0) {
                 const currentJournal = get(journalStore);
@@ -594,8 +592,9 @@ export const app = {
             updateTradeStore(state => ({ ...state, entryPrice: price.toDP(4).toNumber() }));
             uiStore.showFeedback('copy', 700);
             app.calculateAndDisplay();
-        } catch (error: any) {
-            uiStore.showError(error.message);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            uiStore.showError(message);
         } finally {
             uiStore.update(state => ({ ...state, isPriceFetching: false }));
         }
@@ -637,8 +636,9 @@ export const app = {
             updateTradeStore(state => ({ ...state, atrValue: atr.toDP(4).toNumber() }));
             app.calculateAndDisplay();
             uiStore.showFeedback('copy', 700);
-        } catch (error: any) {
-            uiStore.showError(error.message);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            uiStore.showError(message);
         } finally {
             uiStore.update(state => ({ ...state, isPriceFetching: false }));
         }
@@ -713,18 +713,21 @@ export const app = {
         const ONE_HUNDRED = new Decimal(100);
         const ZERO = new Decimal(0);
 
-        const decTargets = targets.map((t: any, i: number) => ({
-            ...t,
+        type DecimalTarget = { price: Decimal; percent: Decimal; isLocked: boolean; originalIndex: number };
+
+        const decTargets: DecimalTarget[] = targets.map((t: { price: number | null; percent: number | null; isLocked: boolean }, i: number) => ({
+            price: parseDecimal(t.price),
             percent: parseDecimal(t.percent),
+            isLocked: t.isLocked,
             originalIndex: i
         }));
 
-        const totalSum = decTargets.reduce((sum: Decimal, t: any) => sum.plus(t.percent), ZERO);
+        const totalSum = decTargets.reduce((sum, t) => sum.plus(t.percent), ZERO);
         const diff = ONE_HUNDRED.minus(totalSum);
 
         if (diff.isZero()) return;
 
-        const otherUnlocked = decTargets.filter((t: any) => !t.isLocked && t.originalIndex !== changedIndex);
+        const otherUnlocked = decTargets.filter(t => !t.isLocked && t.originalIndex !== changedIndex);
 
         if (otherUnlocked.length === 0) {
             if (changedIndex !== null) {
@@ -733,7 +736,7 @@ export const app = {
         }
         else if (diff.gt(ZERO)) {
             const share = diff.div(otherUnlocked.length);
-            otherUnlocked.forEach((t: any) => {
+            otherUnlocked.forEach(t => {
                 decTargets[t.originalIndex].percent = decTargets[t.originalIndex].percent.plus(share);
             });
         }
@@ -750,24 +753,24 @@ export const app = {
             }
         }
 
-        let finalTargets = decTargets.map((t: any) => ({
+        let finalTargets = decTargets.map(t => ({
             ...t,
             percent: t.percent.toDecimalPlaces(0, Decimal.ROUND_HALF_UP)
         }));
 
-        let finalSum = finalTargets.reduce((sum: Decimal, t: any) => sum.plus(t.percent), ZERO);
+        let finalSum = finalTargets.reduce((sum, t) => sum.plus(t.percent), ZERO);
         let roundingDiff = ONE_HUNDRED.minus(finalSum);
 
         if (!roundingDiff.isZero()) {
-            let targetToAdjust = finalTargets.find((t: any, i: number) => !t.isLocked && i !== changedIndex && t.percent.plus(roundingDiff).gte(0));
+            let targetToAdjust = finalTargets.find((t, i) => !t.isLocked && i !== changedIndex && t.percent.plus(roundingDiff).gte(0));
             if (!targetToAdjust) {
-                targetToAdjust = finalTargets.find((t: any, i: number) => !t.isLocked && t.percent.plus(roundingDiff).gte(0));
+                targetToAdjust = finalTargets.find(t => !t.isLocked && t.percent.plus(roundingDiff).gte(0));
             }
             if (targetToAdjust) {
                 targetToAdjust.percent = targetToAdjust.percent.plus(roundingDiff);
             }
         }
 
-        updateTradeStore(state => ({ ...state, targets: finalTargets.map((t: { price: any; percent: any; isLocked: any; }) => ({price: t.price, percent: t.percent.toNumber(), isLocked: t.isLocked})) }));
+        updateTradeStore(state => ({ ...state, targets: finalTargets.map(t => ({price: t.price.toNumber(), percent: t.percent.toNumber(), isLocked: t.isLocked})) }));
     },
 };
