@@ -98,20 +98,10 @@ export const calculator = {
                 totalFees = totalFees.plus(entryFeePart).plus(exitFeePart);
             }
         });
-        
-        const validTpPrices = targets.filter(t => t.price.gt(0)).map(t => t.price);
-        let profitAtBestTarget = new Decimal(0);
-        if (validTpPrices.length > 0) {
-            const bestTpPrice = tradeType === CONSTANTS.TRADE_TYPE_LONG ? Decimal.max(...validTpPrices) : Decimal.min(...validTpPrices);
-            const gainPerUnitFull = bestTpPrice.minus(values.entryPrice).abs();
-            const grossProfitFull = gainPerUnitFull.times(positionSize);
-            const exitFeeFull = positionSize.times(bestTpPrice).times(values.fees.div(100));
-            profitAtBestTarget = grossProfitFull.minus(entryFee).minus(exitFeeFull);
-        }
 
         const totalRR = riskAmount.gt(0) ? totalNetProfit.div(riskAmount) : new Decimal(0);
         const totalROC = requiredMargin.gt(0) ? totalNetProfit.div(requiredMargin).times(100) : new Decimal(0);
-        return { totalNetProfit, totalRR, totalFees, profitAtBestTarget, riskAmount, totalROC };
+        return { totalNetProfit, totalRR, totalFees, riskAmount, totalROC };
     },
     calculatePerformanceStats(journalData: JournalEntry[]) {
         const closedTrades = journalData.filter(t => t.status === 'Won' || t.status === 'Lost');

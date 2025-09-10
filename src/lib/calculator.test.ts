@@ -157,7 +157,6 @@ describe('calculator', () => {
     expect(result.totalRR.toFixed(2)).toBe('7.29');
     expect(result.totalROC.toFixed(2)).toBe('72.93'); // totalNetProfit / requiredMargin * 100
     expect(result.totalFees.toFixed(2)).toBe('2.08');
-    expect(result.profitAtBestTarget.toFixed(2)).toBe('97.90');
     expect(result.riskAmount.toFixed(2)).toBe('10.00');
   });
 
@@ -172,12 +171,13 @@ describe('calculator', () => {
     const stats = calculator.calculatePerformanceStats(journalData);
 
     expect(stats).not.toBeNull();
-    expect(stats?.totalTrades).toBe(3);
-    expect(stats?.winRate.toFixed(2)).toBe('66.67');
+    if (!stats) return; // Type guard
+    expect(stats.totalTrades).toBe(3);
+    expect(stats.winRate.toFixed(2)).toBe('66.67');
     // totalProfit = 80, totalLoss = 12.01 (from netLoss) -> profitFactor = 80 / 12.01 = 6.66
-    expect(stats?.profitFactor.toFixed(2)).toBe('6.66');
+    expect(stats.profitFactor?.toFixed(2)).toBe('6.66');
     // expectancy = (0.666 * 40) - (0.333 * 12.01) = 26.66 - 4.00 = 22.66
-    expect(stats?.expectancy.toFixed(2)).toBe('22.66');
+    expect(stats.expectancy.toFixed(2)).toBe('22.66');
     expect(stats?.avgRMultiple.toFixed(2)).toBe('2.33'); // (5 + (-1) + 3) / 3 = 7/3 = 2.333
     expect(stats?.maxDrawdown.toFixed(2)).toBe('12.01'); // Drawdown now correctly uses netLoss
   });

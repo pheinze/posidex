@@ -13,7 +13,6 @@ export const initialResultsState: Pick<AppState,
     'totalPercentSold' |
     'riskAmountCurrency' |
     'totalFees' |
-    'maxPotentialProfit' |
     'calculatedTpDetails' |
     'totalROC' |
     'showTotalMetricsGroup' |
@@ -32,7 +31,6 @@ export const initialResultsState: Pick<AppState,
     totalPercentSold: '-',
     riskAmountCurrency: '-',
     totalFees: '-',
-    maxPotentialProfit: '-',
     calculatedTpDetails: [],
     totalROC: '-',
     showTotalMetricsGroup: false,

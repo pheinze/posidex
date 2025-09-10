@@ -41,7 +41,6 @@ export interface TotalMetrics {
     totalNetProfit: Decimal;
     totalRR: Decimal;
     totalFees: Decimal;
-    profitAtBestTarget: Decimal;
     riskAmount: Decimal;
     totalROC: Decimal; // The new, total Return on Capital
 }
@@ -76,7 +75,7 @@ export interface AppState {
     totalPercentSold: string;
     riskAmountCurrency: string;
     totalFees: string;
-    profitAtBestTarget: string;
+    totalROC: string;
     calculatedTpDetails: IndividualTpResult[];
 
     // UI State
@@ -126,7 +125,6 @@ export interface JournalEntry {
     riskAmount: Decimal;
     netLoss: Decimal;
     totalFees: Decimal;
-    profitAtBestTarget: Decimal;
     notes: string;
     targets: Array<{ price: Decimal; percent: Decimal; isLocked: boolean }>;
     calculatedTpDetails: IndividualTpResult[];

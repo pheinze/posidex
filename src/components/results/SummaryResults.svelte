@@ -13,7 +13,6 @@
     export let netLoss: string;
     export let requiredMargin: string;
     export let entryFee: string;
-    export let profitAtBestTarget: string;
     export let estimatedLiquidationPrice: string;
     export let breakEvenPrice: string;
 
@@ -49,7 +48,6 @@
         <span id="positionSize" class="result-value text-lg" style:color="var(--success-color)">{positionSize}</span>
     </div>
     <div class="result-item"><div class="result-label">{$_('dashboard.summaryResults.maxNetLossLabel')}<Tooltip text={$_('dashboard.summaryResults.maxNetLossTooltip')} /></div><span id="netLoss" class="result-value" style:color="var(--danger-color)">{netLoss}</span></div>
-    <div class="result-item"><div class="result-label">{$_('dashboard.summaryResults.profitAtBestTargetLabel')}<Tooltip text={$_('dashboard.summaryResults.profitAtBestTargetTooltip')} /></div><span id="profitAtBestTarget" class="result-value">{profitAtBestTarget}</span></div>
     <div class="result-item"><div class="result-label">{$_('dashboard.summaryResults.requiredMarginLabel')}<Tooltip text={$_('dashboard.summaryResults.requiredMarginTooltip')} /></div><span id="requiredMargin" class="result-value">{requiredMargin}</span></div>
     <div class="result-item"><div class="result-label">{$_('dashboard.summaryResults.entryFeeLabel')}</div><span id="entryFee" class="result-value">{entryFee}</span></div>
     <div class="result-item">
