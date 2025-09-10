@@ -112,9 +112,9 @@
       "requiredMarginTooltip": "The capital blocked from your account for this trade.",
       "entryFeeLabel": "Entry Fee",
       "estimatedLiquidationPriceLabel": "Est. Liquidation Price",
-      "estimatedLiquidationPriceTooltip": "Estimated price at which your position will be liquidated.",
+      "estimatedLiquidationPriceTooltip": "DANGER: This is a highly simplified estimate and does NOT include maintenance margin. Your actual liquidation price will be less favorable. Always refer to your exchange's liquidation price.",
       "breakEvenPriceLabel": "Break-Even Price",
-      "breakEvenPriceTooltip": "The price at which your trade makes zero profit/loss, considering fees."
+      "breakEvenPriceTooltip": "The estimated price to exit the entire position without profit or loss. This is not accurate for partial take-profits as the true break-even price changes with each sale."
     },
     "customModal": {
       "promptPlaceholder": "Input...",

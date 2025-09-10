@@ -112,9 +112,9 @@
       "requiredMarginTooltip": "Das Kapital, das von deinem Konto für diesen Trade blockiert wird.",
       "entryFeeLabel": "Einstiegsgebühr",
       "estimatedLiquidationPriceLabel": "Gesch. Liquidationspreis",
-      "estimatedLiquidationPriceTooltip": "Geschätzter Preis, bei dem deine Position liquidiert wird.",
+      "estimatedLiquidationPriceTooltip": "ACHTUNG: Dies ist eine stark vereinfachte Schätzung und beinhaltet NICHT die Maintenance Margin. Ihr tatsächlicher Liquidationspreis wird ungünstiger sein. Beziehen Sie sich immer auf den Liquidationspreis Ihrer Börse.",
       "breakEvenPriceLabel": "Break-Even Preis",
-      "breakEvenPriceTooltip": "Der Kurs, bei dem dein Trade unter Berücksichtigung der Gebühren null Gewinn/Verlust macht."
+      "breakEvenPriceTooltip": "Der geschätzte Preis, um die gesamte Position ohne Gewinn oder Verlust zu verlassen. Dies ist für Teilverkäufe ungenau, da sich der wahre Break-Even-Preis mit jedem Verkauf ändert."
     },
     "customModal": {
       "promptPlaceholder": "Eingabe...",
