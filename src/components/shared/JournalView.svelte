@@ -50,7 +50,7 @@
                                 <td>{trade.entryPrice.toFixed(4)}</td>
                                 <td>{trade.stopLossPrice.toFixed(4)}</td>
                                 <td class="{trade.totalNetProfit.gt(0) ? 'text-[var(--success-color)]' : trade.totalNetProfit.lt(0) ? 'text-[var(--danger-color)]' : ''}">{trade.totalNetProfit.toFixed(2)}</td>
-                                <td><input type="number" class="input-field w-24 p-1" placeholder="Enter P/L" value={trade.realizedPnl} on:blur={(e) => app.updateRealizedPnl(trade.id, (e.target as HTMLInputElement).value)} /></td>
+                                <td><input type="number" class="input-field-table" placeholder="P/L" value={trade.realizedPnl} on:blur={(e) => app.updateRealizedPnl(trade.id, (e.target as HTMLInputElement).value)} /></td>
                                 <td class="{trade.totalRR.gte(2) ? 'text-[var(--success-color)]' : trade.totalRR.gte(1.5) ? 'text-[var(--warning-color)]' : 'text-[var(--danger-color)]'}">{trade.totalRR.toFixed(2)}</td>
                                 <td>
                                     <select class="status-select input-field p-1" data-id="{trade.id}" on:change={(e) => app.updateTradeStatus(trade.id, (e.target as HTMLSelectElement).value)}>
@@ -97,7 +97,7 @@
                             </div>
                             <div>
                                 <div class="text-sm">Realized P/L</div>
-                                <input type="number" class="input-field w-full p-1 mt-1" placeholder="Enter P/L" value={trade.realizedPnl} on:blur={(e) => app.updateRealizedPnl(trade.id, (e.target as HTMLInputElement).value)} />
+                                <input type="number" class="input-field-table w-full" placeholder="Enter P/L" value={trade.realizedPnl} on:blur={(e) => app.updateRealizedPnl(trade.id, (e.target as HTMLInputElement).value)} />
                             </div>
                         </div>
                         <div class="mt-4 flex justify-between items-center">
@@ -116,18 +116,19 @@
         <h3 class="text-xl font-bold mt-6 mb-4">{$_('journal.performancePerSymbol')}</h3>
         <div id="symbol-performance-stats" class="max-h-48 overflow-y-auto border border-[var(--border-color)] rounded-md p-2">
             <table class="journal-table w-full">
-                <thead><tr><th>{$_('journal.symbol')}</th><th>{$_('journal.trades')}</th><th>{$_('journal.profitPercent')}</th><th>{$_('journal.totalPL')}</th></tr></thead>
+                <thead><tr><th>{$_('journal.symbol')}</th><th>{$_('journal.trades')}</th><th>{$_('journal.profitPercent')}</th><th>Planned P/L</th><th>Realized P/L</th></tr></thead>
                 <tbody id="symbol-performance-table-body">
                     {#each Object.entries(app.calculator.calculateSymbolPerformance($journalStore)) as [symbol, data]}
                         <tr>
                             <td>{symbol}</td>
                             <td>{data.totalTrades}</td>
                             <td>{(data.totalTrades > 0 ? (data.wonTrades / data.totalTrades) * 100 : 0).toFixed(1)}%</td>
+                            <td class="{data.totalPlannedProfitLoss.gt(0) ? 'text-[var(--success-color)]' : data.totalPlannedProfitLoss.lt(0) ? 'text-[var(--danger-color)]' : ''}">{data.totalPlannedProfitLoss.toFixed(2)}</td>
                             <td class="{data.totalProfitLoss.gt(0) ? 'text-[var(--success-color)]' : data.totalProfitLoss.lt(0) ? 'text-[var(--danger-color)]' : ''}">{data.totalProfitLoss.toFixed(2)}</td>
                         </tr>
                     {/each}
                     {#if Object.keys(app.calculator.calculateSymbolPerformance($journalStore)).length === 0}
-                        <tr><td colspan="4" class="text-center text-slate-500 py-4">{$_('journal.noData')}</td></tr>
+                        <tr><td colspan="5" class="text-center text-slate-500 py-4">{$_('journal.noData')}</td></tr>
                     {/if}
                 </tbody>
             </table>
@@ -141,3 +142,22 @@
         </div>
     </div>
 </div>
+
+<style>
+    .input-field-table {
+        background-color: transparent;
+        border: 1px solid var(--border-color);
+        border-radius: 0.375rem; /* rounded-md */
+        padding: 0.25rem 0.5rem; /* py-1 px-2 */
+        width: 6rem; /* w-24 */
+        transition: border-color 0.2s;
+    }
+    .input-field-table:focus {
+        outline: none;
+        border-color: var(--accent-color);
+    }
+    .input-field-table::placeholder {
+        color: var(--text-secondary);
+        opacity: 0.7;
+    }
+</style>
