@@ -61,15 +61,24 @@ export const calculator = {
     },
 
     calculateIndividualTp(tpPrice: Decimal, currentTpPercent: Decimal, baseMetrics: BaseMetrics, values: TradeValues, index: number): IndividualTpResult {
-        const { positionSize, requiredMargin, riskAmount } = baseMetrics;
+        const { positionSize, requiredMargin } = baseMetrics;
         const gainPerUnit = tpPrice.minus(values.entryPrice).abs();
         const positionPart = positionSize.times(currentTpPercent.div(100));
         const grossProfitPart = gainPerUnit.times(positionPart);
         const exitFee = positionPart.times(tpPrice).times(values.fees.div(100));
         const entryFeePart = positionPart.times(values.entryPrice).times(values.fees.div(100));
         const netProfit = grossProfitPart.minus(entryFeePart).minus(exitFee);
-        const riskForPart = riskAmount.times(currentTpPercent.div(100)); // Annahme: targets[0] ist der aktuelle TP
-        const riskRewardRatio = riskForPart.gt(0) ? netProfit.div(riskForPart) : new Decimal(0);
+
+        // --- CORRECTED RRR LOGIC ---
+        // Calculate the actual net risk for this part of the position
+        const riskPerUnit = values.entryPrice.minus(values.stopLossPrice).abs();
+        const grossRiskOnPart = riskPerUnit.times(positionPart);
+        const slExitFeeOnPart = positionPart.times(values.stopLossPrice).times(values.fees.div(100));
+        const netRiskOnPart = grossRiskOnPart.plus(entryFeePart).plus(slExitFeeOnPart);
+
+        const riskRewardRatio = netRiskOnPart.gt(0) ? netProfit.div(netRiskOnPart) : new Decimal(0);
+        // --- END OF CORRECTION ---
+
         const priceChangePercent = values.entryPrice.gt(0) ? tpPrice.minus(values.entryPrice).div(values.entryPrice).times(100) : new Decimal(0);
         const returnOnCapital = requiredMargin.gt(0) && currentTpPercent.gt(0) ? netProfit.div(requiredMargin.times(currentTpPercent.div(100))).times(100) : new Decimal(0);
         return { netProfit, riskRewardRatio, priceChangePercent, returnOnCapital, partialVolume: positionPart, exitFee, index: index, percentSold: currentTpPercent };
@@ -121,7 +130,7 @@ export const calculator = {
         const avgRR = totalTrades > 0 ? closedTrades.reduce((sum, t) => sum.plus(new Decimal(t.totalRR || 0)), new Decimal(0)).dividedBy(totalTrades) : new Decimal(0);
         const avgWin = wonTrades.length > 0 ? totalProfit.dividedBy(wonTrades.length) : new Decimal(0);
         const avgLossOnly = lostTrades.length > 0 ? totalLoss.dividedBy(lostTrades.length) : new Decimal(0);
-        const winLossRatio = avgLossOnly.gt(0) ? avgWin.dividedBy(avgLossOnly) : new Decimal(0);
+        const winLossRatio = avgLossOnly.gt(0) ? avgWin.dividedBy(avgLossOnly) : (avgWin.gt(0) ? new Decimal(Infinity) : new Decimal(0));
 
         const largestProfit = wonTrades.length > 0 ? Decimal.max(0, ...wonTrades.map(t => new Decimal(t.totalNetProfit || 0))) : new Decimal(0);
         const largestLoss = lostTrades.length > 0 ? Decimal.max(0, ...lostTrades.map(t => new Decimal(t.riskAmount || 0))) : new Decimal(0);
