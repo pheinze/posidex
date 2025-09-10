@@ -122,6 +122,7 @@ export interface JournalEntry {
     stopLossPrice: Decimal;
     totalRR: Decimal;
     totalNetProfit: Decimal;
+    realizedPnl: Decimal | null;
     riskAmount: Decimal;
     netLoss: Decimal;
     totalFees: Decimal;

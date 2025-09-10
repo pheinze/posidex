@@ -161,47 +161,56 @@ describe('calculator', () => {
   });
 
   // Test für calculatePerformanceStats (Grundlagen)
-  it('should calculate performance stats correctly for closed trades', () => {
+  it('should calculate performance stats correctly using realizedPnl', () => {
     const journalData = [
-      { id: 1, date: '2024-01-01T10:00:00Z', status: 'Won', totalNetProfit: new Decimal(50), riskAmount: new Decimal(10), netLoss: new Decimal(11.99), totalRR: new Decimal(5), tradeType: CONSTANTS.TRADE_TYPE_LONG, symbol: 'BTCUSDT', accountSize: new Decimal(1000), riskPercentage: new Decimal(1), leverage: new Decimal(10), fees: new Decimal(0.1), entryPrice: new Decimal(100), stopLossPrice: new Decimal(90), profitAtBestTarget: new Decimal(100), notes: '', targets: [], calculatedTpDetails: [], totalFees: new Decimal(1) },
-      { id: 2, date: '2024-01-02T10:00:00Z', status: 'Lost', totalNetProfit: new Decimal(0), riskAmount: new Decimal(10), netLoss: new Decimal(12.01), totalRR: new Decimal(-1), tradeType: CONSTANTS.TRADE_TYPE_SHORT, symbol: 'BTCUSDT', accountSize: new Decimal(1000), riskPercentage: new Decimal(1), leverage: new Decimal(10), fees: new Decimal(0.1), entryPrice: new Decimal(100), stopLossPrice: new Decimal(101), profitAtBestTarget: new Decimal(0), notes: '', targets: [], calculatedTpDetails: [], totalFees: new Decimal(1) },
-      { id: 3, date: '2024-01-03T10:00:00Z', status: 'Won', totalNetProfit: new Decimal(30), riskAmount: new Decimal(10), netLoss: new Decimal(11.99), totalRR: new Decimal(3), tradeType: CONSTANTS.TRADE_TYPE_LONG, symbol: 'BTCUSDT', accountSize: new Decimal(1000), riskPercentage: new Decimal(1), leverage: new Decimal(10), fees: new Decimal(0.1), entryPrice: new Decimal(100), stopLossPrice: new Decimal(90), profitAtBestTarget: new Decimal(50), notes: '', targets: [], calculatedTpDetails: [], totalFees: new Decimal(1) },
+      // This trade should be ignored as it has no realizedPnl
+      { id: 1, date: '2024-01-01T10:00:00Z', status: 'Won', realizedPnl: null, totalNetProfit: new Decimal(50), riskAmount: new Decimal(10), netLoss: new Decimal(11.99), totalRR: new Decimal(5), tradeType: CONSTANTS.TRADE_TYPE_LONG, symbol: 'BTCUSDT', accountSize: new Decimal(1000), riskPercentage: new Decimal(1), leverage: new Decimal(10), fees: new Decimal(0.1), entryPrice: new Decimal(100), stopLossPrice: new Decimal(90), notes: '', targets: [], calculatedTpDetails: [], totalFees: new Decimal(1) },
+      // This is a loss of 10
+      { id: 2, date: '2024-01-02T10:00:00Z', status: 'Lost', realizedPnl: new Decimal(-10), totalNetProfit: new Decimal(0), riskAmount: new Decimal(10), netLoss: new Decimal(12.01), totalRR: new Decimal(-1), tradeType: CONSTANTS.TRADE_TYPE_SHORT, symbol: 'BTCUSDT', accountSize: new Decimal(1000), riskPercentage: new Decimal(1), leverage: new Decimal(10), fees: new Decimal(0.1), entryPrice: new Decimal(100), stopLossPrice: new Decimal(101), notes: '', targets: [], calculatedTpDetails: [], totalFees: new Decimal(1) },
+      // This is a win of 35
+      { id: 3, date: '2024-01-03T10:00:00Z', status: 'Won', realizedPnl: new Decimal(35), totalNetProfit: new Decimal(30), riskAmount: new Decimal(10), netLoss: new Decimal(11.99), totalRR: new Decimal(3), tradeType: CONSTANTS.TRADE_TYPE_LONG, symbol: 'BTCUSDT', accountSize: new Decimal(1000), riskPercentage: new Decimal(1), leverage: new Decimal(10), fees: new Decimal(0.1), entryPrice: new Decimal(100), stopLossPrice: new Decimal(90), notes: '', targets: [], calculatedTpDetails: [], totalFees: new Decimal(1) },
     ];
 
     const stats = calculator.calculatePerformanceStats(journalData);
 
     expect(stats).not.toBeNull();
     if (!stats) return; // Type guard
-    expect(stats.totalTrades).toBe(3);
-    expect(stats.winRate.toFixed(2)).toBe('66.67');
-    // totalProfit = 80, totalLoss = 12.01 (from netLoss) -> profitFactor = 80 / 12.01 = 6.66
-    expect(stats.profitFactor?.toFixed(2)).toBe('6.66');
-    // expectancy = (0.666 * 40) - (0.333 * 12.01) = 26.66 - 4.00 = 22.66
-    expect(stats.expectancy.toFixed(2)).toBe('22.66');
-    expect(stats?.avgRMultiple.toFixed(2)).toBe('2.33'); // (5 + (-1) + 3) / 3 = 7/3 = 2.333
-    expect(stats?.maxDrawdown.toFixed(2)).toBe('12.01'); // Drawdown now correctly uses netLoss
+    expect(stats.totalTrades).toBe(2); // Ignores the first trade
+    expect(stats.winRate.toFixed(2)).toBe('50.00'); // 1 win / 2 trades
+    // totalProfit = 35, totalLoss = 10 -> profitFactor = 35 / 10 = 3.5
+    expect(stats.profitFactor?.toFixed(2)).toBe('3.50');
+    // R-Multiples: (-10/10) + (35/10) = -1 + 3.5 = 2.5. Avg = 2.5 / 2 = 1.25
+    expect(stats.avgRMultiple.toFixed(2)).toBe('1.25');
+    // Drawdown: Trade 2 is -10. Max DD is 10.
+    expect(stats.maxDrawdown.toFixed(2)).toBe('10.00');
   });
 
   // Test für calculateSymbolPerformance
-  it('should calculate symbol performance correctly', () => {
+  it('should calculate symbol performance correctly using realizedPnl', () => {
     const journalData = [
-      { id: 1, symbol: 'BTCUSDT', status: 'Won', totalNetProfit: new Decimal(50), riskAmount: new Decimal(10), netLoss: new Decimal(11.99), date: '2024-01-01T10:00:00Z', tradeType: 'long', accountSize: new Decimal(1000), riskPercentage: new Decimal(1), leverage: new Decimal(10), fees: new Decimal(0.1), entryPrice: new Decimal(100), stopLossPrice: new Decimal(90), totalRR: new Decimal(5), profitAtBestTarget: new Decimal(100), notes: '', targets: [], calculatedTpDetails: [], totalFees: new Decimal(1) },
-      { id: 2, symbol: 'ETHUSDT', status: 'Lost', totalNetProfit: new Decimal(0), riskAmount: new Decimal(10), netLoss: new Decimal(12.01), date: '2024-01-02T10:00:00Z', tradeType: 'short', accountSize: new Decimal(1000), riskPercentage: new Decimal(1), leverage: new Decimal(10), fees: new Decimal(0.1), entryPrice: new Decimal(2000), stopLossPrice: new Decimal(2020), totalRR: new Decimal(-1), profitAtBestTarget: new Decimal(0), notes: '', targets: [], calculatedTpDetails: [], totalFees: new Decimal(2) },
-      { id: 3, symbol: 'BTCUSDT', status: 'Won', totalNetProfit: new Decimal(30), riskAmount: new Decimal(10), netLoss: new Decimal(11.99), date: '2024-01-03T10:00:00Z', tradeType: 'long', accountSize: new Decimal(1000), riskPercentage: new Decimal(1), leverage: new Decimal(10), fees: new Decimal(0.1), entryPrice: new Decimal(110), stopLossPrice: new Decimal(99), totalRR: new Decimal(3), profitAtBestTarget: new Decimal(50), notes: '', targets: [], calculatedTpDetails: [], totalFees: new Decimal(1.5) },
-      { id: 4, symbol: 'ETHUSDT', status: 'Won', totalNetProfit: new Decimal(20), riskAmount: new Decimal(5), netLoss: new Decimal(5.99), date: '2024-01-04T10:00:00Z', tradeType: 'long', accountSize: new Decimal(1000), riskPercentage: new Decimal(0.5), leverage: new Decimal(10), fees: new Decimal(0.1), entryPrice: new Decimal(2000), stopLossPrice: new Decimal(1990), totalRR: new Decimal(4), profitAtBestTarget: new Decimal(25), notes: '', targets: [], calculatedTpDetails: [], totalFees: new Decimal(1) },
+      // Valid BTC win: +50
+      { id: 1, symbol: 'BTCUSDT', status: 'Won', realizedPnl: new Decimal(50), date: '2024-01-01T10:00:00Z', tradeType: 'long', accountSize: new Decimal(1000), riskPercentage: new Decimal(1), leverage: new Decimal(10), fees: new Decimal(0.1), entryPrice: new Decimal(100), stopLossPrice: new Decimal(90), totalRR: new Decimal(5), totalNetProfit: new Decimal(50), riskAmount: new Decimal(10), netLoss: new Decimal(12), notes: '', targets: [], calculatedTpDetails: [], totalFees: new Decimal(1) },
+      // Invalid ETH loss (no realizedPnl) -> Should be ignored
+      { id: 2, symbol: 'ETHUSDT', status: 'Lost', realizedPnl: null, date: '2024-01-02T10:00:00Z', tradeType: 'short', accountSize: new Decimal(1000), riskPercentage: new Decimal(1), leverage: new Decimal(10), fees: new Decimal(0.1), entryPrice: new Decimal(2000), stopLossPrice: new Decimal(2020), totalRR: new Decimal(-1), totalNetProfit: new Decimal(0), riskAmount: new Decimal(10), netLoss: new Decimal(12), notes: '', targets: [], calculatedTpDetails: [], totalFees: new Decimal(2) },
+      // Valid BTC loss: -20
+      { id: 3, symbol: 'BTCUSDT', status: 'Lost', realizedPnl: new Decimal(-20), date: '2024-01-03T10:00:00Z', tradeType: 'long', accountSize: new Decimal(1000), riskPercentage: new Decimal(1), leverage: new Decimal(10), fees: new Decimal(0.1), entryPrice: new Decimal(110), stopLossPrice: new Decimal(99), totalRR: new Decimal(3), totalNetProfit: new Decimal(30), riskAmount: new Decimal(10), netLoss: new Decimal(12), notes: '', targets: [], calculatedTpDetails: [], totalFees: new Decimal(1.5) },
+      // Valid ETH win: +40
+      { id: 4, symbol: 'ETHUSDT', status: 'Won', realizedPnl: new Decimal(40), date: '2024-01-04T10:00:00Z', tradeType: 'long', accountSize: new Decimal(1000), riskPercentage: new Decimal(0.5), leverage: new Decimal(10), fees: new Decimal(0.1), entryPrice: new Decimal(2000), stopLossPrice: new Decimal(1990), totalRR: new Decimal(4), totalNetProfit: new Decimal(20), riskAmount: new Decimal(5), netLoss: new Decimal(6), notes: '', targets: [], calculatedTpDetails: [], totalFees: new Decimal(1) },
     ];
 
     const symbolStats = calculator.calculateSymbolPerformance(journalData);
 
+    // BTC: 1 win, 1 loss. Total P/L = 50 - 20 = 30
     expect(symbolStats['BTCUSDT']).not.toBeUndefined();
     expect(symbolStats['BTCUSDT'].totalTrades).toBe(2);
-    expect(symbolStats['BTCUSDT'].wonTrades).toBe(2);
-    expect(symbolStats['BTCUSDT'].totalProfitLoss.toFixed(2)).toBe('80.00');
+    expect(symbolStats['BTCUSDT'].wonTrades).toBe(1);
+    expect(symbolStats['BTCUSDT'].totalProfitLoss.toFixed(2)).toBe('30.00');
 
+    // ETH: 1 win, 0 losses (one trade ignored). Total P/L = 40
     expect(symbolStats['ETHUSDT']).not.toBeUndefined();
-    expect(symbolStats['ETHUSDT'].totalTrades).toBe(2);
+    expect(symbolStats['ETHUSDT'].totalTrades).toBe(1);
     expect(symbolStats['ETHUSDT'].wonTrades).toBe(1);
-    expect(symbolStats['ETHUSDT'].totalProfitLoss.toFixed(2)).toBe('7.99'); // 20 (won) - 12.01 (lost) = 7.99
+    expect(symbolStats['ETHUSDT'].totalProfitLoss.toFixed(2)).toBe('40.00');
   });
 
   it('should calculate ATR using Wilder`s Smoothing method', () => {
@@ -276,18 +285,18 @@ describe('Correct RRR and Stats Calculation', () => {
     expect(result.feeAdjustedRRR.toFixed(3)).toBe('1.941');
   });
 
-  it('should return null for ratios when there are no losses', () => {
+  it('should return null if no trades with realizedPnl are found', () => {
     const journalData = [
-      { id: 1, status: 'Won', totalNetProfit: new Decimal(50), riskAmount: new Decimal(10), netLoss: new Decimal(12), date: '2024-01-01', tradeType: 'long', symbol: 'BTC' },
-      { id: 2, status: 'Won', totalNetProfit: new Decimal(30), riskAmount: new Decimal(10), netLoss: new Decimal(12), date: '2024-01-03', tradeType: 'long', symbol: 'BTC' },
+        // These trades should be ignored because they lack realizedPnl
+      { id: 1, status: 'Won', realizedPnl: null, totalNetProfit: new Decimal(50), riskAmount: new Decimal(10), netLoss: new Decimal(12), date: '2024-01-01', tradeType: 'long', symbol: 'BTC' },
+      { id: 2, status: 'Won', realizedPnl: undefined, totalNetProfit: new Decimal(30), riskAmount: new Decimal(10), netLoss: new Decimal(12), date: '2024-01-03', tradeType: 'long', symbol: 'BTC' },
     ];
 
     // @ts-ignore
     const stats = calculator.calculatePerformanceStats(journalData);
 
-    // With no losses, profitFactor and winLossRatio should be null instead of Infinity.
-    expect(stats?.winLossRatio).toBeNull();
-    expect(stats?.profitFactor).toBeNull();
+    // With no valid trades, the entire stats object should be null.
+    expect(stats).toBeNull();
   });
 
 });

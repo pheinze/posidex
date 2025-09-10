@@ -280,8 +280,11 @@ export const app = {
             return parsedData.map(trade => {
                 const newTrade = { ...trade };
                 Object.keys(newTrade).forEach(key => {
-                    if (['accountSize', 'riskPercentage', 'entryPrice', 'stopLossPrice', 'leverage', 'fees', 'atrValue', 'atrMultiplier', 'totalRR', 'totalNetProfit', 'netLoss', 'riskAmount', 'totalFees', 'positionSize'].includes(key)) {
-                        newTrade[key] = new Decimal(newTrade[key] || 0);
+                    if (['accountSize', 'riskPercentage', 'entryPrice', 'stopLossPrice', 'leverage', 'fees', 'atrValue', 'atrMultiplier', 'totalRR', 'totalNetProfit', 'netLoss', 'riskAmount', 'totalFees', 'positionSize', 'realizedPnl'].includes(key)) {
+                        // Ensure nulls are not converted to Decimal(0)
+                        if (newTrade[key] !== null) {
+                            newTrade[key] = new Decimal(newTrade[key] || 0);
+                        }
                     }
                 });
                 if (newTrade.targets && Array.isArray(newTrade.targets)) {
@@ -307,21 +310,56 @@ export const app = {
         const currentAppState = get(tradeStore);
         if (!currentAppState.currentTradeData || !currentAppState.currentTradeData.positionSize || currentAppState.currentTradeData.positionSize.lte(0)) { uiStore.showError("Kann keinen ungültigen Trade speichern."); return; }
         const journalData = app.getJournal();
-        journalData.push({ ...currentAppState.currentTradeData, notes: currentAppState.tradeNotes, id: Date.now(), date: new Date().toISOString() } as JournalEntry);
+        const newTrade: JournalEntry = {
+            ...currentAppState.currentTradeData,
+            notes: currentAppState.tradeNotes,
+            id: Date.now(),
+            date: new Date().toISOString(),
+            realizedPnl: null
+        };
+        journalData.push(newTrade);
         app.saveJournal(journalData);
         journalStore.set(journalData);
         onboardingService.trackFirstJournalSave();
         uiStore.showFeedback('save');
     },
-    updateTradeStatus: (id: number, newStatus: string) => {
+    updateTradeStatus: async (id: number, newStatus: string) => {
         const journalData = app.getJournal();
         const tradeIndex = journalData.findIndex(t => t.id == id);
-        if (tradeIndex !== -1) {
+        if (tradeIndex === -1) return;
+
+        if (newStatus === 'Won' || newStatus === 'Lost') {
+            const result = await modalManager.show(
+                `Trade ${newStatus}`,
+                `Enter the final Net P/L for this trade (e.g., 150.50 for profit, -75.25 for loss):`,
+                'prompt'
+            );
+
+            if (result === null || result === false) {
+                // User cancelled, refresh UI to revert dropdown
+                journalStore.set([...journalData]);
+                return;
+            }
+
+            const pnlValue = parseFloat(result as string);
+            if (isNaN(pnlValue)) {
+                uiStore.showError("Invalid number entered for P/L.");
+                // Refresh UI to revert dropdown
+                journalStore.set([...journalData]);
+                return;
+            }
+
+            journalData[tradeIndex].realizedPnl = new Decimal(pnlValue);
             journalData[tradeIndex].status = newStatus;
-            app.saveJournal(journalData);
-            journalStore.set(journalData);
-            trackCustomEvent('Journal', 'UpdateStatus', newStatus);
+
+        } else { // e.g., setting back to 'Open'
+            journalData[tradeIndex].status = newStatus;
+            journalData[tradeIndex].realizedPnl = null;
         }
+
+        app.saveJournal(journalData);
+        journalStore.set(journalData);
+        trackCustomEvent('Journal', 'UpdateStatus', newStatus);
     },
     deleteTrade: (id: number) => {
         const d = app.getJournal().filter(t => t.id != id);
@@ -553,7 +591,8 @@ export const app = {
                         riskAmount: parseDecimal(typedEntry['Risiko pro Trade (Waehrung)'] || '0'),
                         totalFees: parseDecimal(typedEntry['Gesamte Gebuehren'] || '0'),
                         notes: typedEntry.Notizen ? typedEntry.Notizen.replace(/""/g, '"').slice(1, -1) : '',
-                        targets: targets
+                        targets: targets,
+                        realizedPnl: null
                     } as JournalEntry;
                 } catch (err: unknown) {
                     console.warn("Fehler beim Verarbeiten einer Zeile:", entry, err);
