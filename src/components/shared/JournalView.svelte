@@ -1,4 +1,5 @@
 <script lang="ts">
+    import Decimal from 'decimal.js';
     import { tradeStore } from '../../stores/tradeStore';
     import { journalStore } from '../../stores/journalStore';
     import { uiStore } from '../../stores/uiStore';
@@ -30,6 +31,17 @@
             node.focus();
             node.select();
         });
+    }
+
+    function formatPnl(pnl: Decimal | null | undefined): string {
+        if (pnl === null || pnl === undefined) {
+            return '-';
+        }
+        if (pnl instanceof Decimal) {
+            return pnl.toFixed(2);
+        }
+        // Fallback for primitive numbers from older storage formats
+        return Number(pnl).toFixed(2);
     }
 </script>
 
@@ -74,7 +86,7 @@
                                         />
                                     {:else}
                                         <button type="button" class="input-field-placeholder text-left w-full h-full min-h-[34px] px-2 py-1" on:click={() => editingTradeId = trade.id}>
-                                            {trade.realizedPnl?.toFixed(2) || '-'}
+                                            {formatPnl(trade.realizedPnl)}
                                         </button>
                                     {/if}
                                 </td>
@@ -136,7 +148,7 @@
                                     />
                                 {:else}
                                     <button type="button" class="input-field-placeholder mt-1 text-left w-full" on:click={() => editingTradeId = trade.id}>
-                                        {trade.realizedPnl?.toFixed(2) || '-'}
+                                        {formatPnl(trade.realizedPnl)}
                                     </button>
                                 {/if}
                             </div>
