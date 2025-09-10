@@ -130,7 +130,6 @@ export const calculator = {
         const totalLoss = lostTrades.reduce((sum, t) => sum.plus(t.realizedPnlValue.abs()), new Decimal(0));
         const profitFactor = totalLoss.gt(0) ? totalProfit.dividedBy(totalLoss) : null;
         
-        const avgRR = totalTrades > 0 ? tradesWithPnl.reduce((sum, t) => sum.plus(new Decimal(t.totalRR || 0)), new Decimal(0)).dividedBy(totalTrades) : new Decimal(0);
         const avgWin = wonTrades.length > 0 ? totalProfit.dividedBy(wonTrades.length) : new Decimal(0);
         const avgLossOnly = lostTrades.length > 0 ? totalLoss.dividedBy(lostTrades.length) : new Decimal(0);
         const winLossRatio = avgLossOnly.gt(0) ? avgWin.dividedBy(avgLossOnly) : null;
@@ -194,7 +193,7 @@ export const calculator = {
             currentStreakText = `${lastIsWin ? 'W' : 'L'}${streak}`;
         }
 
-        return { totalTrades, winRate, profitFactor, expectancy, avgRMultiple, avgRR, avgWin, avgLossOnly, winLossRatio, largestProfit, largestLoss, maxDrawdown, recoveryFactor, currentStreakText, longestWinningStreak, longestLosingStreak, totalProfitLong, totalLossLong, totalProfitShort, totalLossShort };
+        return { totalTrades, winRate, profitFactor, expectancy, avgRMultiple, avgWin, avgLossOnly, winLossRatio, largestProfit, largestLoss, maxDrawdown, recoveryFactor, currentStreakText, longestWinningStreak, longestLosingStreak, totalProfitLong, totalLossLong, totalProfitShort, totalLossShort };
     },
     calculateSymbolPerformance(journalData: JournalEntry[]) {
         const closedTrades = journalData.filter(t => t.status === 'Won' || t.status === 'Lost');
