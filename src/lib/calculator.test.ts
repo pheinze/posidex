@@ -439,7 +439,6 @@ describe('Correct RRR and Stats Calculation', () => {
       { id: 2, status: 'Won', realizedPnl: undefined, totalNetProfit: new Decimal(30), riskAmount: new Decimal(10), netLoss: new Decimal(12), date: '2024-01-03', tradeType: 'long', symbol: 'BTC' },
     ];
 
-    // @ts-expect-error - Testing invalid data shape
     const stats = calculator.calculatePerformanceStats(journalData as JournalEntry[]);
 
     // With no valid trades, the entire stats object should be null.
