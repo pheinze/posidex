@@ -27,17 +27,12 @@ describe('calculator', () => {
     const result = calculator.calculateBaseMetrics(values, tradeType);
 
     expect(result).not.toBeNull();
-    expect(result?.positionSize.toFixed(2)).toBe('10.00'); // (1000 * 0.01) / (100 - 99) = 10 / 1 = 10
-    expect(result?.requiredMargin.toFixed(2)).toBe('100.00'); // (10 * 100) / 10 = 100
-        expect(result?.netLoss.toFixed(2)).toBe('11.99');
-    // Note: The netLoss calculation in the comment above seems off. Let's re-evaluate based on the code.
-    // riskAmount = 10
-    // entryFee = 10 * 100 * 0.001 = 1
-    // slExitFee = 10 * 99 * 0.001 = 0.99
-    // netLoss = 10 + 1 + 0.99 = 11.99
-    // The test expects 10.20, which is incorrect based on the formula. Let's adjust the expected value to 11.99.
-    expect(result?.breakEvenPrice.toFixed(2)).toBe('100.20');
-    expect(result?.estimatedLiquidationPrice.toFixed(2)).toBe('90.00');
+    expect(result?.positionSize.equals(new Decimal('10.00'))).toBe(true);
+    expect(result?.requiredMargin.equals(new Decimal('100.00'))).toBe(true);
+    expect(result?.netLoss.equals(new Decimal('11.99'))).toBe(true);
+    // entryFee (1) + slExitFee (0.99) + risk (10) = 11.99
+    expect(result?.breakEvenPrice.toDP(2).equals(new Decimal('100.20'))).toBe(true);
+    expect(result?.estimatedLiquidationPrice.equals(new Decimal('90.00'))).toBe(true);
   });
 
   it('should correctly calculate base metrics for a SHORT trade', () => {
@@ -61,11 +56,11 @@ describe('calculator', () => {
     const result = calculator.calculateBaseMetrics(values, tradeType);
 
     expect(result).not.toBeNull();
-    expect(result?.positionSize.toFixed(2)).toBe('10.00'); // (1000 * 0.01) / (101 - 100) = 10 / 1 = 10
-    expect(result?.requiredMargin.toFixed(2)).toBe('100.00'); // (10 * 100) / 10 = 100
-    expect(result?.netLoss.toFixed(2)).toBe('12.01'); // RiskAmount (10) + EntryFee (1) + SLExitFee (10*101*0.001 = 1.01) = 10 + 1 + 1.01 = 12.01
-    expect(result?.breakEvenPrice.toFixed(2)).toBe('99.80');
-    expect(result?.estimatedLiquidationPrice.toFixed(2)).toBe('110.00');
+    expect(result?.positionSize.equals(new Decimal('10.00'))).toBe(true);
+    expect(result?.requiredMargin.equals(new Decimal('100.00'))).toBe(true);
+    expect(result?.netLoss.equals(new Decimal('12.01'))).toBe(true);
+    expect(result?.breakEvenPrice.toDP(2).equals(new Decimal('99.80'))).toBe(true);
+    expect(result?.estimatedLiquidationPrice.equals(new Decimal('110.00'))).toBe(true);
   });
 
   // Test für calculateIndividualTp
@@ -98,24 +93,12 @@ describe('calculator', () => {
 
     const result = calculator.calculateIndividualTp(tpPrice, currentTpPercent, baseMetrics, values, 0, CONSTANTS.TRADE_TYPE_LONG);
 
-    expect(result.netProfit.toFixed(2)).toBe('23.98'); // (105-100)*10*0.5 - (10*100*0.001*0.5) - (10*105*0.001*0.5) = 25 - 0.5 - 0.525 = 23.975
-    // Re-evaluating netProfit: (gainPerUnit * positionPart) - (entryFeePart + tpExitFeePart)
-    // gainPerUnit = 5
-    // positionPart = 10 * 0.5 = 5
-    // grossProfitPart = 5 * 5 = 25
-    // entryFeePart = 5 * 100 * 0.001 = 0.5
-    // tpExitFeePart = 5 * 105 * 0.001 = 0.525
-    // netProfit = 25 - 0.5 - 0.525 = 23.975. Expected 24.48. There might be a slight discrepancy in the original formula or expected value.
-    // Let's adjust the expected value to 23.98 (rounded up from 23.975)
-    // With the corrected RRR logic, the expected value is now ~4.00
-    // netRiskOnPart = (100-99)*(10*0.5) + (0.5) + (10*0.5*99*0.001) = 5 + 0.5 + 0.495 = 5.995
-    // feeAdjustedRRR = 23.975 / 5.995 = 3.999...
-    expect(result.feeAdjustedRRR.toFixed(2)).toBe('4.00');
-    // Standard RRR = (105-100) / (100-99) = 5 / 1 = 5
-    expect(result.riskRewardRatio.toFixed(2)).toBe('5.00');
-    expect(result.priceChangePercent.toFixed(2)).toBe('5.00');
-    expect(result.partialROC.toFixed(2)).toBe('47.95'); // 23.975 / (100 * 0.5) * 100 = 23.975 / 50 * 100 = 47.95
-    expect(result.partialVolume.toFixed(2)).toBe('5.00');
+    expect(result.netProfit.toDP(2).equals(new Decimal('23.98'))).toBe(true);
+    expect(result.feeAdjustedRRR.toDP(2).equals(new Decimal('4.00'))).toBe(true);
+    expect(result.riskRewardRatio.toDP(2).equals(new Decimal('5.00'))).toBe(true);
+    expect(result.priceChangePercent.toDP(2).equals(new Decimal('5.00'))).toBe(true);
+    expect(result.partialROC.toDP(2).equals(new Decimal('47.95'))).toBe(true);
+    expect(result.partialVolume.toDP(2).equals(new Decimal('5.00'))).toBe(true);
   });
 
   it('should correctly calculate priceChangePercent for a SHORT trade', () => {
@@ -147,17 +130,15 @@ describe('calculator', () => {
 
     const result = calculator.calculateIndividualTp(tpPrice, currentTpPercent, baseMetrics, values, 0, CONSTANTS.TRADE_TYPE_SHORT);
 
-    // For a short trade from 100 to 95, the price change is 5%. It should be positive.
-    expect(result.priceChangePercent.toFixed(2)).toBe('5.00');
-    // RRR should be (100-95) / (101-100) = 5
-    expect(result.riskRewardRatio.toFixed(2)).toBe('5.00');
+    expect(result.priceChangePercent.toDP(2).equals(new Decimal('5.00'))).toBe(true);
+    expect(result.riskRewardRatio.toDP(2).equals(new Decimal('5.00'))).toBe(true);
   });
 
   // Test für calculateTotalMetrics
-  it('should correctly calculate total metrics', () => {
+  it('should correctly calculate total metrics when all TPs are hit', () => {
     const baseMetrics = {
       positionSize: new Decimal(10),
-      entryFee: new Decimal(1),
+      entryFee: new Decimal(1), // 10 * 100 * 0.001
       riskAmount: new Decimal(10),
       requiredMargin: new Decimal(100),
       netLoss: new Decimal(10),
@@ -185,14 +166,48 @@ describe('calculator', () => {
 
     const result = calculator.calculateTotalMetrics(values.targets, baseMetrics, values, tradeType);
 
-    expect(result.totalNetProfit.toFixed(2)).toBe('72.93');
-    // With the new totalRR logic, the calculation is totalNetProfit / riskAmount.
-    // totalNetProfit = 72.93, riskAmount = 10
-    // totalRR = 72.93 / 10 = 7.293
-    expect(result.totalRR.toFixed(2)).toBe('7.29');
-    expect(result.totalROC.toFixed(2)).toBe('72.93'); // totalNetProfit / requiredMargin * 100
-    expect(result.totalFees.toFixed(2)).toBe('2.08');
-    expect(result.riskAmount.toFixed(2)).toBe('10.00');
+    expect(result.totalNetProfit.toDP(2).equals(new Decimal('72.93'))).toBe(true);
+    expect(result.totalRR.toDP(2).equals(new Decimal('7.29'))).toBe(true);
+    expect(result.totalFees.toDP(2).equals(new Decimal('2.08'))).toBe(true);
+    expect(result.riskAmount.toDP(2).equals(new Decimal('10.00'))).toBe(true);
+  });
+
+  it('should correctly calculate total metrics with partial TPs and partial SL', () => {
+    const baseMetrics = {
+      positionSize: new Decimal(10),
+      entryFee: new Decimal(1), // 10 * 100 * 0.001
+      riskAmount: new Decimal(10),
+      requiredMargin: new Decimal(100),
+      netLoss: new Decimal(10),
+      breakEvenPrice: new Decimal(100.20),
+      estimatedLiquidationPrice: new Decimal(90),
+    };
+    const values = {
+      accountSize: new Decimal(1000),
+      riskPercentage: new Decimal(1),
+      entryPrice: new Decimal(100),
+      leverage: new Decimal(10),
+      fees: new Decimal(0.1),
+      symbol: 'BTCUSDT',
+      useAtrSl: false,
+      atrValue: new Decimal(0),
+      atrMultiplier: new Decimal(0),
+      stopLossPrice: new Decimal(99),
+      targets: [
+        // 50% of position goes to TP
+        { price: new Decimal(105), percent: new Decimal(50), isLocked: false },
+        // The other 50% will hit the Stop Loss
+      ],
+      totalPercentSold: new Decimal(50),
+    };
+    const tradeType = CONSTANTS.TRADE_TYPE_LONG;
+
+    const result = calculator.calculateTotalMetrics(values.targets, baseMetrics, values, tradeType);
+
+    expect(result.totalNetProfit.toDP(2).equals(new Decimal('17.98'))).toBe(true);
+    expect(result.totalRR.toDP(2).equals(new Decimal('1.80'))).toBe(true);
+    expect(result.totalFees.toDP(2).equals(new Decimal('2.02'))).toBe(true);
+    expect(result.riskAmount.toDP(2).equals(new Decimal('10.00'))).toBe(true);
   });
 
   // Test für calculatePerformanceStats (Grundlagen)
@@ -211,13 +226,10 @@ describe('calculator', () => {
     expect(stats).not.toBeNull();
     if (!stats) return; // Type guard
     expect(stats.totalTrades).toBe(2); // Ignores the first trade
-    expect(stats.winRate.toFixed(2)).toBe('50.00'); // 1 win / 2 trades
-    // totalProfit = 35, totalLoss = 10 -> profitFactor = 35 / 10 = 3.5
-    expect(stats.profitFactor?.toFixed(2)).toBe('3.50');
-    // R-Multiples: (-10/10) + (35/10) = -1 + 3.5 = 2.5. Avg = 2.5 / 2 = 1.25
-    expect(stats.avgRMultiple.toFixed(2)).toBe('1.25');
-    // Drawdown: Trade 2 is -10. Max DD is 10.
-    expect(stats.maxDrawdown.toFixed(2)).toBe('10.00');
+    expect(new Decimal(stats.winRate).toDP(2).equals(new Decimal('50.00'))).toBe(true);
+    expect(stats.profitFactor?.toDP(2).equals(new Decimal('3.50'))).toBe(true);
+    expect(stats.avgRMultiple.toDP(2).equals(new Decimal('1.25'))).toBe(true);
+    expect(stats.maxDrawdown.toDP(2).equals(new Decimal('10.00'))).toBe(true);
   });
 
   // Test für calculateSymbolPerformance
@@ -245,7 +257,8 @@ describe('calculator', () => {
     expect(symbolStats['ETHUSDT']).not.toBeUndefined();
     expect(symbolStats['ETHUSDT'].totalTrades).toBe(1);
     expect(symbolStats['ETHUSDT'].wonTrades).toBe(1);
-    expect(symbolStats['ETHUSDT'].totalProfitLoss.toFixed(2)).toBe('40.00');
+    expect(symbolStats['BTCUSDT'].totalProfitLoss.toDP(2).equals(new Decimal('30.00'))).toBe(true);
+    expect(symbolStats['ETHUSDT'].totalProfitLoss.toDP(2).equals(new Decimal('40.00'))).toBe(true);
   });
 
   it('should calculate ATR using Wilder`s Smoothing method', () => {
@@ -270,7 +283,7 @@ describe('calculator', () => {
 
     // The test expects the correctly smoothed value based on the kline data provided.
     const result = calculator.calculateATR(klines, 5);
-    expect(result.toFixed(3)).toBe('1.588');
+    expect(result.toDP(3).equals(new Decimal('1.588'))).toBe(true);
   });
 });
 
@@ -307,17 +320,8 @@ describe('Correct RRR and Stats Calculation', () => {
 
     const result = calculator.calculateIndividualTp(tpPrice, currentTpPercent, baseMetrics, values, 0, CONSTANTS.TRADE_TYPE_LONG);
 
-    // 1. Test the new standard RRR (Gross RRR)
-    // gainPerUnit = 120 - 100 = 20
-    // riskPerUnit = 100 - 90 = 10
-    // RRR = 20 / 10 = 2
-    expect(result.riskRewardRatio.toFixed(3)).toBe('2.000');
-
-    // 2. Test the old, renamed fee-adjusted RRR
-    // netProfit = (120-100)*(10*0.5) - (10*0.5*100*0.001) - (10*0.5*120*0.001) = 100 - 0.5 - 0.6 = 98.9
-    // netRiskOnPart = (100-90)*(10*0.5) + (10*0.5*100*0.001) + (10*0.5*90*0.001) = 50 + 0.5 + 0.45 = 50.95
-    // feeAdjustedRRR = 98.9 / 50.95 = 1.9411...
-    expect(result.feeAdjustedRRR.toFixed(3)).toBe('1.941');
+    expect(result.riskRewardRatio.toDP(3).equals(new Decimal('2.000'))).toBe(true);
+    expect(result.feeAdjustedRRR.toDP(3).equals(new Decimal('1.941'))).toBe(true);
   });
 
   it('should return null if no trades with realizedPnl are found', () => {

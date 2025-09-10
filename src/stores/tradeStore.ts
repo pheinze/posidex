@@ -3,6 +3,7 @@ import { CONSTANTS } from '../lib/constants';
 import type { AppState } from './types';
 import { resultsStore, initialResultsState } from './resultsStore';
 import { uiStore } from './uiStore';
+import { Decimal } from 'decimal.js';
 
 export const initialTradeState: Pick<AppState,
     'tradeType' |
@@ -29,23 +30,23 @@ export const initialTradeState: Pick<AppState,
     'currentTradeData'
 > = {
     tradeType: CONSTANTS.TRADE_TYPE_LONG,
-    accountSize: 1000,
-    riskPercentage: 1,
+    accountSize: new Decimal(1000),
+    riskPercentage: new Decimal(1),
     entryPrice: null,
     stopLossPrice: null,
-    leverage: parseFloat(CONSTANTS.DEFAULT_LEVERAGE),
-    fees: parseFloat(CONSTANTS.DEFAULT_FEES),
+    leverage: new Decimal(CONSTANTS.DEFAULT_LEVERAGE),
+    fees: new Decimal(CONSTANTS.DEFAULT_FEES),
     symbol: '',
     atrValue: null,
-    atrMultiplier: parseFloat(CONSTANTS.DEFAULT_ATR_MULTIPLIER),
+    atrMultiplier: new Decimal(CONSTANTS.DEFAULT_ATR_MULTIPLIER),
     useAtrSl: false,
     atrMode: 'manual',
     atrTimeframe: '1d',
     tradeNotes: '',
     targets: [
-        { price: null, percent: 50, isLocked: false },
-        { price: null, percent: 25, isLocked: false },
-        { price: null, percent: 25, isLocked: false }
+        { price: null, percent: new Decimal(50), isLocked: false },
+        { price: null, percent: new Decimal(25), isLocked: false },
+        { price: null, percent: new Decimal(25), isLocked: false }
     ],
     isPositionSizeLocked: false,
     lockedPositionSize: null,

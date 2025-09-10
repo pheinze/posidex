@@ -95,17 +95,39 @@ export const calculator = {
     calculateTotalMetrics(targets: Array<{ price: Decimal; percent: Decimal; }>, baseMetrics: BaseMetrics, values: TradeValues, tradeType: string): TotalMetrics {
         const { positionSize, entryFee, riskAmount, requiredMargin } = baseMetrics;
         let totalNetProfit = new Decimal(0);
-        let totalFees = new Decimal(0);
+        let totalFees = entryFee; // Start with the full entry fee
+        let totalPercentSoldAtTp = new Decimal(0);
 
+        // Calculate profit and exit fees from TPs
         targets.forEach((tp, index) => {
             if (tp.price.gt(0) && tp.percent.gt(0)) {
-                const { netProfit } = this.calculateIndividualTp(tp.price, tp.percent, baseMetrics, values, index, tradeType);
-                totalNetProfit = totalNetProfit.plus(netProfit);
-                const entryFeePart = positionSize.times(tp.percent.div(100)).times(values.entryPrice).times(values.fees.div(100));
-                const exitFeePart = positionSize.times(tp.percent.div(100)).times(tp.price).times(values.fees.div(100));
-                totalFees = totalFees.plus(entryFeePart).plus(exitFeePart);
+                const individualResult = this.calculateIndividualTp(tp.price, tp.percent, baseMetrics, values, index, tradeType);
+                totalNetProfit = totalNetProfit.plus(individualResult.netProfit);
+                totalFees = totalFees.plus(individualResult.exitFee);
+                totalPercentSoldAtTp = totalPercentSoldAtTp.plus(tp.percent);
             }
         });
+
+        // Account for the part of the position that hits the Stop Loss
+        const percentHittingSl = new Decimal(100).minus(totalPercentSoldAtTp);
+        if (percentHittingSl.gt(0)) {
+            const positionPartHittingSl = positionSize.times(percentHittingSl.div(100));
+
+            // Calculate loss for the SL part
+            const riskPerUnit = values.entryPrice.minus(values.stopLossPrice).abs();
+            const grossLossOnSlPart = riskPerUnit.times(positionPartHittingSl);
+
+            // Calculate fees for the SL part. Entry fee for this part is already included in the total `entryFee`.
+            const entryFeeOnSlPart = positionPartHittingSl.times(values.entryPrice).times(values.fees.div(100));
+            const exitFeeOnSlPart = positionPartHittingSl.times(values.stopLossPrice).times(values.fees.div(100));
+
+            // Add exit fee for SL part to total fees
+            totalFees = totalFees.plus(exitFeeOnSlPart);
+
+            // Subtract the net loss of the SL part from the totalNetProfit
+            const netLossOnSlPart = grossLossOnSlPart.plus(entryFeeOnSlPart).plus(exitFeeOnSlPart);
+            totalNetProfit = totalNetProfit.minus(netLossOnSlPart);
+        }
 
         const totalRR = riskAmount.gt(0) ? totalNetProfit.div(riskAmount) : new Decimal(0);
         const totalROC = requiredMargin.gt(0) ? totalNetProfit.div(requiredMargin).times(100) : new Decimal(0);

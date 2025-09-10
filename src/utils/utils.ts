@@ -10,7 +10,10 @@ export function debounce<T extends (...args: unknown[]) => void>(func: T, delay:
     };
 }
 
-export function parseDecimal(value: string | number | null | undefined): Decimal {
+export function parseDecimal(value: string | number | Decimal | null | undefined): Decimal {
+    if (value instanceof Decimal) {
+        return value;
+    }
     if (value === null || value === undefined) {
         return new Decimal(0);
     }
@@ -47,4 +50,26 @@ export function formatDynamicDecimal(value: Decimal | string | number | null | u
 
     // Otherwise, remove only the trailing zeros and the decimal point if it's the last char
     return formatted.replace(/0+$/, '').replace(/\.$/, '');
+}
+
+export function parseGermanDate(dateStr: string, timeStr: string): string {
+    const dateParts = dateStr.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+    const timeParts = timeStr.match(/^(\d{1,2}):(\d{1,2}):(\d{1,2})$/);
+
+    if (!dateParts || !timeParts) {
+        throw new Error(`Invalid German date or time format: ${dateStr} ${timeStr}`);
+    }
+
+    const [, day, month, year] = dateParts;
+    const [, hours, minutes, seconds] = timeParts;
+
+    // Construct an ISO-8601 string. This format is unambiguous.
+    const isoString = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}:${seconds.padStart(2, '0')}.000Z`;
+
+    const date = new Date(isoString);
+    if (isNaN(date.getTime()) || date.getUTCFullYear() !== parseInt(year) || date.getUTCMonth() !== parseInt(month) - 1) {
+        throw new Error(`Invalid date created from parts: ${isoString}`);
+    }
+
+    return date.toISOString();
 }
