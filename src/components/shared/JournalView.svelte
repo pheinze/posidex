@@ -6,6 +6,7 @@
     import { _, locale } from '../../locales/i18n';
     import { icons, CONSTANTS } from '../../lib/constants';
     import { browser } from '$app/environment';
+    import { numberInput } from '../../utils/inputUtils';
 
     $: filteredTrades = $journalStore.filter(trade =>
         trade.symbol.toLowerCase().includes($tradeStore.journalSearchQuery.toLowerCase()) &&
@@ -50,7 +51,7 @@
                                 <td>{trade.entryPrice.toFixed(4)}</td>
                                 <td>{trade.stopLossPrice.toFixed(4)}</td>
                                 <td class="{trade.totalNetProfit.gt(0) ? 'text-[var(--success-color)]' : trade.totalNetProfit.lt(0) ? 'text-[var(--danger-color)]' : ''}">{trade.totalNetProfit.toFixed(2)}</td>
-                                <td><input type="number" class="input-field-table" placeholder="P/L" value={trade.realizedPnl} on:blur={(e) => app.updateRealizedPnl(trade.id, (e.target as HTMLInputElement).value)} /></td>
+                                <td><input type="text" class="input-field w-24 px-2 py-1" placeholder="P/L" value={trade.realizedPnl} use:numberInput={{ maxDecimalPlaces: 4 }} on:input={(e) => app.updateRealizedPnl(trade.id, (e.target as HTMLInputElement).value)} /></td>
                                 <td class="{trade.totalRR.gte(2) ? 'text-[var(--success-color)]' : trade.totalRR.gte(1.5) ? 'text-[var(--warning-color)]' : 'text-[var(--danger-color)]'}">{trade.totalRR.toFixed(2)}</td>
                                 <td>
                                     <select class="status-select input-field p-1" data-id="{trade.id}" on:change={(e) => app.updateTradeStatus(trade.id, (e.target as HTMLSelectElement).value)}>
@@ -97,7 +98,7 @@
                             </div>
                             <div>
                                 <div class="text-sm">Realized P/L</div>
-                                <input type="number" class="input-field-table w-full" placeholder="Enter P/L" value={trade.realizedPnl} on:blur={(e) => app.updateRealizedPnl(trade.id, (e.target as HTMLInputElement).value)} />
+                                <input type="text" class="input-field w-full px-2 py-1 mt-1" placeholder="Enter P/L" value={trade.realizedPnl} use:numberInput={{ maxDecimalPlaces: 4 }} on:input={(e) => app.updateRealizedPnl(trade.id, (e.target as HTMLInputElement).value)} />
                             </div>
                         </div>
                         <div class="mt-4 flex justify-between items-center">
@@ -142,22 +143,3 @@
         </div>
     </div>
 </div>
-
-<style>
-    .input-field-table {
-        background-color: transparent;
-        border: 1px solid var(--border-color);
-        border-radius: 0.375rem; /* rounded-md */
-        padding: 0.25rem 0.5rem; /* py-1 px-2 */
-        width: 6rem; /* w-24 */
-        transition: border-color 0.2s;
-    }
-    .input-field-table:focus {
-        outline: none;
-        border-color: var(--accent-color);
-    }
-    .input-field-table::placeholder {
-        color: var(--text-secondary);
-        opacity: 0.7;
-    }
-</style>
