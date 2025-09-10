@@ -1,8 +1,7 @@
-import SuperJSON from 'superjson';
+import superjson from 'superjson';
 import { Decimal } from 'decimal.js';
 
-const superjson = SuperJSON.clone();
-
+// Register the custom Decimal.js serializer/deserializer on the main instance
 superjson.registerCustom<Decimal, string>(
   {
     isApplicable: (v): v is Decimal => Decimal.isDecimal(v),
