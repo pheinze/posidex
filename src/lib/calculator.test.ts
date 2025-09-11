@@ -318,19 +318,19 @@ describe('Bugfix Verification Tests', () => {
     expect(result.totalRR.toDP(2).equals(new Decimal('1.80'))).toBe(true);
   });
 
-  it('should exclude breakeven trades from win rate calculation', () => {
+  it('should include breakeven trades in win rate calculation', () => {
     const journalData = [
-      { status: 'Won', realizedPnl: new Decimal(100) },
-      { status: 'Lost', realizedPnl: new Decimal(-50) },
-      { status: 'Lost', realizedPnl: new Decimal(0) }, // Breakeven trade
+      { status: 'Won', realizedPnl: new Decimal(100), date: '2024-01-01' },
+      { status: 'Lost', realizedPnl: new Decimal(-50), date: '2024-01-02' },
+      { status: 'Lost', realizedPnl: new Decimal(0), date: '2024-01-03' }, // Breakeven trade
     ] as any;
 
     const stats = calculator.calculatePerformanceStats(journalData);
     expect(stats).not.toBeNull();
-    // Total trades for winrate are wins + losses. Breakeven is excluded.
-    expect(stats?.totalTrades).toBe(2);
-    // Winrate is 1 win / 2 trades = 50%
-    expect(new Decimal(stats?.winRate!).toDP(2).equals(new Decimal('50.00'))).toBe(true);
+    // Total trades for winrate are wins + losses + breakeven.
+    expect(stats?.totalTrades).toBe(3);
+    // Winrate is 1 win / 3 trades = 33.33...%
+    expect(new Decimal(stats?.winRate!).toDP(2).equals(new Decimal('33.33'))).toBe(true);
   });
 
   it('should cap profit calculation at 100% of the position', () => {

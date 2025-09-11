@@ -22,6 +22,12 @@ export const calculator = {
             const denominator = new Decimal(1).minus(feeFactor);
             breakEvenPrice = denominator.isZero() ? new Decimal(Infinity) : values.entryPrice.times(feeFactor.plus(1)).div(denominator);
         } else {
+            // For SHORT trades, the formula to break even is: P_b = P_e * (1 - f) / (1 + f)
+            // This is derived from setting the net profit to zero:
+            // (P_e - P_b) * V - (P_e * V * f) - (P_b * V * f) = 0
+            // P_e - P_b - P_e*f - P_b*f = 0
+            // P_e * (1 - f) = P_b * (1 + f)
+            // P_b = P_e * (1 - f) / (1 + f)
             breakEvenPrice = values.entryPrice.times(new Decimal(1).minus(feeFactor)).div(feeFactor.plus(1));
         }
 
@@ -154,7 +160,7 @@ export const calculator = {
 
         const wonTrades = tradesWithPnl.filter(t => t.realizedPnlValue.gt(0));
         const lostTrades = tradesWithPnl.filter(t => t.realizedPnlValue.lt(0));
-        const totalTrades = wonTrades.length + lostTrades.length; // Exclude breakeven trades
+        const totalTrades = tradesWithPnl.length; // Includes breakeven trades for a more accurate win rate
         const winRate = totalTrades > 0 ? (wonTrades.length / totalTrades) * 100 : 0;
         
         const totalProfit = wonTrades.reduce((sum, t) => sum.plus(t.realizedPnlValue), new Decimal(0));
@@ -202,16 +208,22 @@ export const calculator = {
             }
         });
 
-        let longestWinningStreak = 0, currentWinningStreak = 0, longestLosingStreak = 0, currentLosingStreak = 0, currentStreakText = 'N/A';
+        let longestWinningStreak = 0, currentWinningStreak = 0;
+        let longestLosingStreak = 0, currentLosingStreak = 0;
+        let currentBreakevenStreak = 0; // For tracking current B/E streak
+        let currentStreakText = 'N/A';
 
         tradesWithPnl.forEach(trade => {
             if (trade.realizedPnlValue.gt(0)) {
                 currentWinningStreak++;
                 currentLosingStreak = 0;
+                currentBreakevenStreak = 0;
             } else if (trade.realizedPnlValue.lt(0)) {
                 currentLosingStreak++;
                 currentWinningStreak = 0;
+                currentBreakevenStreak = 0;
             } else { // Break-even
+                currentBreakevenStreak++;
                 currentWinningStreak = 0;
                 currentLosingStreak = 0;
             }
@@ -219,50 +231,28 @@ export const calculator = {
             if (currentLosingStreak > longestLosingStreak) longestLosingStreak = currentLosingStreak;
         });
 
-        if (tradesWithPnl.length > 0) {
-            const lastTrade = tradesWithPnl[tradesWithPnl.length - 1];
-            let currentStreak = 0;
-
-            if (lastTrade.realizedPnlValue.gt(0)) {
-                for (let i = tradesWithPnl.length - 1; i >= 0; i--) {
-                    if (tradesWithPnl[i].realizedPnlValue.gt(0)) currentStreak++;
-                    else break;
-                }
-                currentStreakText = `W${currentStreak}`;
-            } else if (lastTrade.realizedPnlValue.lt(0)) {
-                for (let i = tradesWithPnl.length - 1; i >= 0; i--) {
-                    if (tradesWithPnl[i].realizedPnlValue.lt(0)) currentStreak++;
-                    else break;
-                }
-                currentStreakText = `L${currentStreak}`;
-            } else { // Break-even
-                 for (let i = tradesWithPnl.length - 1; i >= 0; i--) {
-                    if (tradesWithPnl[i].realizedPnlValue.isZero()) currentStreak++;
-                    else break;
-                }
-                currentStreakText = `B/E ${currentStreak}`;
-            }
+        // After the loop, the 'current' counters hold the value of the most recent streak.
+        if (currentWinningStreak > 0) {
+            currentStreakText = `W${currentWinningStreak}`;
+        } else if (currentLosingStreak > 0) {
+            currentStreakText = `L${currentLosingStreak}`;
+        } else if (currentBreakevenStreak > 0) {
+            currentStreakText = `B/E ${currentBreakevenStreak}`;
         }
 
         return { totalTrades, winRate, profitFactor, expectancy, avgRMultiple, avgWin, avgLossOnly, winLossRatio, largestProfit, largestLoss, maxDrawdown, recoveryFactor, currentStreakText, longestWinningStreak, longestLosingStreak, totalProfitLong, totalLossLong, totalProfitShort, totalLossShort };
     },
     calculateSymbolPerformance(journalData: JournalEntry[]) {
         const closedTrades = journalData.filter(t => t.status === 'Won' || t.status === 'Lost');
-        const symbolPerformance: { [key: string]: { totalTrades: number; wonTrades: number; totalProfitLoss: Decimal; totalPlannedProfitLoss: Decimal; } } = {};
+        const symbolPerformance: { [key: string]: { totalTrades: number; wonTrades: number; totalProfitLoss: Decimal; } } = {};
 
         closedTrades.forEach(trade => {
             if (!trade.symbol) return;
             if (!symbolPerformance[trade.symbol]) {
-                symbolPerformance[trade.symbol] = { totalTrades: 0, wonTrades: 0, totalProfitLoss: new Decimal(0), totalPlannedProfitLoss: new Decimal(0) };
+                symbolPerformance[trade.symbol] = { totalTrades: 0, wonTrades: 0, totalProfitLoss: new Decimal(0) };
             }
 
-            // Calculate planned P/L (old logic)
-            const plannedPnl = trade.status === 'Won'
-                ? new Decimal(trade.totalNetProfit || 0)
-                : new Decimal(trade.netLoss || 0).negated();
-            symbolPerformance[trade.symbol].totalPlannedProfitLoss = symbolPerformance[trade.symbol].totalPlannedProfitLoss.plus(plannedPnl);
-
-            // Calculate realized P/L (new logic)
+            // Calculate realized P/L
             if (trade.realizedPnl !== null && trade.realizedPnl !== undefined) {
                 const realizedPnl = new Decimal(trade.realizedPnl);
                 symbolPerformance[trade.symbol].totalProfitLoss = symbolPerformance[trade.symbol].totalProfitLoss.plus(realizedPnl);
