@@ -164,7 +164,20 @@
     "clearJournalTitle": "Clear entire journal",
     "clearAll": "Clear All",
     "showJournalInstructionsTitle": "Show Journal Instructions",
-    "showJournalInstructionsAriaLabel": "Show Journal Instructions"
+    "showJournalInstructionsAriaLabel": "Show Journal Instructions",
+    "noDataForStats": "No trade data available to calculate statistics.",
+    "stats": {
+      "winrate": "Winrate",
+      "profitFactor": "Profit Factor",
+      "profitFactorTooltip": "Gross Profit / Gross Loss. A value > 1 means the strategy is profitable.",
+      "expectancy": "Expectancy",
+      "expectancyTooltip": "The average amount you can expect to win or lose per trade.",
+      "avgRMultiple": "Avg. R-Multiple",
+      "avgRMultipleTooltip": "The average profit or loss in relation to the initial risk (R).",
+      "avgWinLossRatio": "Avg. Win/Loss",
+      "avgWinLossRatioTooltip": "The average profit of winning trades divided by the average loss of losing trades.",
+      "currentStreak": "Current Streak"
+    }
   },
   "seo": {
     "title": "Cachy - Trading Position Size & Risk Calculator",

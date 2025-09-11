@@ -74,14 +74,8 @@ export const calculator = {
         const entryFeePart = positionPart.times(values.entryPrice).times(values.fees.div(100));
         const netProfit = grossProfitPart.minus(entryFeePart).minus(exitFee);
 
-        // --- FEE-ADJUSTED RRR (OLD LOGIC) ---
-        const riskPerUnit = values.entryPrice.minus(values.stopLossPrice).abs();
-        const grossRiskOnPart = riskPerUnit.times(positionPart);
-        const slExitFeeOnPart = positionPart.times(values.stopLossPrice).times(values.fees.div(100));
-        const netRiskOnPart = grossRiskOnPart.plus(entryFeePart).plus(slExitFeeOnPart);
-        const feeAdjustedRRR = netRiskOnPart.gt(0) ? netProfit.div(netRiskOnPart) : new Decimal(0);
-
         // --- STANDARD GROSS RRR (NEW LOGIC) ---
+        const riskPerUnit = values.entryPrice.minus(values.stopLossPrice).abs();
         const riskRewardRatio = riskPerUnit.gt(0) ? gainPerUnit.div(riskPerUnit) : new Decimal(0);
 
         let priceChangePercent = new Decimal(0);
@@ -93,8 +87,8 @@ export const calculator = {
             }
         }
 
-        const partialROC = requiredMargin.gt(0) && currentTpPercent.gt(0) ? netProfit.div(requiredMargin.times(currentTpPercent.div(100))).times(100) : new Decimal(0);
-        return { netProfit, feeAdjustedRRR, riskRewardRatio, priceChangePercent, partialROC, partialVolume: positionPart, exitFee, index: index, percentSold: currentTpPercent };
+        const partialROC = requiredMargin.gt(0) ? netProfit.div(requiredMargin).times(100) : new Decimal(0);
+        return { netProfit, riskRewardRatio, priceChangePercent, partialROC, partialVolume: positionPart, exitFee, index: index, percentSold: currentTpPercent };
     },
     calculateTotalMetrics(targets: Array<{ price: Decimal; percent: Decimal; }>, baseMetrics: BaseMetrics, values: TradeValues, tradeType: string): TotalMetrics {
         const { positionSize, entryFee, riskAmount, requiredMargin } = baseMetrics;
@@ -209,25 +203,45 @@ export const calculator = {
         });
 
         let longestWinningStreak = 0, currentWinningStreak = 0, longestLosingStreak = 0, currentLosingStreak = 0, currentStreakText = 'N/A';
+
         tradesWithPnl.forEach(trade => {
             if (trade.realizedPnlValue.gt(0)) {
                 currentWinningStreak++;
                 currentLosingStreak = 0;
-                if (currentWinningStreak > longestWinningStreak) longestWinningStreak = currentWinningStreak;
-            } else {
+            } else if (trade.realizedPnlValue.lt(0)) {
                 currentLosingStreak++;
                 currentWinningStreak = 0;
-                if (currentLosingStreak > longestLosingStreak) longestLosingStreak = currentLosingStreak;
+            } else { // Break-even
+                currentWinningStreak = 0;
+                currentLosingStreak = 0;
             }
+            if (currentWinningStreak > longestWinningStreak) longestWinningStreak = currentWinningStreak;
+            if (currentLosingStreak > longestLosingStreak) longestLosingStreak = currentLosingStreak;
         });
+
         if (tradesWithPnl.length > 0) {
-            const lastIsWin = tradesWithPnl[tradesWithPnl.length - 1].realizedPnlValue.gt(0);
-            let streak = 0;
-            for (let i = tradesWithPnl.length - 1; i >= 0; i--) {
-                if ((lastIsWin && tradesWithPnl[i].realizedPnlValue.gt(0)) || (!lastIsWin && tradesWithPnl[i].realizedPnlValue.lte(0))) streak++;
-                else break;
+            const lastTrade = tradesWithPnl[tradesWithPnl.length - 1];
+            let currentStreak = 0;
+
+            if (lastTrade.realizedPnlValue.gt(0)) {
+                for (let i = tradesWithPnl.length - 1; i >= 0; i--) {
+                    if (tradesWithPnl[i].realizedPnlValue.gt(0)) currentStreak++;
+                    else break;
+                }
+                currentStreakText = `W${currentStreak}`;
+            } else if (lastTrade.realizedPnlValue.lt(0)) {
+                for (let i = tradesWithPnl.length - 1; i >= 0; i--) {
+                    if (tradesWithPnl[i].realizedPnlValue.lt(0)) currentStreak++;
+                    else break;
+                }
+                currentStreakText = `L${currentStreak}`;
+            } else { // Break-even
+                 for (let i = tradesWithPnl.length - 1; i >= 0; i--) {
+                    if (tradesWithPnl[i].realizedPnlValue.isZero()) currentStreak++;
+                    else break;
+                }
+                currentStreakText = `B/E ${currentStreak}`;
             }
-            currentStreakText = `${lastIsWin ? 'W' : 'L'}${streak}`;
         }
 
         return { totalTrades, winRate, profitFactor, expectancy, avgRMultiple, avgWin, avgLossOnly, winLossRatio, largestProfit, largestLoss, maxDrawdown, recoveryFactor, currentStreakText, longestWinningStreak, longestLosingStreak, totalProfitLong, totalLossLong, totalProfitShort, totalLossShort };

@@ -27,7 +27,6 @@ export interface BaseMetrics {
 
 export interface IndividualTpResult {
     netProfit: Decimal;
-    feeAdjustedRRR: Decimal; // Renamed from riskRewardRatio
     riskRewardRatio: Decimal; // The new, standard RRR
     priceChangePercent: Decimal;
     partialROC: Decimal; // Renamed from returnOnCapital

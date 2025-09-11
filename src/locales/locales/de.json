@@ -164,7 +164,20 @@
     "clearJournalTitle": "Ganzes Journal leeren",
     "clearAll": "Alles löschen",
     "showJournalInstructionsTitle": "Journal Anleitung anzeigen",
-    "showJournalInstructionsAriaLabel": "Journal Anleitung anzeigen"
+    "showJournalInstructionsAriaLabel": "Journal Anleitung anzeigen",
+    "noDataForStats": "Keine Trade-Daten für die Statistikberechnung verfügbar.",
+    "stats": {
+      "winrate": "Trefferquote",
+      "profitFactor": "Profit-Faktor",
+      "profitFactorTooltip": "Bruttogewinn / Bruttoverlust. Ein Wert > 1 bedeutet, die Strategie ist profitabel.",
+      "expectancy": "Erwartungswert",
+      "expectancyTooltip": "Der durchschnittliche Betrag, den Sie pro Trade gewinnen oder verlieren können.",
+      "avgRMultiple": "Durchschn. R-Multiple",
+      "avgRMultipleTooltip": "Der durchschnittliche Gewinn oder Verlust im Verhältnis zum ursprünglichen Risiko (R).",
+      "avgWinLossRatio": "Durchschn. Gewinn/Verlust",
+      "avgWinLossRatioTooltip": "Der durchschnittliche Gewinn aus Gewinntrades geteilt durch den durchschnittlichen Verlust aus Verlusttrades.",
+      "currentStreak": "Aktuelle Serie"
+    }
   },
   "seo": {
     "title": "Cachy - Trading Positionsgröße & Risikorechner",

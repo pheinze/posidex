@@ -94,10 +94,10 @@ describe('calculator', () => {
     const result = calculator.calculateIndividualTp(tpPrice, currentTpPercent, baseMetrics, values, 0, CONSTANTS.TRADE_TYPE_LONG);
 
     expect(result.netProfit.toDP(2).equals(new Decimal('23.98'))).toBe(true);
-    expect(result.feeAdjustedRRR.toDP(2).equals(new Decimal('4.00'))).toBe(true);
     expect(result.riskRewardRatio.toDP(2).equals(new Decimal('5.00'))).toBe(true);
     expect(result.priceChangePercent.toDP(2).equals(new Decimal('5.00'))).toBe(true);
-    expect(result.partialROC.toDP(2).equals(new Decimal('47.95'))).toBe(true);
+    // Corrected partialROC calculation: netProfit / requiredMargin
+    expect(result.partialROC.toDP(2).equals(new Decimal('23.98'))).toBe(true);
     expect(result.partialVolume.toDP(2).equals(new Decimal('5.00'))).toBe(true);
   });
 
@@ -380,40 +380,6 @@ describe('Bugfix Verification Tests', () => {
 
 describe('Correct RRR and Stats Calculation', () => {
 
-  it('should calculate standard RRR and fee-adjusted RRR correctly', () => {
-    // Setup a simple trade: Entry 100, SL 90, TP 120. Risk per unit is 10, Gain per unit is 20. Gross R/R is 2.0.
-    const baseMetrics = {
-      positionSize: new Decimal(10),
-      requiredMargin: new Decimal(100),
-      netLoss: new Decimal(102.1),
-      breakEvenPrice: new Decimal(100.20),
-      estimatedLiquidationPrice: new Decimal(90),
-      entryFee: new Decimal(1),
-      riskAmount: new Decimal(100),
-    };
-    const values = {
-      accountSize: new Decimal(10000),
-      riskPercentage: new Decimal(1),
-      entryPrice: new Decimal(100),
-      stopLossPrice: new Decimal(90),
-      leverage: new Decimal(10),
-      fees: new Decimal(0.1),
-      symbol: 'BTCUSDT',
-      useAtrSl: false,
-      atrValue: new Decimal(0),
-      atrMultiplier: new Decimal(0),
-      targets: [],
-      totalPercentSold: new Decimal(0),
-    };
-    const tpPrice = new Decimal(120);
-    const currentTpPercent = new Decimal(50);
-
-    const result = calculator.calculateIndividualTp(tpPrice, currentTpPercent, baseMetrics, values, 0, CONSTANTS.TRADE_TYPE_LONG);
-
-    expect(result.riskRewardRatio.toDP(3).equals(new Decimal('2.000'))).toBe(true);
-    expect(result.feeAdjustedRRR.toDP(3).equals(new Decimal('1.941'))).toBe(true);
-  });
-
   it('should return null if no trades with realizedPnl are found', () => {
     const journalData = [
         // These trades should be ignored because they lack realizedPnl
@@ -428,4 +394,74 @@ describe('Correct RRR and Stats Calculation', () => {
     expect(stats).toBeNull();
   });
 
+});
+
+describe('Performance Stats Streak Calculation', () => {
+  const createTrade = (pnl: number): any => ({
+    status: pnl > 0 ? 'Won' : pnl < 0 ? 'Lost' : 'Lost',
+    realizedPnl: new Decimal(pnl),
+    date: new Date().toISOString(),
+  });
+
+  it('should correctly calculate longest winning and losing streaks', () => {
+    const journalData = [
+      createTrade(10), createTrade(20), // W2
+      createTrade(-5), // L1
+      createTrade(15), // W1
+      createTrade(-10), createTrade(-15), createTrade(-20), // L3
+      createTrade(5), createTrade(5), // W2
+    ];
+    const stats = calculator.calculatePerformanceStats(journalData);
+    expect(stats?.longestWinningStreak).toBe(2);
+    expect(stats?.longestLosingStreak).toBe(3);
+  });
+
+  it('should reset streaks on a break-even trade', () => {
+    const journalData = [
+      createTrade(10), createTrade(20), // W2
+      createTrade(0), // B/E
+      createTrade(-10), createTrade(-15), // L2
+    ];
+    const stats = calculator.calculatePerformanceStats(journalData);
+    expect(stats?.longestWinningStreak).toBe(2);
+    expect(stats?.longestLosingStreak).toBe(2);
+  });
+
+  it('should correctly identify the current winning streak', () => {
+    const journalData = [
+      createTrade(-10),
+      createTrade(10),
+      createTrade(20),
+      createTrade(30),
+    ];
+    const stats = calculator.calculatePerformanceStats(journalData);
+    expect(stats?.currentStreakText).toBe('W3');
+  });
+
+  it('should correctly identify the current losing streak', () => {
+    const journalData = [
+      createTrade(10),
+      createTrade(-10),
+      createTrade(-20),
+    ];
+    const stats = calculator.calculatePerformanceStats(journalData);
+    expect(stats?.currentStreakText).toBe('L2');
+  });
+
+  it('should correctly identify the current break-even streak', () => {
+    const journalData = [
+      createTrade(10),
+      createTrade(-20),
+      createTrade(0),
+      createTrade(0),
+    ];
+    const stats = calculator.calculatePerformanceStats(journalData);
+    expect(stats?.currentStreakText).toBe('B/E 2');
+  });
+
+  it('should show "N/A" for an empty journal', () => {
+    const journalData: any[] = [];
+    const stats = calculator.calculatePerformanceStats(journalData);
+    expect(stats).toBeNull();
+  });
 });
