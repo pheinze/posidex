@@ -80,7 +80,7 @@ export function parseGermanDate(dateStr: string, timeStr: string): string {
  * @param locale - The locale to use for formatting (e.g., 'en-US', 'de-DE').
  * @returns A formatted date-time string.
  */
-export function formatDate(date: string | Date, locale: string | undefined): string {
+export function formatDate(date: string | Date, locale: string | null | undefined): string {
     if (!date) return '-';
     try {
         const options: Intl.DateTimeFormatOptions = {
@@ -91,7 +91,7 @@ export function formatDate(date: string | Date, locale: string | undefined): str
             minute: '2-digit',
             hour12: false,
         };
-        return new Intl.DateTimeFormat(locale, options).format(new Date(date));
+        return new Intl.DateTimeFormat(locale || undefined, options).format(new Date(date));
     } catch (e) {
         console.error("Error formatting date:", e);
         return 'Invalid Date';

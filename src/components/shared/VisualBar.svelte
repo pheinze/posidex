@@ -54,10 +54,10 @@
             {@const ariaLabel = tpDetail
                 ? `${marker.label}: ${tpDetail.riskRewardRatio.toFixed(2)} R/R, Net Profit +${tpDetail.netProfit.toFixed(2)}`
                 : `${marker.label}`}
-            <div
+            <button
+                type="button"
                 class="bar-marker {marker.isEntry ? 'entry-marker' : ''} {marker.index !== undefined ? 'tp-marker' : ''}"
                 style="left: {marker.pos}%; z-index: {marker.index !== undefined ? 20 - marker.index : 'auto'};"
-                tabindex="0"
                 aria-label={ariaLabel}
             >
                 <span class="marker-label" style="transform: translateX(-50%);" aria-hidden="true">{marker.label}</span>
@@ -84,7 +84,16 @@
     .visual-bar { height: 1.5rem; position: relative; display: flex; border-radius: 0.375rem; overflow: visible; background-color: var(--bg-tertiary); }
     .loss-zone { background-color: var(--danger-color); position: absolute; height: 100%;}
     .gain-zone { background-color: var(--success-color); position: absolute; height: 100%;}
-    .bar-marker { position: absolute; top: -0.25rem; bottom: -0.25rem; width: 20px; display: flex; flex-direction: column; align-items: center; cursor: pointer; transform: translateX(-50%); }
+    .bar-marker {
+        position: absolute; top: -0.25rem; bottom: -0.25rem; width: 20px;
+        display: flex; flex-direction: column; align-items: center;
+        transform: translateX(-50%);
+        /* Reset button styles */
+        background: none;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+    }
     .bar-marker::before { content: ''; position: absolute; left: 50%; transform: translateX(-50%); width: 4px; height: 100%; background-color: var(--text-primary); }
     .bar-marker span { position: absolute; font-size: 0.75rem; background-color: var(--bg-tertiary); padding: 0.1rem 0.3rem; border-radius: 0.25rem; white-space: nowrap; }
     .bar-marker .marker-label { bottom: 100%; margin-bottom: 1.5rem; font-size: 0.7rem; }
@@ -126,7 +135,8 @@
         border-top: 5px solid var(--bg-tertiary);
     }
 
-    .bar-marker:hover .tp-tooltip {
+    .bar-marker:hover .tp-tooltip,
+    .bar-marker:focus .tp-tooltip {
         visibility: visible;
         opacity: 1;
         transform: translateX(-50%) translateY(-15px);
