@@ -30,7 +30,7 @@
     "riskPerTradeCurrencyTooltip": "The absolute amount of money you risk at most.",
     "totalFees": "Total Fees",
     "totalFeesTooltip": "The estimated total cost for this trade.",
-    "profitAtBestTargetLabel": "Profit at Best Target",
+    "profitAtBestTargetLabel": "Max. Potential Profit",
     "profitAtBestTargetTooltip": "Hypothetical profit if the ENTIRE position were closed at the best take-profit target. This is not the planned total profit.",
     "weightedRR": "Weighted R/R",
     "weightedRRTooltip": "The average risk-reward ratio of all partial sales.",

@@ -73,3 +73,27 @@ export function parseGermanDate(dateStr: string, timeStr: string): string {
 
     return date.toISOString();
 }
+
+/**
+ * Formats a date string or object into a consistent, localized string.
+ * @param date - The date to format (ISO string or Date object).
+ * @param locale - The locale to use for formatting (e.g., 'en-US', 'de-DE').
+ * @returns A formatted date-time string.
+ */
+export function formatDate(date: string | Date, locale: string | undefined): string {
+    if (!date) return '-';
+    try {
+        const options: Intl.DateTimeFormatOptions = {
+            day: '2-digit',
+            month: '2-digit',
+            year: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false,
+        };
+        return new Intl.DateTimeFormat(locale, options).format(new Date(date));
+    } catch (e) {
+        console.error("Error formatting date:", e);
+        return 'Invalid Date';
+    }
+}

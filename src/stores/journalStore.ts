@@ -20,8 +20,11 @@ function loadJournalFromLocalStorage(): JournalEntry[] {
         return parsedData.map(trade => {
             const newTrade = { ...trade };
             Object.keys(newTrade).forEach(key => {
-                if (['accountSize', 'riskPercentage', 'entryPrice', 'stopLossPrice', 'leverage', 'fees', 'atrValue', 'atrMultiplier', 'totalRR', 'totalNetProfit', 'netLoss', 'riskAmount', 'totalFees', 'maxPotentialProfit', 'positionSize'].includes(key)) {
-                    newTrade[key] = new Decimal(newTrade[key] || 0);
+                if (['accountSize', 'riskPercentage', 'entryPrice', 'stopLossPrice', 'leverage', 'fees', 'atrValue', 'atrMultiplier', 'totalRR', 'totalNetProfit', 'netLoss', 'riskAmount', 'totalFees', 'maxPotentialProfit', 'positionSize', 'realizedPnl'].includes(key)) {
+                    // Ensure nulls are not converted to Decimal(0)
+                    if (newTrade[key] !== null && newTrade[key] !== undefined) {
+                        newTrade[key] = new Decimal(newTrade[key] || 0);
+                    }
                 }
             });
             if (newTrade.targets && Array.isArray(newTrade.targets)) {

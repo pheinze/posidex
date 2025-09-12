@@ -299,29 +299,33 @@ export const calculator = {
         const symbolPerformance: { [key: string]: { totalTrades: number; wonTrades: number; totalProfitLoss: Decimal; totalPlannedProfitLoss: Decimal; } } = {};
 
         closedTrades.forEach(trade => {
-            if (!trade.symbol) return;
-            if (!symbolPerformance[trade.symbol]) {
-                symbolPerformance[trade.symbol] = { totalTrades: 0, wonTrades: 0, totalProfitLoss: new Decimal(0), totalPlannedProfitLoss: new Decimal(0) };
-            }
+            try {
+                if (!trade.symbol) return;
+                if (!symbolPerformance[trade.symbol]) {
+                    symbolPerformance[trade.symbol] = { totalTrades: 0, wonTrades: 0, totalProfitLoss: new Decimal(0), totalPlannedProfitLoss: new Decimal(0) };
+                }
 
-            // Calculate planned P/L (old logic)
-            const plannedPnl = trade.status === 'Won'
-                ? new Decimal(trade.totalNetProfit || 0)
-                : new Decimal(trade.netLoss || 0).negated();
-            symbolPerformance[trade.symbol].totalPlannedProfitLoss = symbolPerformance[trade.symbol].totalPlannedProfitLoss.plus(plannedPnl);
+                // Calculate planned P/L (old logic)
+                const plannedPnl = trade.status === 'Won'
+                    ? new Decimal(trade.totalNetProfit || 0)
+                    : new Decimal(trade.netLoss || 0).negated();
+                symbolPerformance[trade.symbol].totalPlannedProfitLoss = symbolPerformance[trade.symbol].totalPlannedProfitLoss.plus(plannedPnl);
 
-            // Calculate realized P/L (new logic)
-            if (trade.realizedPnl !== null && trade.realizedPnl !== undefined) {
-                const realizedPnl = new Decimal(trade.realizedPnl);
-                symbolPerformance[trade.symbol].totalProfitLoss = symbolPerformance[trade.symbol].totalProfitLoss.plus(realizedPnl);
+                // Calculate realized P/L (new logic)
+                if (trade.realizedPnl !== null && trade.realizedPnl !== undefined) {
+                    const realizedPnl = new Decimal(trade.realizedPnl);
+                    symbolPerformance[trade.symbol].totalProfitLoss = symbolPerformance[trade.symbol].totalProfitLoss.plus(realizedPnl);
 
-                // Only count trades with a non-zero P/L for win rate calculation
-                if (!realizedPnl.isZero()) {
-                    symbolPerformance[trade.symbol].totalTrades++;
-                    if (realizedPnl.gt(0)) {
-                        symbolPerformance[trade.symbol].wonTrades++;
+                    // Only count trades with a non-zero P/L for win rate calculation
+                    if (!realizedPnl.isZero()) {
+                        symbolPerformance[trade.symbol].totalTrades++;
+                        if (realizedPnl.gt(0)) {
+                            symbolPerformance[trade.symbol].wonTrades++;
+                        }
                     }
                 }
+            } catch (error) {
+                console.warn(`Skipping malformed trade entry during symbol performance calculation:`, { tradeId: trade.id, error });
             }
         });
 

@@ -51,22 +51,25 @@
         {/each}
         {#each visualBarData.markers as marker}
             {@const tpDetail = calculatedTpDetails.find(d => d.index === marker.index)}
+            {@const ariaLabel = tpDetail
+                ? `${marker.label}: ${tpDetail.riskRewardRatio.toFixed(2)} R/R, Net Profit +${tpDetail.netProfit.toFixed(2)}`
+                : `${marker.label}`}
             <div
                 class="bar-marker {marker.isEntry ? 'entry-marker' : ''} {marker.index !== undefined ? 'tp-marker' : ''}"
                 style="left: {marker.pos}%; z-index: {marker.index !== undefined ? 20 - marker.index : 'auto'};"
-                role="button"
                 tabindex="0"
+                aria-label={ariaLabel}
             >
-                <span class="marker-label" style="transform: translateX(-50%);">{marker.label}</span>
+                <span class="marker-label" style="transform: translateX(-50%);" aria-hidden="true">{marker.label}</span>
 
                 {#if marker.rr}
-                <span class="rr-label" style="transform: translateX(-50%);">
+                <span class="rr-label" style="transform: translateX(-50%);" aria-hidden="true">
                     {marker.rr.toFixed(2)}R
                 </span>
                 {/if}
 
                 {#if tpDetail}
-                    <div class="tp-tooltip">
+                    <div class="tp-tooltip" role="tooltip">
                         <div class="tp-tooltip-line">{$_('dashboard.visualBar.netProfitLabel')} <span class="text-green-400">+${tpDetail.netProfit.toFixed(2)}</span></div>
                         <div class="tp-tooltip-line">{$_('dashboard.visualBar.rrLabel')} <span class="{tpDetail.riskRewardRatio.gte(2) ? 'text-green-400' : tpDetail.riskRewardRatio.gte(1.5) ? 'text-yellow-400' : 'text-red-400'}">{tpDetail.riskRewardRatio.toFixed(2)}</span></div>
                     </div>

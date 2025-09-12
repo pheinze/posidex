@@ -25,6 +25,7 @@
     import { icons, CONSTANTS } from '../../lib/constants';
     import { browser } from '$app/environment';
     import { numberInput } from '../../utils/inputUtils';
+    import { formatDate } from '../../utils/utils';
     import { tick } from 'svelte';
     import JournalStats from '../results/JournalStats.svelte';
 
@@ -87,7 +88,7 @@
                     <tbody>
                         {#each filteredTrades as trade}
                             <tr>
-                                <td>{new Date(trade.date).toLocaleString($locale || undefined, {day:'2-digit', month: '2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit'})}</td>
+                                <td>{formatDate(trade.date, $locale)}</td>
                                 <td>{trade.symbol || '-'}</td>
                                 <td class="{trade.tradeType === CONSTANTS.TRADE_TYPE_LONG ? 'text-[var(--success-color)]' : 'text-[var(--danger-color)]'}">{trade.tradeType.charAt(0).toUpperCase() + trade.tradeType.slice(1)}</td>
                                 <td>{trade.entryPrice.toFixed(4)}</td>
@@ -132,7 +133,10 @@
             <!-- Mobile Card Layout -->
             <div class="md:hidden space-y-4">
                 {#each filteredTrades as trade}
-                    <div class="bg-[var(--bg-primary)] p-4 rounded-lg shadow-md border border-[var(--border-color)]">
+                    <div class="bg-[var(--bg-primary)] p-4 rounded-lg shadow-md border border-[var(--border-color)]"
+                         class:status-won={trade.status === 'Won'}
+                         class:status-lost={trade.status === 'Lost'}
+                    >
                         <div class="flex justify-between items-start">
                             <div>
                                 <div class="text-lg font-bold text-[var(--text-primary)]">{trade.symbol || '-'}</div>
@@ -174,10 +178,8 @@
                             </div>
                         </div>
                         <div class="mt-4 flex justify-between items-center">
-                            <div class="text-right">
-                                <div class="text-sm text-slate-400">{new Date(trade.date).toLocaleString('de-DE', {day:'2-digit', month: '2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit'})}</div>
-                                <button class="delete-trade-btn text-[var(--danger-color)] hover:opacity-80 p-1 rounded-full cursor-pointer mt-1" data-id="{trade.id}" title="{$_('journal.delete')}" on:click={() => app.deleteTrade(trade.id)}>{@html icons.delete}</button>
-                            </div>
+                            <div class="text-sm text-slate-400">{formatDate(trade.date, $locale)}</div>
+                            <button class="delete-trade-btn text-[var(--danger-color)] hover:opacity-80 p-1 rounded-full cursor-pointer" data-id="{trade.id}" title="{$_('journal.delete')}" on:click={() => app.deleteTrade(trade.id)}>{@html icons.delete}</button>
                         </div>
                     </div>
                 {/each}
@@ -219,5 +221,13 @@
     .input-field-placeholder {
         @apply w-full px-2 py-1 h-[34px] border border-transparent rounded-md cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700;
         line-height: 1.5; /* Adjust to vertically center text if needed */
+    }
+    .status-won {
+        background-color: color-mix(in srgb, var(--success-color) 10%, var(--bg-primary));
+        border-left: 4px solid var(--success-color);
+    }
+    .status-lost {
+        background-color: color-mix(in srgb, var(--danger-color) 10%, var(--bg-primary));
+        border-left: 4px solid var(--danger-color);
     }
 </style>

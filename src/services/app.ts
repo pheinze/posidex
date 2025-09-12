@@ -1,6 +1,7 @@
 import { get } from 'svelte/store';
-import { parseDecimal, formatDynamicDecimal, parseGermanDate } from '../utils/utils';
+import { parseDecimal, formatDynamicDecimal, parseGermanDate, formatDate } from '../utils/utils';
 import { CONSTANTS } from '../lib/constants';
+import { locale } from '../locales/i18n';
 import { apiService } from './apiService';
 import { modalManager } from './modalManager';
 import { uiManager } from './uiManager';
@@ -295,48 +296,12 @@ export const app = {
     },
 
     /**
-     * Retrieves the journal data from Local Storage.
+     * Retrieves the journal data from the central journal store.
      * @returns An array of `JournalEntry` objects.
      */
     getJournal: (): JournalEntry[] => {
         if (!browser) return [];
-        try {
-            const d = localStorage.getItem(CONSTANTS.LOCAL_STORAGE_JOURNAL_KEY) || '[]';
-            const parsedData = JSON.parse(d);
-            if (!Array.isArray(parsedData)) return [];
-            return parsedData.map(trade => {
-                const newTrade = { ...trade };
-                Object.keys(newTrade).forEach(key => {
-                    if (['accountSize', 'riskPercentage', 'entryPrice', 'stopLossPrice', 'leverage', 'fees', 'atrValue', 'atrMultiplier', 'totalRR', 'totalNetProfit', 'netLoss', 'riskAmount', 'totalFees', 'positionSize', 'realizedPnl'].includes(key)) {
-                        // Ensure nulls are not converted to Decimal(0)
-                        if (newTrade[key] !== null) {
-                            newTrade[key] = new Decimal(newTrade[key] || 0);
-                        }
-                    }
-                });
-                if (newTrade.targets && Array.isArray(newTrade.targets)) {
-                    newTrade.targets = newTrade.targets.map((tp: { price: string | number; percent: string | number }) => ({ ...tp, price: new Decimal(tp.price || 0), percent: new Decimal(tp.percent || 0) }));
-                }
-                return newTrade as JournalEntry;
-            });
-        } catch {
-            console.warn("Could not load journal from localStorage.");
-            uiStore.showError("Could not load journal.");
-            return [];
-        }
-    },
-
-    /**
-     * Saves the entire journal to Local Storage.
-     * @param d - The array of `JournalEntry` objects to save.
-     */
-    saveJournal: (d: JournalEntry[]) => {
-        if (!browser) return;
-        try {
-            localStorage.setItem(CONSTANTS.LOCAL_STORAGE_JOURNAL_KEY, JSON.stringify(d));
-        } catch {
-            uiStore.showError("Error saving journal. Local storage may be full or blocked.");
-        }
+        return get(journalStore);
     },
 
     /**
@@ -353,9 +318,7 @@ export const app = {
             date: new Date().toISOString(),
             realizedPnl: null
         };
-        journalData.push(newTrade);
-        app.saveJournal(journalData);
-        journalStore.set(journalData);
+        journalStore.set([...journalData, newTrade]);
         onboardingService.trackFirstJournalSave();
         uiStore.showFeedback('save');
     },
@@ -369,7 +332,8 @@ export const app = {
         const journalData = app.getJournal();
         const tradeIndex = journalData.findIndex(t => t.id == id);
         if (tradeIndex !== -1) {
-            const trade = journalData[tradeIndex];
+            const updatedJournal = [...journalData];
+            const trade = { ...updatedJournal[tradeIndex] };
             trade.status = newStatus;
 
             // Automatically set realizedPnl if it's not already set
@@ -380,9 +344,8 @@ export const app = {
                     trade.realizedPnl = new Decimal(trade.netLoss).negated();
                 }
             }
-
-            app.saveJournal(journalData);
-            journalStore.set([...journalData]); // Force reactivity
+            updatedJournal[tradeIndex] = trade;
+            journalStore.set(updatedJournal);
             trackCustomEvent('Journal', 'UpdateStatus', newStatus);
         }
     },
@@ -397,13 +360,16 @@ export const app = {
         const tradeIndex = journalData.findIndex(t => t.id == id);
         if (tradeIndex === -1) return;
 
+        const updatedJournal = [...journalData];
+        const tradeToUpdate = { ...updatedJournal[tradeIndex] };
+
         try {
             // If input is empty or null, set realizedPnl to null. Otherwise, create a new Decimal.
             // The Decimal constructor will throw an error for invalid numbers (e.g., "--" or "1.2.3").
-            journalData[tradeIndex].realizedPnl = (pnl === null || pnl.trim() === '') ? null : new Decimal(pnl);
+            tradeToUpdate.realizedPnl = (pnl === null || pnl.trim() === '') ? null : new Decimal(pnl);
+            updatedJournal[tradeIndex] = tradeToUpdate;
 
-            app.saveJournal(journalData);
-            journalStore.set([...journalData]);
+            journalStore.set(updatedJournal);
             trackCustomEvent('Journal', 'UpdatePnl');
         } catch (_error) {
             uiStore.showError("Invalid number entered for P/L.");
@@ -413,13 +379,16 @@ export const app = {
     },
 
     /**
-     * Deletes a trade from the journal.
+     * Deletes a trade from the journal after user confirmation.
      * @param id - The ID of the trade to delete.
      */
-    deleteTrade: (id: number) => {
-        const d = app.getJournal().filter(t => t.id != id);
-        app.saveJournal(d);
-        journalStore.set(d);
+    deleteTrade: async (id: number) => {
+        if (await modalManager.show("Delete Trade", "Are you sure you want to permanently delete this trade?", "confirm")) {
+            const journal = app.getJournal();
+            const updatedJournal = journal.filter(t => t.id != id);
+            journalStore.set(updatedJournal);
+            trackCustomEvent('Journal', 'DeleteTrade');
+        }
     },
 
     /**
@@ -432,7 +401,6 @@ export const app = {
             return;
         }
         if (await modalManager.show("Clear Journal", "Are you sure you want to permanently delete the entire journal?", "confirm")) {
-            app.saveJournal([]);
             journalStore.set([]);
             uiStore.showFeedback('save', 2000);
         }
@@ -607,14 +575,17 @@ export const app = {
         const journalData = get(journalStore);
         if (journalData.length === 0) { uiStore.showError("Journal is empty."); return; }
         trackCustomEvent('Journal', 'Export', 'CSV', journalData.length);
-        const headers = ['ID', 'Datum', 'Uhrzeit', 'Symbol', 'Typ', 'Status', 'Konto Guthaben', 'Risiko %', 'Hebel', 'Gebuehren %', 'Einstieg', 'Stop Loss', 'Gewichtetes R/R', 'Gesamt Netto-Gewinn', 'Risiko pro Trade (Waehrung)', 'Gesamte Gebuehren', 'Notizen', ...Array.from({length: 5}, (_, i) => [`TP${i+1} Preis`, `TP${i+1} %`]).flat()];
+        const headers = ['ID', 'Datum', 'Uhrzeit', 'Symbol', 'Typ', 'Status', 'Konto Guthaben', 'Risiko %', 'Hebel', 'Gebuehren %', 'Einstieg', 'Stop Loss', 'Gewichtetes R/R', 'Gesamt Netto-Gewinn', 'Realisierter G/V', 'Risiko pro Trade (Waehrung)', 'Gesamte Gebuehren', 'Notizen', ...Array.from({length: 5}, (_, i) => [`TP${i+1} Preis`, `TP${i+1} %`]).flat()];
         const rows = journalData.map(trade => {
-            const date = new Date(trade.date);
+            const formattedDate = formatDate(trade.date, get(locale)).split(', ');
+            const date = formattedDate[0];
+            const time = formattedDate.length > 1 ? formattedDate[1] : '';
             const notes = trade.notes ? `"${trade.notes.replace(/"/g, '""').replace(/\n/g, ' ')}"` : '';
             const tpData = Array.from({length: 5}, (_, i) => [ (trade.targets[i]?.price || new Decimal(0)).toFixed(4), (trade.targets[i]?.percent || new Decimal(0)).toFixed(2) ]).flat();
-            return [ trade.id, date.toLocaleDateString('de-DE'), date.toLocaleTimeString('de-DE'), trade.symbol, trade.tradeType, trade.status,
+            const realizedPnl = trade.realizedPnl ? trade.realizedPnl.toFixed(2) : '';
+            return [ trade.id, date, time, trade.symbol, trade.tradeType, trade.status,
                 (trade.accountSize || new Decimal(0)).toFixed(2), (trade.riskPercentage || new Decimal(0)).toFixed(2), (trade.leverage || new Decimal(0)).toFixed(2), (trade.fees || new Decimal(0)).toFixed(2), (trade.entryPrice || new Decimal(0)).toFixed(4), (trade.stopLossPrice || new Decimal(0)).toFixed(4),
-                (trade.totalRR || new Decimal(0)).toFixed(2), (trade.totalNetProfit || new Decimal(0)).toFixed(2), (trade.riskAmount || new Decimal(0)).toFixed(2), (trade.totalFees || new Decimal(0)).toFixed(2), notes, ...tpData ].join(',');
+                (trade.totalRR || new Decimal(0)).toFixed(2), (trade.totalNetProfit || new Decimal(0)).toFixed(2), realizedPnl, (trade.riskAmount || new Decimal(0)).toFixed(2), (trade.totalFees || new Decimal(0)).toFixed(2), notes, ...tpData ].join(',');
         });
         const csvContent = "data:text/csv;charset=utf-8," + headers.join(",") + "\n" + rows.join("\n");
         const link = document.createElement("a");
@@ -626,11 +597,40 @@ export const app = {
     },
 
     /**
-     * Imports journal data from a CSV file.
+     * Imports journal data from a CSV file with flexible header mapping.
      * @param file - The CSV file to import.
      */
     importFromCSV: (file: File) => {
         if (!browser) return;
+
+        const headerMapping: { [key: string]: string[] } = {
+            id: ['id'],
+            date: ['datum', 'date'],
+            time: ['uhrzeit', 'time'],
+            symbol: ['symbol'],
+            tradeType: ['typ', 'type'],
+            status: ['status'],
+            accountSize: ['konto guthaben', 'account balance', 'account size'],
+            riskPercentage: ['risiko %', 'risk %', 'risk percentage'],
+            leverage: ['hebel', 'leverage'],
+            fees: ['gebuehren %', 'fees %', 'fees percentage'],
+            entryPrice: ['einstieg', 'entry', 'entry price'],
+            stopLossPrice: ['stop loss', 'sl'],
+            totalRR: ['gewichtetes r/r', 'weighted r/r', 'rr'],
+            totalNetProfit: ['gesamt netto-gewinn', 'total net profit'],
+            realizedPnl: ['realisierter g/v', 'realized p/l', 'realized pnl'],
+            riskAmount: ['risiko pro trade (waehrung)', 'risk amount'],
+            totalFees: ['gesamte gebuehren', 'total fees'],
+            notes: ['notizen', 'notes'],
+        };
+
+        const findHeader = (header: string, headers: string[]): string | undefined => {
+            const normalizedHeader = header.toLowerCase();
+            const aliases = headerMapping[header as keyof typeof headerMapping];
+            if (!aliases) return undefined;
+            return headers.find(h => aliases.includes(h.toLowerCase()));
+        };
+
         const reader = new FileReader();
         reader.onload = async (e) => {
             const text = e.target?.result as string;
@@ -640,9 +640,9 @@ export const app = {
                 return;
             }
 
-            const headers = lines[0].split(',').map(h => h.trim());
-            const requiredHeaders = ['ID', 'Datum', 'Uhrzeit', 'Symbol', 'Typ', 'Status', 'Einstieg', 'Stop Loss'];
-            const missingHeaders = requiredHeaders.filter(h => !headers.includes(h));
+            const rawHeaders = lines[0].split(',').map(h => h.trim());
+            const requiredFields = ['id', 'date', 'time', 'symbol', 'tradeType', 'status', 'entryPrice', 'stopLossPrice'];
+            const missingHeaders = requiredFields.filter(field => !findHeader(field, rawHeaders));
 
             if (missingHeaders.length > 0) {
                 uiStore.showError(`CSV file is missing required columns: ${missingHeaders.join(', ')}`);
@@ -651,45 +651,48 @@ export const app = {
 
             const entries = lines.slice(1).map(line => {
                 const values = line.split(',');
-                const entry: CSVTradeEntry = headers.reduce((obj: Partial<CSVTradeEntry>, header, index) => {
-                    obj[header as keyof CSVTradeEntry] = values[index] ? values[index].trim() : '';
+                const entry: { [key: string]: string } = rawHeaders.reduce((obj: { [key: string]: string }, header, index) => {
+                    obj[header.toLowerCase()] = values[index] ? values[index].trim() : '';
                     return obj;
-                }, {}) as CSVTradeEntry;
+                }, {});
+
+                const getValue = (field: string) => entry[findHeader(field, rawHeaders)?.toLowerCase() || ''];
 
                 try {
                     const targets = [];
                     for (let j = 1; j <= 5; j++) {
-                        const priceKey = `TP${j} Preis`;
-                        const percentKey = `TP${j} %`;
-                        if (entry[priceKey] && entry[percentKey]) {
+                        const priceHeader = rawHeaders.find(h => h.toLowerCase() === `tp${j} preis` || h.toLowerCase() === `tp${j} price`);
+                        const percentHeader = rawHeaders.find(h => h.toLowerCase() === `tp${j} %` || h.toLowerCase() === `tp${j} percent`);
+                        if (priceHeader && percentHeader && entry[priceHeader.toLowerCase()] && entry[percentHeader.toLowerCase()]) {
                             targets.push({
-                                price: parseDecimal(entry[priceKey] as string),
-                                percent: parseDecimal(entry[percentKey] as string),
+                                price: parseDecimal(entry[priceHeader.toLowerCase()]),
+                                percent: parseDecimal(entry[percentHeader.toLowerCase()]),
                                 isLocked: false
                             });
                         }
                     }
 
-                    const typedEntry = entry as CSVTradeEntry;
+                    const realizedPnlValue = getValue('realizedPnl');
+
                     return {
-                        id: parseInt(typedEntry.ID, 10),
-                        date: parseGermanDate(typedEntry.Datum, typedEntry.Uhrzeit),
-                        symbol: typedEntry.Symbol,
-                        tradeType: typedEntry.Typ.toLowerCase(),
-                        status: typedEntry.Status,
-                        accountSize: parseDecimal(typedEntry['Konto Guthaben'] || '0'),
-                        riskPercentage: parseDecimal(typedEntry['Risiko %'] || '0'),
-                        leverage: parseDecimal(typedEntry.Hebel || '1'),
-                        fees: parseDecimal(typedEntry['Gebuehren %'] || '0.1'),
-                        entryPrice: parseDecimal(typedEntry.Einstieg),
-                        stopLossPrice: parseDecimal(typedEntry['Stop Loss']),
-                        totalRR: parseDecimal(typedEntry['Gewichtetes R/R'] || '0'),
-                        totalNetProfit: parseDecimal(typedEntry['Gesamt Netto-Gewinn'] || '0'),
-                        riskAmount: parseDecimal(typedEntry['Risiko pro Trade (Waehrung)'] || '0'),
-                        totalFees: parseDecimal(typedEntry['Gesamte Gebuehren'] || '0'),
-                        notes: typedEntry.Notizen ? typedEntry.Notizen.replace(/""/g, '"').slice(1, -1) : '',
+                        id: parseInt(getValue('id'), 10),
+                        date: parseGermanDate(getValue('date'), getValue('time')),
+                        symbol: getValue('symbol'),
+                        tradeType: getValue('tradeType').toLowerCase(),
+                        status: getValue('status'),
+                        accountSize: parseDecimal(getValue('accountSize') || '0'),
+                        riskPercentage: parseDecimal(getValue('riskPercentage') || '0'),
+                        leverage: parseDecimal(getValue('leverage') || '1'),
+                        fees: parseDecimal(getValue('fees') || '0.1'),
+                        entryPrice: parseDecimal(getValue('entryPrice')),
+                        stopLossPrice: parseDecimal(getValue('stopLossPrice')),
+                        totalRR: parseDecimal(getValue('totalRR') || '0'),
+                        totalNetProfit: parseDecimal(getValue('totalNetProfit') || '0'),
+                        riskAmount: parseDecimal(getValue('riskAmount') || '0'),
+                        totalFees: parseDecimal(getValue('totalFees') || '0'),
+                        notes: getValue('notes').replace(/""/g, '"').slice(1, -1),
                         targets: targets,
-                        realizedPnl: null
+                        realizedPnl: realizedPnlValue ? parseDecimal(realizedPnlValue) : null
                     } as JournalEntry;
                 } catch (err: unknown) {
                     console.warn("Error processing a row:", entry, err);

@@ -7,6 +7,7 @@
      *
      * It takes the full journal data as a prop and uses the `calculator` service
      * to compute the performance statistics, which are then displayed.
+     * It shows a loading state while the calculation is in progress.
      *
      * @props {JournalEntry[]} journalData - An array of all journal entries.
      */
@@ -16,13 +17,22 @@
     import { formatDynamicDecimal } from '../../utils/utils';
     import Tooltip from '../shared/Tooltip.svelte';
     import Decimal from 'decimal.js';
+    import { tick } from 'svelte';
 
     export let journalData: JournalEntry[];
 
     let stats: ReturnType<typeof calculator.calculatePerformanceStats> | null = null;
+    let isLoading = true;
 
     $: {
-        stats = calculator.calculatePerformanceStats(journalData);
+        // Use a self-invoking async function inside the reactive block
+        // to handle the calculation and loading state.
+        (async () => {
+            isLoading = true;
+            await tick(); // Allow UI to update to show loading state
+            stats = calculator.calculatePerformanceStats(journalData);
+            isLoading = false;
+        })();
     }
 
     function formatStat(value: Decimal | number | null | undefined, dp: number = 2, prefix: string = '', suffix: string = ''): string {
@@ -35,7 +45,9 @@
     }
 </script>
 
-{#if stats}
+{#if isLoading}
+    <div class="text-center text-slate-500 py-4">Loading stats...</div>
+{:else if stats}
     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 text-center">
         <div class="stat-item">
             <div class="stat-label">{$_('journal.stats.winrate')}</div>

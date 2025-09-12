@@ -30,7 +30,7 @@
     "riskPerTradeCurrencyTooltip": "Der absolute Geldbetrag, den du maximal riskierst.",
     "totalFees": "Gesamte Gebühren",
     "totalFeesTooltip": "Die geschätzten Gesamtkosten für diesen Trade.",
-    "profitAtBestTargetLabel": "Gewinn am besten Ziel",
+    "profitAtBestTargetLabel": "Max. potenzieller Gewinn",
     "profitAtBestTargetTooltip": "Hypothetischer Gewinn, wenn die GESAMTE Position am besten Take-Profit-Ziel geschlossen würde. Dies ist nicht der geplante Gesamtgewinn.",
     "weightedRR": "Gewichtetes R/R",
     "weightedRRTooltip": "Das durchschnittliche Chance-Risiko-Verhältnis aller Teilverkäufe.",
