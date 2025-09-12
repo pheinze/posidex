@@ -74,7 +74,7 @@
                         <div class="tp-tooltip-line">{$_('dashboard.visualBar.rrLabel')} <span class="{tpDetail.riskRewardRatio.gte(2) ? 'text-green-400' : tpDetail.riskRewardRatio.gte(1.5) ? 'text-yellow-400' : 'text-red-400'}">{tpDetail.riskRewardRatio.toFixed(2)}</span></div>
                     </div>
                 {/if}
-            </div>
+            </button>
         {/each}
     </div>
 </section>
