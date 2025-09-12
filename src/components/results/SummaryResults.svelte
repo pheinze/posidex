@@ -28,17 +28,19 @@
 
     export let isPositionSizeLocked: boolean;
     export let showCopyFeedback: boolean;
-    export let positionSize: string;
-    export let netLoss: string;
-    export let requiredMargin: string;
-    export let entryFee: string;
-    export let estimatedLiquidationPrice: string;
-    export let breakEvenPrice: string;
+    export let positionSize: string | null;
+    export let netLoss: string | null;
+    export let requiredMargin: string | null;
+    export let entryFee: string | null;
+    export let estimatedLiquidationPrice: string | null;
+    export let breakEvenPrice: string | null;
 
     function handleCopy() {
         trackCustomEvent('Result', 'Copy', 'PositionSize');
-        navigator.clipboard.writeText(positionSize);
-        dispatch('copy');
+        if (positionSize) {
+            navigator.clipboard.writeText(positionSize);
+            dispatch('copy');
+        }
     }
 
     function handleToggleLock() {
@@ -64,14 +66,14 @@
             </button>
             {#if showCopyFeedback}<span id="copy-feedback" class="copy-feedback visible">{$_('dashboard.summaryResults.copiedFeedback')}</span>{/if}
         </div>
-        <span id="positionSize" class="result-value text-lg" style:color="var(--success-color)">{positionSize}</span>
+        <span id="positionSize" class="result-value text-lg" style:color="var(--success-color)">{positionSize ?? '-'}</span>
     </div>
-    <div class="result-item"><div class="result-label">{$_('dashboard.summaryResults.maxNetLossLabel')}<Tooltip text={$_('dashboard.summaryResults.maxNetLossTooltip')} /></div><span id="netLoss" class="result-value" style:color="var(--danger-color)">{netLoss}</span></div>
-    <div class="result-item"><div class="result-label">{$_('dashboard.summaryResults.requiredMarginLabel')}<Tooltip text={$_('dashboard.summaryResults.requiredMarginTooltip')} /></div><span id="requiredMargin" class="result-value">{requiredMargin}</span></div>
-    <div class="result-item"><div class="result-label">{$_('dashboard.summaryResults.entryFeeLabel')}</div><span id="entryFee" class="result-value">{entryFee}</span></div>
+    <div class="result-item"><div class="result-label">{$_('dashboard.summaryResults.maxNetLossLabel')}<Tooltip text={$_('dashboard.summaryResults.maxNetLossTooltip')} /></div><span id="netLoss" class="result-value" style:color="var(--danger-color)">{netLoss ?? '-'}</span></div>
+    <div class="result-item"><div class="result-label">{$_('dashboard.summaryResults.requiredMarginLabel')}<Tooltip text={$_('dashboard.summaryResults.requiredMarginTooltip')} /></div><span id="requiredMargin" class="result-value">{requiredMargin ?? '-'}</span></div>
+    <div class="result-item"><div class="result-label">{$_('dashboard.summaryResults.entryFeeLabel')}</div><span id="entryFee" class="result-value">{entryFee ?? '-'}</span></div>
     <div class="result-item">
         <span class="result-label">{$_('dashboard.summaryResults.estimatedLiquidationPriceLabel')}<Tooltip text={$_('dashboard.summaryResults.estimatedLiquidationPriceTooltip')} /></span>
-        <span id="liquidationPrice" class="result-value">{estimatedLiquidationPrice}</span>
+        <span id="liquidationPrice" class="result-value">{estimatedLiquidationPrice ?? '-'}</span>
     </div>
-    <div class="result-item"><span class="result-label">{$_('dashboard.summaryResults.breakEvenPriceLabel')}<Tooltip text={$_('dashboard.summaryResults.breakEvenPriceTooltip')} /></span><span id="breakEvenPrice" class="result-value" style:color="var(--warning-color)">{breakEvenPrice}</span></div>
+    <div class="result-item"><span class="result-label">{$_('dashboard.summaryResults.breakEvenPriceLabel')}<Tooltip text={$_('dashboard.summaryResults.breakEvenPriceTooltip')} /></span><span id="breakEvenPrice" class="result-value" style:color="var(--warning-color)">{breakEvenPrice ?? '-'}</span></div>
 </div>

@@ -93,11 +93,12 @@ describe('calculator', () => {
 
     const result = calculator.calculateIndividualTp(tpPrice, currentTpPercent, baseMetrics, values, 0, CONSTANTS.TRADE_TYPE_LONG);
 
-    expect(result.netProfit.toDP(2).equals(new Decimal('23.98'))).toBe(true);
+    // netProfit = (105-100)*5 - (5*105*0.001) = 25 - 0.525 = 24.475
+    expect(result.netProfit.toDP(2).equals(new Decimal('24.48'))).toBe(true);
     expect(result.riskRewardRatio.toDP(2).equals(new Decimal('5.00'))).toBe(true);
     expect(result.priceChangePercent.toDP(2).equals(new Decimal('5.00'))).toBe(true);
     // Corrected partialROC calculation: netProfit / requiredMargin
-    expect(result.partialROC.toDP(2).equals(new Decimal('23.98'))).toBe(true);
+    expect(result.partialROC.toDP(2).equals(new Decimal('24.48'))).toBe(true);
     expect(result.partialVolume.toDP(2).equals(new Decimal('5.00'))).toBe(true);
   });
 
@@ -291,7 +292,7 @@ describe('Bugfix Verification Tests', () => {
   it('should calculate totalRR based on net loss (Net/Net R:R)', () => {
     const baseMetrics = {
       positionSize: new Decimal(1),
-      entryFee: new Decimal(1),
+      entryFee: new Decimal(10), // Corrected: 10000 * 0.001
       riskAmount: new Decimal(100), // Gross risk
       netLoss: new Decimal(102),     // Net risk (includes fees)
       requiredMargin: new Decimal(1000),

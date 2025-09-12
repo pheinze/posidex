@@ -97,8 +97,8 @@ export const calculator = {
         const positionPart = positionSize.times(currentTpPercent.div(100));
         const grossProfitPart = gainPerUnit.times(positionPart);
         const exitFee = positionPart.times(tpPrice).times(values.fees.div(100));
-        const entryFeePart = positionPart.times(values.entryPrice).times(values.fees.div(100));
-        const netProfit = grossProfitPart.minus(entryFeePart).minus(exitFee);
+        // The entry fee is handled once for the entire position in `calculateTotalMetrics`.
+        const netProfit = grossProfitPart.minus(exitFee);
 
         // --- STANDARD GROSS RRR (NEW LOGIC) ---
         const riskPerUnit = values.entryPrice.minus(values.stopLossPrice).abs();
@@ -127,47 +127,48 @@ export const calculator = {
      * @returns An object with the aggregated total metrics for the entire trade.
      */
     calculateTotalMetrics(targets: Array<{ price: Decimal; percent: Decimal; }>, baseMetrics: BaseMetrics, values: TradeValues, tradeType: string): TotalMetrics {
-        const { positionSize, entryFee, riskAmount, requiredMargin } = baseMetrics;
-        let totalNetProfit = new Decimal(0);
-        let totalFees = entryFee; // Start with the full entry fee
+        const { positionSize, entryFee, riskAmount, requiredMargin, netLoss } = baseMetrics;
+        let totalGrossProfit = new Decimal(0);
+        let totalExitFees = new Decimal(0);
         let totalPercentSoldAtTp = new Decimal(0);
 
-        // Calculate profit and exit fees from TPs
+        // 1. Calculate profit and exit fees from all successful Take-Profit targets
         targets.forEach((tp, index) => {
             if (tp.price.gt(0) && tp.percent.gt(0) && totalPercentSoldAtTp.lt(100)) {
                 const remainingPercent = new Decimal(100).minus(totalPercentSoldAtTp);
                 const percentToProcess = Decimal.min(tp.percent, remainingPercent);
+                const positionPart = positionSize.times(percentToProcess.div(100));
 
-                const individualResult = this.calculateIndividualTp(tp.price, percentToProcess, baseMetrics, values, index, tradeType);
-                totalNetProfit = totalNetProfit.plus(individualResult.netProfit);
-                totalFees = totalFees.plus(individualResult.exitFee);
+                const gainPerUnit = tp.price.minus(values.entryPrice).abs();
+                totalGrossProfit = totalGrossProfit.plus(gainPerUnit.times(positionPart));
+
+                const exitFee = positionPart.times(tp.price).times(values.fees.div(100));
+                totalExitFees = totalExitFees.plus(exitFee);
+
                 totalPercentSoldAtTp = totalPercentSoldAtTp.plus(percentToProcess);
             }
         });
 
-        // Account for the part of the position that hits the Stop Loss
+        // 2. Calculate loss and exit fee for the part of the position that hits the Stop Loss
         const percentHittingSl = new Decimal(100).minus(totalPercentSoldAtTp);
+        let grossLossOnSlPart = new Decimal(0);
         if (percentHittingSl.gt(0)) {
             const positionPartHittingSl = positionSize.times(percentHittingSl.div(100));
-
-            // Calculate loss for the SL part
             const riskPerUnit = values.entryPrice.minus(values.stopLossPrice).abs();
-            const grossLossOnSlPart = riskPerUnit.times(positionPartHittingSl);
+            grossLossOnSlPart = riskPerUnit.times(positionPartHittingSl);
 
-            // Calculate fees for the SL part. Entry fee for this part is already included in the total `entryFee`.
-            const entryFeeOnSlPart = positionPartHittingSl.times(values.entryPrice).times(values.fees.div(100));
             const exitFeeOnSlPart = positionPartHittingSl.times(values.stopLossPrice).times(values.fees.div(100));
-
-            // Add exit fee for SL part to total fees
-            totalFees = totalFees.plus(exitFeeOnSlPart);
-
-            // Subtract the net loss of the SL part from the totalNetProfit
-            const netLossOnSlPart = grossLossOnSlPart.plus(entryFeeOnSlPart).plus(exitFeeOnSlPart);
-            totalNetProfit = totalNetProfit.minus(netLossOnSlPart);
+            totalExitFees = totalExitFees.plus(exitFeeOnSlPart);
         }
 
-        const totalRR = baseMetrics.netLoss.gt(0) ? totalNetProfit.div(baseMetrics.netLoss) : new Decimal(0);
+        // 3. Calculate final net profit and total fees
+        const totalFees = entryFee.plus(totalExitFees);
+        const totalNetProfit = totalGrossProfit.minus(grossLossOnSlPart).minus(totalFees);
+
+        // 4. Calculate final R/R and ROC
+        const totalRR = netLoss.gt(0) ? totalNetProfit.div(netLoss) : new Decimal(0);
         const totalROC = requiredMargin.gt(0) ? totalNetProfit.div(requiredMargin).times(100) : new Decimal(0);
+
         return { totalNetProfit, totalRR, totalFees, riskAmount, totalROC };
     },
 
@@ -230,23 +231,16 @@ export const calculator = {
         });
 
         const recoveryFactor = maxDrawdown.gt(0) ? cumulativeProfit.dividedBy(maxDrawdown) : new Decimal(0);
-        const lossRate = totalTrades > 0 ? (lostTrades.length / totalTrades) * 100 : 0;
-        const expectancy = (new Decimal(winRate/100).times(avgWin)).minus(new Decimal(lossRate/100).times(avgLossOnly));
+
+        const winRateDecimal = totalTrades > 0 ? new Decimal(wonTrades.length).div(totalTrades) : new Decimal(0);
+        const lossRateDecimal = totalTrades > 0 ? new Decimal(lostTrades.length).div(totalTrades) : new Decimal(0);
+        const expectancy = (winRateDecimal.times(avgWin)).minus(lossRateDecimal.times(avgLossOnly));
 
         let totalProfitLong = new Decimal(0), totalLossLong = new Decimal(0), totalProfitShort = new Decimal(0), totalLossShort = new Decimal(0);
-        tradesWithPnl.forEach(trade => {
-            if (trade.tradeType === CONSTANTS.TRADE_TYPE_LONG) {
-                if (trade.realizedPnlValue.gt(0)) totalProfitLong = totalProfitLong.plus(trade.realizedPnlValue);
-                else totalLossLong = totalLossLong.plus(trade.realizedPnlValue.abs());
-            } else {
-                if (trade.realizedPnlValue.gt(0)) totalProfitShort = totalProfitShort.plus(trade.realizedPnlValue);
-                else totalLossShort = totalLossShort.plus(trade.realizedPnlValue.abs());
-            }
-        });
-
-        let longestWinningStreak = 0, currentWinningStreak = 0, longestLosingStreak = 0, currentLosingStreak = 0, currentStreakText = 'N/A';
+        let longestWinningStreak = 0, currentWinningStreak = 0, longestLosingStreak = 0, currentLosingStreak = 0;
 
         tradesWithPnl.forEach(trade => {
+            // Streaks
             if (trade.realizedPnlValue.gt(0)) {
                 currentWinningStreak++;
                 currentLosingStreak = 0;
@@ -259,30 +253,32 @@ export const calculator = {
             }
             if (currentWinningStreak > longestWinningStreak) longestWinningStreak = currentWinningStreak;
             if (currentLosingStreak > longestLosingStreak) longestLosingStreak = currentLosingStreak;
+
+            // P/L by trade type
+            if (trade.tradeType === CONSTANTS.TRADE_TYPE_LONG) {
+                if (trade.realizedPnlValue.gt(0)) totalProfitLong = totalProfitLong.plus(trade.realizedPnlValue);
+                else totalLossLong = totalLossLong.plus(trade.realizedPnlValue.abs());
+            } else {
+                if (trade.realizedPnlValue.gt(0)) totalProfitShort = totalProfitShort.plus(trade.realizedPnlValue);
+                else totalLossShort = totalLossShort.plus(trade.realizedPnlValue.abs());
+            }
         });
 
-        if (tradesWithPnl.length > 0) {
+        let currentStreakText = 'N/A';
+        if (currentWinningStreak > 0) {
+            currentStreakText = `W${currentWinningStreak}`;
+        } else if (currentLosingStreak > 0) {
+            currentStreakText = `L${currentLosingStreak}`;
+        } else if (tradesWithPnl.length > 0) {
+            // Handle case where last trade was break-even
             const lastTrade = tradesWithPnl[tradesWithPnl.length - 1];
-            let currentStreak = 0;
-
-            if (lastTrade.realizedPnlValue.gt(0)) {
-                for (let i = tradesWithPnl.length - 1; i >= 0; i--) {
-                    if (tradesWithPnl[i].realizedPnlValue.gt(0)) currentStreak++;
-                    else break;
-                }
-                currentStreakText = `W${currentStreak}`;
-            } else if (lastTrade.realizedPnlValue.lt(0)) {
-                for (let i = tradesWithPnl.length - 1; i >= 0; i--) {
-                    if (tradesWithPnl[i].realizedPnlValue.lt(0)) currentStreak++;
-                    else break;
-                }
-                currentStreakText = `L${currentStreak}`;
-            } else { // Break-even
+            if (lastTrade.realizedPnlValue.isZero()) {
+                 let beStreak = 0;
                  for (let i = tradesWithPnl.length - 1; i >= 0; i--) {
-                    if (tradesWithPnl[i].realizedPnlValue.isZero()) currentStreak++;
+                    if (tradesWithPnl[i].realizedPnlValue.isZero()) beStreak++;
                     else break;
                 }
-                currentStreakText = `B/E ${currentStreak}`;
+                currentStreakText = `B/E ${beStreak}`;
             }
         }
 

@@ -63,18 +63,18 @@ export interface AppState {
     targets: Array<{ price: Decimal | null; percent: Decimal | null; isLocked: boolean }>;
 
     // Calculated Results
-    positionSize: string;
-    requiredMargin: string;
-    netLoss: string;
-    entryFee: string;
-    estimatedLiquidationPrice: string;
-    breakEvenPrice: string;
-    totalRR: string;
-    totalNetProfit: string;
-    totalPercentSold: string;
-    riskAmountCurrency: string;
-    totalFees: string;
-    totalROC: string;
+    positionSize: string | null;
+    requiredMargin: string | null;
+    netLoss: string | null;
+    entryFee: string | null;
+    estimatedLiquidationPrice: string | null;
+    breakEvenPrice: string | null;
+    totalRR: string | null;
+    totalNetProfit: string | null;
+    totalPercentSold: string | null;
+    riskAmountCurrency: string | null;
+    totalFees: string | null;
+    totalROC: string | null;
     calculatedTpDetails: IndividualTpResult[];
 
     // UI State
