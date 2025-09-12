@@ -78,6 +78,8 @@
     }
 
     function handleKeydown(event: KeyboardEvent) {
+        if (!event || !event.key) return;
+
         if (event.key.toLowerCase() === 'escape') {
             event.preventDefault();
             if ($uiStore.showJournalModal) uiStore.toggleJournalModal(false);

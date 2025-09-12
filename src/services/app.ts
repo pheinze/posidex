@@ -1,5 +1,5 @@
 import { get } from 'svelte/store';
-import { parseDecimal, formatDynamicDecimal, parseGermanDate } from '../utils/utils';
+import { parseDecimal, formatDynamicDecimal, parseGermanDate, robustJsonParse } from '../utils/utils';
 import { CONSTANTS } from '../lib/constants';
 import { apiService } from './apiService';
 import { modalManager } from './modalManager';
@@ -46,6 +46,7 @@ export const app = {
         if (browser) {
             app.loadSettings();
             app.populatePresetLoader();
+            journalStore.set(app.getJournal());
         }
     },
 
@@ -53,8 +54,7 @@ export const app = {
         if (!browser) return [];
         try {
             const d = localStorage.getItem(CONSTANTS.LOCAL_STORAGE_JOURNAL_KEY);
-            if (!d) return [];
-            return superjson.parse<JournalEntry[]>(d) || [];
+            return robustJsonParse<JournalEntry[]>(d) || [];
         } catch {
             console.warn("Could not load journal from localStorage.");
             uiStore.showError("Could not load journal.");
@@ -84,7 +84,7 @@ export const app = {
             id: Date.now(),
             date: new Date().toISOString(),
             realizedPnl: null
-        } as JournalEntry;
+        };
 
         journalData.push(newTrade);
         app.saveJournal(journalData);
@@ -162,8 +162,7 @@ export const app = {
         if (!browser) return;
         try {
             const settingsJSON = localStorage.getItem(CONSTANTS.LOCAL_STORAGE_SETTINGS_KEY);
-            if (!settingsJSON) return;
-            const settings = superjson.parse<ReturnType<typeof getInputsAsObject>>(settingsJSON);
+            const settings = robustJsonParse<ReturnType<typeof getInputsAsObject>>(settingsJSON);
             if (settings) {
                 updateTradeStore(state => ({
                     ...state,
@@ -182,7 +181,7 @@ export const app = {
         if (typeof presetName === 'string' && presetName) {
             try {
                 const presetsJSON = localStorage.getItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY) || '{}';
-                const presets = superjson.parse<Record<string, ReturnType<typeof getInputsAsObject>>>(presetsJSON);
+                const presets = robustJsonParse<Record<string, ReturnType<typeof getInputsAsObject>>>(presetsJSON) || {};
                 if (presets[presetName] && !(await modalManager.show({ title: "Overwrite?", message: `Preset "${presetName}" already exists. Do you want to overwrite it?`, type: 'confirm' }))) return;
                 presets[presetName] = getInputsAsObject();
                 localStorage.setItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY, superjson.stringify(presets));
@@ -201,8 +200,8 @@ export const app = {
         if (!presetName) return;
         if (!(await modalManager.show({ title: "Delete Preset", message: `Really delete preset "${presetName}"?`, type: 'confirm' }))) return;
         try {
-            const presetsJSON = localStorage.getItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY) || '{}';
-            const presets = superjson.parse<Record<string, any>>(presetsJSON);
+            const presetsJSON = localStorage.getItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY);
+            const presets = robustJsonParse<Record<string, any>>(presetsJSON) || {};
             delete presets[presetName];
             localStorage.setItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY, superjson.stringify(presets));
             app.populatePresetLoader();
@@ -214,9 +213,9 @@ export const app = {
         if (!browser || !presetName) return;
         trackCustomEvent('Preset', 'Load', presetName);
         try {
-            const presetsJSON = localStorage.getItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY) || '{}';
-            const presets = superjson.parse<Record<string, ReturnType<typeof getInputsAsObject>>>(presetsJSON);
-            const preset = presets[presetName];
+            const presetsJSON = localStorage.getItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY);
+            const presets = robustJsonParse<Record<string, ReturnType<typeof getInputsAsObject>>>(presetsJSON);
+            const preset = presets?.[presetName];
             if (preset) {
                 resetAllInputs();
                 updateTradeStore(state => ({
@@ -235,8 +234,8 @@ export const app = {
     populatePresetLoader: () => {
         if (!browser) return;
         try {
-            const presetsJSON = localStorage.getItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY) || '{}';
-            const presets = superjson.parse<Record<string, any>>(presetsJSON);
+            const presetsJSON = localStorage.getItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY);
+            const presets = robustJsonParse<Record<string, any>>(presetsJSON) || {};
             updatePresetStore(state => ({ ...state, availablePresets: Object.keys(presets) }));
         } catch {
             console.warn("Could not populate presets from localStorage.");

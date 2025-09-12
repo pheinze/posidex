@@ -1,4 +1,20 @@
 import { Decimal } from 'decimal.js';
+import superjson from '$lib/superjson';
+
+export function robustJsonParse<T>(jsonString: string | null): T | null {
+    if (!jsonString) return null;
+    try {
+        return superjson.parse<T>(jsonString);
+    } catch (superjsonError) {
+        try {
+            console.warn("SuperJSON parsing failed, falling back to JSON.parse. This might indicate old data format.", superjsonError);
+            return JSON.parse(jsonString);
+        } catch (jsonError) {
+            console.error("Failed to parse data with both SuperJSON and JSON.parse.", jsonError);
+            return null;
+        }
+    }
+}
 
 export function debounce<T extends (...args: unknown[]) => void>(func: T, delay: number) {
     let timeout: ReturnType<typeof setTimeout>;
