@@ -6,7 +6,7 @@
     import ConfirmModal from '../components/shared/ConfirmModal.svelte';
     import PromptModal from '../components/shared/PromptModal.svelte';
     import VisualBar from '../components/shared/VisualBar.svelte';
-    import { CONSTANTS } from '../lib/constants';
+    import { CONSTANTS, icons } from '../lib/constants';
     import { app } from '../services/app';
     import { tradeStore, updateTradeStore, toggleAtrInputs, calculationInputs } from '../stores/tradeStore';
     import { resultsStore } from '../stores/resultsStore';
