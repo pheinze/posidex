@@ -8,7 +8,7 @@ interface ConfirmState {
 }
 
 const createConfirmStore = () => {
-    const { subscribe, set } = writable<ConfirmState>({
+    const { subscribe, set, update } = writable<ConfirmState>({
         isOpen: false,
         title: '',
         message: '',
@@ -28,7 +28,7 @@ const createConfirmStore = () => {
             });
         },
         _handleConfirm: (value: boolean) => {
-            set((state) => {
+            update((state: ConfirmState) => {
                 if (state.resolve) {
                     state.resolve(value);
                 }

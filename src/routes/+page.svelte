@@ -17,6 +17,7 @@
     import { get } from 'svelte/store'; // Import get
     import { loadInstruction } from '../services/markdownLoader';
     import { formatDynamicDecimal } from '../utils/utils';
+    import { trackClick } from '../lib/actions';
     import { trackCustomEvent } from '../services/trackingService';
     import { createBackup, restoreFromBackup } from '../services/backupService';
     import { Decimal } from 'decimal.js';

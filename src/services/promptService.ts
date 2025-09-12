@@ -9,7 +9,7 @@ interface PromptState {
 }
 
 const createPromptStore = () => {
-    const { subscribe, set } = writable<PromptState>({
+    const { subscribe, set, update } = writable<PromptState>({
         isOpen: false,
         title: '',
         message: '',
@@ -31,7 +31,7 @@ const createPromptStore = () => {
             });
         },
         _handleConfirm: (value: string | false) => {
-            set((state) => {
+            update((state: PromptState) => {
                 if (state.resolve) {
                     state.resolve(value);
                 }
