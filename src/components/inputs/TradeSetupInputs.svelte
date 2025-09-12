@@ -97,25 +97,69 @@
     function handleEntryPriceInput(e: Event) {
         const target = e.target as HTMLInputElement;
         const value = target.value;
-        updateTradeStore(s => ({ ...s, entryPrice: value === '' ? null : new Decimal(value) }));
+
+        if (value.trim() === '') {
+            updateTradeStore(s => ({ ...s, entryPrice: null }));
+            return;
+        }
+
+        try {
+            const decimalValue = new Decimal(value);
+            updateTradeStore(s => ({ ...s, entryPrice: decimalValue }));
+        } catch (error) {
+            // Invalid intermediate state (e.g., '-'). Do nothing.
+        }
     }
 
     function handleAtrValueInput(e: Event) {
         const target = e.target as HTMLInputElement;
         const value = target.value;
-        updateTradeStore(s => ({ ...s, atrValue: value === '' ? null : new Decimal(value) }));
+
+        if (value.trim() === '') {
+            updateTradeStore(s => ({ ...s, atrValue: null }));
+            return;
+        }
+
+        try {
+            const decimalValue = new Decimal(value);
+            updateTradeStore(s => ({ ...s, atrValue: decimalValue }));
+        } catch (error) {
+            // Invalid intermediate state (e.g., '-'). Do nothing.
+        }
     }
 
     function handleAtrMultiplierInput(e: Event) {
         const target = e.target as HTMLInputElement;
         const value = target.value;
-        updateTradeStore(s => ({ ...s, atrMultiplier: value === '' ? null : new Decimal(value) }));
+
+        if (value.trim() === '') {
+            updateTradeStore(s => ({ ...s, atrMultiplier: null }));
+            return;
+        }
+
+        try {
+            const decimalValue = new Decimal(value);
+            updateTradeStore(s => ({ ...s, atrMultiplier: decimalValue }));
+        } catch (error) {
+            // Invalid intermediate state (e.g., '-'). Do nothing.
+        }
     }
 
     function handleStopLossPriceInput(e: Event) {
         const target = e.target as HTMLInputElement;
         const value = target.value;
-        updateTradeStore(s => ({ ...s, stopLossPrice: value === '' ? null : new Decimal(value) }));
+
+        if (value.trim() === '') {
+            updateTradeStore(s => ({ ...s, stopLossPrice: null }));
+            return;
+        }
+
+        try {
+            const decimalValue = new Decimal(value);
+            updateTradeStore(s => ({ ...s, stopLossPrice: decimalValue }));
+        } catch (error) {
+            // Invalid intermediate state (e.g., '-'). Do nothing.
+        }
     }
 </script>
 

@@ -32,13 +32,35 @@
     function handleLeverageInput(e: Event) {
         const target = e.target as HTMLInputElement;
         const value = target.value;
-        updateTradeStore(s => ({ ...s, leverage: value === '' ? null : new Decimal(value) }));
+
+        if (value.trim() === '') {
+            updateTradeStore(s => ({ ...s, leverage: null }));
+            return;
+        }
+
+        try {
+            const decimalValue = new Decimal(value);
+            updateTradeStore(s => ({ ...s, leverage: decimalValue }));
+        } catch (error) {
+            // Invalid intermediate state (e.g., '-'). Do nothing.
+        }
     }
 
     function handleFeesInput(e: Event) {
         const target = e.target as HTMLInputElement;
         const value = target.value;
-        updateTradeStore(s => ({ ...s, fees: value === '' ? null : new Decimal(value) }));
+
+        if (value.trim() === '') {
+            updateTradeStore(s => ({ ...s, fees: null }));
+            return;
+        }
+
+        try {
+            const decimalValue = new Decimal(value);
+            updateTradeStore(s => ({ ...s, fees: decimalValue }));
+        } catch (error) {
+            // Invalid intermediate state (e.g., '-'). Do nothing.
+        }
     }
 </script>
 

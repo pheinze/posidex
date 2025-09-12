@@ -30,8 +30,14 @@
         (async () => {
             isLoading = true;
             await tick(); // Allow UI to update to show loading state
-            stats = calculator.calculatePerformanceStats(journalData);
-            isLoading = false;
+            try {
+                stats = calculator.calculatePerformanceStats(journalData);
+            } catch (error) {
+                console.error("Error calculating journal performance stats:", error);
+                stats = null; // Clear stats on error to show 'no data' message
+            } finally {
+                isLoading = false;
+            }
         })();
     }
 

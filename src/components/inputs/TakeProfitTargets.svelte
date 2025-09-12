@@ -21,8 +21,11 @@
 
     const dispatch = createEventDispatcher();
 
-    export let targets: Array<{ price: Decimal | null; percent: Decimal | null; isLocked: boolean }>;
+    export let targets: Array<{ id: number; price: Decimal | null; percent: Decimal | null; isLocked: boolean }>;
     export let calculatedTpDetails: IndividualTpResult[] = [];
+
+    // Create a reactive map for efficient lookups. This avoids O(n^2) complexity in the template.
+    $: calculatedTpDetailsMap = new Map(calculatedTpDetails.map(detail => [detail.index, detail]));
 
     function addTakeProfitRow() {
         app.addTakeProfitRow();
@@ -46,8 +49,8 @@
         </div>
     </h2>
     <div id="take-profit-list" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {#each targets as target, i (i)}
-            {@const tpDetail = calculatedTpDetails.find(d => d.index === i)}
+        {#each targets as target, i (target.id)}
+            {@const tpDetail = calculatedTpDetailsMap.get(i)}
             <TakeProfitRow
                 index={i}
                 price={target.price}

@@ -18,7 +18,12 @@ import { trackCustomEvent } from './trackingService';
 import { onboardingService } from './onboardingService';
 
 // Type alias for Take Profit Target from AppState for cleaner usage
+// Type alias for Take Profit Target from AppState for cleaner usage
 type TakeProfitTarget = AppState['targets'][number];
+
+// This counter ensures that new Take-Profit targets get a unique ID, which is crucial for Svelte's keyed #each blocks.
+// It's initialized to 3 because there are 3 default targets with IDs 0, 1, 2.
+let nextTargetId = 3;
 
 interface CSVTradeEntry {
     'ID': string;
@@ -461,6 +466,7 @@ export const app = {
                     useAtrSl: settings.useAtrSl || false,
                     tradeType: settings.tradeType || CONSTANTS.TRADE_TYPE_LONG,
                     targets: (settings.targets || []).map((t: TakeProfitTarget) => ({
+                        id: t.id ?? nextTargetId++,
                         price: parseDecimal(t.price),
                         percent: parseDecimal(t.percent),
                         isLocked: t.isLocked
@@ -537,6 +543,7 @@ export const app = {
                     useAtrSl: preset.useAtrSl || false,
                     tradeType: preset.tradeType || CONSTANTS.TRADE_TYPE_LONG,
                     targets: (preset.targets || []).map((t: TakeProfitTarget) => ({
+                        id: t.id ?? nextTargetId++,
                         price: parseDecimal(t.price),
                         percent: parseDecimal(t.percent),
                         isLocked: t.isLocked
@@ -874,7 +881,7 @@ export const app = {
     addTakeProfitRow: (price: number | null = null, percent: number | null = null, isLocked = false) => {
         updateTradeStore(state => ({
             ...state,
-            targets: [...state.targets, { price: price !== null ? new Decimal(price) : null, percent: percent !== null ? new Decimal(percent) : null, isLocked }]
+            targets: [...state.targets, { id: nextTargetId++, price: price !== null ? new Decimal(price) : null, percent: percent !== null ? new Decimal(percent) : null, isLocked }]
         }));
     },
 

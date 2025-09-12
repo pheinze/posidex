@@ -105,6 +105,7 @@
       "lockPositionSizeAriaLabel": "Positionsgröße sperren/entsperren",
       "copyPositionSizeAriaLabel": "Positionsgröße kopieren",
       "copiedFeedback": "Kopiert!",
+      "copyErrorFeedback": "Kopieren fehlgeschlagen!",
       "maxNetLossLabel": "Max. Verlust (Netto)",
       "maxNetLossTooltip": "Der maximale Betrag, den du bei diesem Trade verlieren kannst, einschließlich aller Gebühren.",
       "profitAtBestTargetLabel": "Gewinn am besten Ziel",

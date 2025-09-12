@@ -53,25 +53,44 @@
     function handlePriceInput(e: Event) {
         const target = e.target as HTMLInputElement;
         const value = target.value;
-        const newPrice = value === '' ? null : new Decimal(value);
+        const currentTargets = [...get(tradeStore).targets];
 
-        const currentTargets = get(tradeStore).targets;
-        if (currentTargets[index]) {
-            currentTargets[index].price = newPrice;
-            updateTradeStore(s => ({...s, targets: currentTargets}));
+        if (!currentTargets[index]) return;
+
+        if (value.trim() === '') {
+            currentTargets[index].price = null;
+            updateTradeStore(s => ({ ...s, targets: currentTargets }));
+            return;
+        }
+
+        try {
+            currentTargets[index].price = new Decimal(value);
+            updateTradeStore(s => ({ ...s, targets: currentTargets }));
+        } catch (error) {
+            // Invalid intermediate state, do nothing
         }
     }
 
     function handlePercentInput(e: Event) {
         const target = e.target as HTMLInputElement;
         const value = target.value;
-        const newPercent = value === '' ? null : new Decimal(value);
+        const currentTargets = [...get(tradeStore).targets];
 
-        const currentTargets = get(tradeStore).targets;
-        if (currentTargets[index]) {
-            currentTargets[index].percent = newPercent;
-            updateTradeStore(s => ({...s, targets: currentTargets}));
+        if (!currentTargets[index]) return;
+
+        if (value.trim() === '') {
+            currentTargets[index].percent = null;
+            updateTradeStore(s => ({ ...s, targets: currentTargets }));
             app.adjustTpPercentages(index);
+            return;
+        }
+
+        try {
+            currentTargets[index].percent = new Decimal(value);
+            updateTradeStore(s => ({ ...s, targets: currentTargets }));
+            app.adjustTpPercentages(index);
+        } catch (error) {
+            // Invalid intermediate state, do nothing
         }
     }
 </script>

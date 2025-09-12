@@ -39,19 +39,52 @@
     function handleAccountSizeInput(e: Event) {
         const target = e.target as HTMLInputElement;
         const value = target.value;
-        updateTradeStore(s => ({ ...s, accountSize: value === '' ? null : new Decimal(value) }));
+
+        if (value.trim() === '') {
+            updateTradeStore(s => ({ ...s, accountSize: null }));
+            return;
+        }
+
+        try {
+            const decimalValue = new Decimal(value);
+            updateTradeStore(s => ({ ...s, accountSize: decimalValue }));
+        } catch (error) {
+            // Invalid intermediate state (e.g., '-'). Do nothing.
+        }
     }
 
     function handleRiskPercentageInput(e: Event) {
         const target = e.target as HTMLInputElement;
         const value = target.value;
-        updateTradeStore(s => ({ ...s, riskPercentage: value === '' ? null : new Decimal(value) }));
+
+        if (value.trim() === '') {
+            updateTradeStore(s => ({ ...s, riskPercentage: null }));
+            return;
+        }
+
+        try {
+            const decimalValue = new Decimal(value);
+            updateTradeStore(s => ({ ...s, riskPercentage: decimalValue }));
+        } catch (error) {
+            // Invalid intermediate state (e.g., '-'). Do nothing.
+        }
     }
 
     function handleRiskAmountInput(e: Event) {
         const target = e.target as HTMLInputElement;
         const value = target.value;
-        updateTradeStore(s => ({ ...s, riskAmount: value === '' ? null : new Decimal(value) }));
+
+        if (value.trim() === '') {
+            updateTradeStore(s => ({ ...s, riskAmount: null }));
+            return;
+        }
+
+        try {
+            const decimalValue = new Decimal(value);
+            updateTradeStore(s => ({ ...s, riskAmount: decimalValue }));
+        } catch (error) {
+            // Invalid intermediate state (e.g., '-'). Do nothing.
+        }
     }
 </script>
 
@@ -60,11 +93,28 @@
     <div class="grid grid-cols-3 gap-4">
         <div>
             <label for="account-size" class="input-label text-xs">{$_('dashboard.portfolioInputs.accountSizeLabel')}</label>
-            <input id="account-size" type="text" use:numberInput={{ maxDecimalPlaces: 4 }} value={format(accountSize)} on:input={handleAccountSizeInput} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.portfolioInputs.accountSizePlaceholder')}" on:input={onboardingService.trackFirstInput}>
+            <input
+                id="account-size"
+                type="text"
+                use:numberInput={{ maxDecimalPlaces: 4 }}
+                value={format(accountSize)}
+                on:input={(e) => { handleAccountSizeInput(e); onboardingService.trackFirstInput(e); }}
+                class="input-field w-full px-4 py-2 rounded-md"
+                placeholder="{$_('dashboard.portfolioInputs.accountSizePlaceholder')}"
+            >
         </div>
         <div>
             <label for="risk-percentage" class="input-label text-xs">{$_('dashboard.portfolioInputs.riskPerTradeLabel')}</label>
-            <input id="risk-percentage" type="text" use:numberInput={{ noDecimals: true, isPercentage: true, maxValue: 100, minValue: 0 }} value={format(riskPercentage)} on:input={handleRiskPercentageInput} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.portfolioInputs.riskPerTradePlaceholder')}" on:input={onboardingService.trackFirstInput} disabled={isRiskAmountLocked || isPositionSizeLocked}>
+            <input
+                id="risk-percentage"
+                type="text"
+                use:numberInput={{ noDecimals: true, isPercentage: true, maxValue: 100, minValue: 0 }}
+                value={format(riskPercentage)}
+                on:input={(e) => { handleRiskPercentageInput(e); onboardingService.trackFirstInput(e); }}
+                class="input-field w-full px-4 py-2 rounded-md"
+                placeholder="{$_('dashboard.portfolioInputs.riskPerTradePlaceholder')}"
+                disabled={isRiskAmountLocked || isPositionSizeLocked}
+            >
         </div>
         <div>
             <label for="risk-amount" class="input-label text-xs">{$_('dashboard.portfolioInputs.riskAmountLabel')}</label>

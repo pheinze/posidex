@@ -105,6 +105,7 @@
       "lockPositionSizeAriaLabel": "Lock/Unlock Position Size",
       "copyPositionSizeAriaLabel": "Copy Position Size",
       "copiedFeedback": "Copied!",
+      "copyErrorFeedback": "Copy failed!",
       "maxNetLossLabel": "Max. Net Loss",
       "maxNetLossTooltip": "The maximum amount you can lose on this trade, including all fees.",
       "profitAtBestTargetLabel": "Profit at Best Target",

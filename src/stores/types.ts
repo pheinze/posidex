@@ -11,7 +11,7 @@ export interface TradeValues {
     atrValue: Decimal;
     atrMultiplier: Decimal;
     stopLossPrice: Decimal;
-    targets: Array<{ price: Decimal; percent: Decimal; isLocked: boolean; }>;
+    targets: Array<{ id: number; price: Decimal; percent: Decimal; isLocked: boolean; }>;
     totalPercentSold: Decimal;
 }
 
@@ -60,7 +60,7 @@ export interface AppState {
     atrMode: 'manual' | 'auto';
     atrTimeframe: string;
     tradeNotes: string;
-    targets: Array<{ price: Decimal | null; percent: Decimal | null; isLocked: boolean }>;
+    targets: Array<{ id: number; price: Decimal | null; percent: Decimal | null; isLocked: boolean }>;
 
     // Calculated Results
     positionSize: string | null;
@@ -126,6 +126,6 @@ export interface JournalEntry {
     netLoss: Decimal;
     totalFees: Decimal;
     notes: string;
-    targets: Array<{ price: Decimal; percent: Decimal; isLocked: boolean }>;
+    targets: Array<{ id: number; price: Decimal; percent: Decimal; isLocked: boolean }>;
     calculatedTpDetails: IndividualTpResult[];
 }

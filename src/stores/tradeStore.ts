@@ -48,9 +48,9 @@ export const initialTradeState: Pick<AppState,
     atrTimeframe: '1d',
     tradeNotes: '',
     targets: [
-        { price: null, percent: new Decimal(50), isLocked: false },
-        { price: null, percent: new Decimal(25), isLocked: false },
-        { price: null, percent: new Decimal(25), isLocked: false }
+        { id: 0, price: null, percent: new Decimal(50), isLocked: false },
+        { id: 1, price: null, percent: new Decimal(25), isLocked: false },
+        { id: 2, price: null, percent: new Decimal(25), isLocked: false }
     ],
     isPositionSizeLocked: false,
     lockedPositionSize: null,
