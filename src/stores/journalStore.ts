@@ -11,7 +11,7 @@ import type { JournalEntry } from './types';
  * @returns An array of `JournalEntry` objects. Returns an empty array if
  * not in a browser, if no data exists, or if an error occurs.
  */
-function loadJournalFromLocalStorage(): JournalEntry[] {
+export function loadJournalFromLocalStorage(): JournalEntry[] {
     if (!browser) return [];
     try {
         const d = localStorage.getItem(CONSTANTS.LOCAL_STORAGE_JOURNAL_KEY) || '[]';

@@ -75,12 +75,12 @@ export function createBackup() {
 
 /**
  * Restores user data from the content of a JSON backup file.
- * This function validates the backup and writes the data to localStorage.
- * A page reload is required after a successful restore to apply the new data.
+ * This function validates the backup, writes the data to localStorage,
+ * and returns the data for reactive updates in the UI.
  * @param jsonContent The string content of the uploaded JSON backup file.
- * @returns An object indicating success or failure, along with a user-friendly message.
+ * @returns An object indicating success or failure, a message, and the restored data.
  */
-export function restoreFromBackup(jsonContent: string): { success: boolean; message: string } {
+export function restoreFromBackup(jsonContent: string): { success: boolean; message: string; data?: BackupData } {
   if (!browser) {
     return { success: false, message: 'Backup can only be restored in a browser environment.' };
   }
@@ -110,8 +110,8 @@ export function restoreFromBackup(jsonContent: string): { success: boolean; mess
       localStorage.setItem(CONSTANTS.LOCAL_STORAGE_JOURNAL_KEY, backup.data.journal);
     }
 
-    // The app will re-initialize with the new data on reload.
-    return { success: true, message: 'Restore successful! The application will now reload.' };
+    // Return the data for reactive updates.
+    return { success: true, message: 'Restore successful!', data: backup.data };
 
   } catch (error) {
     console.error('Failed to parse or restore backup file.', error);

@@ -18,6 +18,7 @@
   },
   "dashboard": {
     "presetLoad": "Preset laden...",
+    "noPresets": "Noch keine Presets gespeichert.",
     "savePresetTitle": "Aktuelle Eingaben als Preset speichern",
     "savePresetAriaLabel": "Preset speichern",
     "deletePresetTitle": "Ausgewähltes Preset löschen",
@@ -150,6 +151,10 @@
     "notes": "Notizen",
     "action": "Aktion",
     "noTradesYet": "Noch keine Trades im Journal vorhanden.",
+    "emptyState": {
+      "title": "Dein Journal ist leer",
+      "description": "Füge deinen ersten Trade über die Hauptansicht hinzu, um deine Performance zu verfolgen."
+    },
     "clickToExpand": "Klicken zum Ausklappen",
     "delete": "Löschen",
     "performancePerSymbol": "Performance pro Symbol",

@@ -20,6 +20,7 @@
     import { trackClick } from '../lib/actions';
 import { trackCustomEvent } from '../services/trackingService';
     import { createBackup, restoreFromBackup } from '../services/backupService';
+    import { loadJournalFromLocalStorage, journalStore } from '../stores/journalStore';
     import { Decimal } from 'decimal.js';
     
     import type { IndividualTpResult } from '../stores/types';
@@ -181,10 +182,13 @@ import { trackCustomEvent } from '../services/trackingService';
                 if (confirmed) {
                     const result = restoreFromBackup(content);
                     if (result.success) {
-                        uiStore.showFeedback('save'); // Re-use save feedback for now
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 1000);
+                        // Instead of reloading, we now update the stores reactively
+                        app.loadSettings(); // Reloads settings into tradeStore
+                        app.populatePresetLoader(); // Reloads presets into presetStore
+                        journalStore.set(loadJournalFromLocalStorage()); // Reloads journal into journalStore
+                        app.calculateAndDisplay(); // Re-run calculation with new data
+                        uiStore.showFeedback('save');
+                        trackCustomEvent('Backup', 'RestoreSuccess');
                     } else {
                         uiStore.showError(result.message);
                     }
@@ -218,12 +222,18 @@ import { trackCustomEvent } from '../services/trackingService';
         </div>
         <div class="flex items-center flex-wrap justify-end gap-2 w-full md:w-auto">
             <div class="flex items-center flex-wrap justify-end gap-2 md:order-1">
-                <select id="preset-loader" class="input-field px-3 py-2 rounded-md text-sm" on:change={handlePresetLoad} bind:value={$presetStore.selectedPreset}>
-                    <option value="">{$_('dashboard.presetLoad')}</option>
-                    {#each $presetStore.availablePresets as presetName}
-                        <option value={presetName}>{presetName}</option>
-                    {/each}
-                </select>
+                {#key $presetStore.availablePresets}
+                    {#if $presetStore.availablePresets.length > 0}
+                        <select id="preset-loader" class="input-field px-3 py-2 rounded-md text-sm" on:change={handlePresetLoad} bind:value={$presetStore.selectedPreset}>
+                            <option value="">{$_('dashboard.presetLoad')}</option>
+                            {#each $presetStore.availablePresets as presetName}
+                                <option value={presetName}>{presetName}</option>
+                            {/each}
+                        </select>
+                    {:else}
+                        <div class="px-3 py-2 text-sm text-[var(--text-secondary)]">{$_('dashboard.noPresets')}</div>
+                    {/if}
+                {/key}
                 <button id="save-preset-btn" class="text-sm bg-[var(--btn-default-bg)] hover:bg-[var(--btn-default-hover-bg)] text-[var(--btn-default-text)] font-bold py-2.5 px-2.5 rounded-lg" title="{$_('dashboard.savePresetTitle')}" aria-label="{$_('dashboard.savePresetAriaLabel')}" on:click={app.savePreset} use:trackClick={{ category: 'Presets', action: 'Click', name: 'SavePreset' }}>{@html icons.save}</button>
                 <button id="delete-preset-btn" class="text-sm bg-[var(--btn-danger-bg)] hover:bg-[var(--btn-danger-hover-bg)] text-[var(--btn-danger-text)] font-bold py-2.5 px-2.5 rounded-lg disabled:cursor-not-allowed" title="{$_('dashboard.deletePresetTitle')}" disabled={!$presetStore.selectedPreset} on:click={app.deletePreset} use:trackClick={{ category: 'Presets', action: 'Click', name: 'DeletePreset' }}>{@html icons.delete}</button>
                 <button id="reset-btn" class="text-sm bg-[var(--btn-default-bg)] hover:bg-[var(--btn-default-hover-bg)] text-[var(--btn-default-text)] font-bold py-2.5 px-2.5 rounded-lg flex items-center gap-2" title="{$_('dashboard.resetButtonTitle')}" on:click={resetAllInputs} use:trackClick={{ category: 'Actions', action: 'Click', name: 'ResetAll' }}>{@html icons.broom}</button>

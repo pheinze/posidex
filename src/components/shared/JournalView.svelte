@@ -124,7 +124,50 @@
                             </tr>
                         {/each}
                         {#if filteredTrades.length === 0}
-                            <tr><td colspan="10" class="text-center text-slate-500 py-8">{$_('journal.noTradesYet')}</td></tr>
+                            <tr>
+                                <td colspan="11" class="text-center py-12">
+                                    <p class="text-lg font-semibold text-[var(--text-primary)] mb-2">{$_('journal.emptyState.title')}</p>
+                                    <p class="text-[var(--text-secondary)]">{$_('journal.emptyState.description')}</p>
+                                </td>
+                            </tr>
+                        {:else}
+                            {#each filteredTrades as trade}
+                            <tr>
+                                <td>{formatDate(trade.date, $locale)}</td>
+                                <td>{trade.symbol || '-'}</td>
+                                <td class="{trade.tradeType === CONSTANTS.TRADE_TYPE_LONG ? 'text-[var(--success-color)]' : 'text-[var(--danger-color)]'}">{trade.tradeType.charAt(0).toUpperCase() + trade.tradeType.slice(1)}</td>
+                                <td>{trade.entryPrice.toFixed(4)}</td>
+                                <td>{trade.stopLossPrice.toFixed(4)}</td>
+                                <td class="{trade.totalNetProfit.gt(0) ? 'text-[var(--success-color)]' : trade.totalNetProfit.lt(0) ? 'text-[var(--danger-color)]' : ''}">{trade.totalNetProfit.toFixed(2)}</td>
+                                <td class="p-2">
+                                    {#if editingTradeId === trade.id}
+                                        <input
+                                            type="text"
+                                            class="input-field w-24 px-2 py-1"
+                                            value={trade.realizedPnl}
+                                            use:numberInput={{ maxDecimalPlaces: 4 }}
+                                            use:focus
+                                            on:blur={(e) => { app.updateRealizedPnl(trade.id, (e.target as HTMLInputElement).value); editingTradeId = null; }}
+                                            on:keydown={(e) => { if (e.key === 'Enter') { (e.target as HTMLInputElement).blur(); } else if (e.key === 'Escape') { editingTradeId = null; } }}
+                                        />
+                                    {:else}
+                                        <button type="button" class="input-field-placeholder text-left w-full h-full min-h-[34px] px-2 py-1" on:click={() => editingTradeId = trade.id}>
+                                            {formatPnl(trade.realizedPnl)}
+                                        </button>
+                                    {/if}
+                                </td>
+                                <td class="{trade.totalRR.gte(2) ? 'text-[var(--success-color)]' : trade.totalRR.gte(1.5) ? 'text-[var(--warning-color)]' : 'text-[var(--danger-color)]'}">{trade.totalRR.toFixed(2)}</td>
+                                <td>
+                                    <select class="status-select input-field p-1" data-id="{trade.id}" on:change={(e) => app.updateTradeStatus(trade.id, (e.target as HTMLSelectElement).value)}>
+                                        <option value="Open" selected={trade.status === 'Open'}>{$_('journal.filterOpen')}</option>
+                                        <option value="Won" selected={trade.status === 'Won'}>{$_('journal.filterWon')}</option>
+                                        <option value="Lost" selected={trade.status === 'Lost'}>{$_('journal.filterLost')}</option>
+                                    </select>
+                                </td>
+                                <td class="notes-cell" title="{$_('journal.clickToExpand')}" on:click={(e) => (e.target as HTMLElement).classList.toggle('expanded')}>{trade.notes || ''}</td>
+                                <td class="text-center"><button class="delete-trade-btn text-[var(--danger-color)] hover:opacity-80 p-1 rounded-full" data-id="{trade.id}" title="{$_('journal.delete')}" on:click={() => app.deleteTrade(trade.id)}>{@html icons.delete}</button></td>
+                            </tr>
+                        {/each}
                         {/if}
                     </tbody>
                 </table>
@@ -132,59 +175,63 @@
 
             <!-- Mobile Card Layout -->
             <div class="md:hidden space-y-4">
-                {#each filteredTrades as trade}
-                    <div class="bg-[var(--bg-primary)] p-4 rounded-lg shadow-md border border-[var(--border-color)]"
-                         class:status-won={trade.status === 'Won'}
-                         class:status-lost={trade.status === 'Lost'}
-                    >
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <div class="text-lg font-bold text-[var(--text-primary)]">{trade.symbol || '-'}</div>
-                                <div class="text-sm {trade.tradeType === CONSTANTS.TRADE_TYPE_LONG ? 'text-[var(--success-color)]' : 'text-[var(--danger-color)]'}">{trade.tradeType.charAt(0).toUpperCase() + trade.tradeType.slice(1)}</div>
-                            </div>
-                            <div class="text-right">
-                                <div class="text-lg font-bold {trade.totalNetProfit.gt(0) ? 'text-[var(--success-color)]' : trade.totalNetProfit.lt(0) ? 'text-[var(--danger-color)]' : ''}">
-                                    {trade.totalNetProfit.toFixed(2)}
+                {#if filteredTrades.length > 0}
+                    {#each filteredTrades as trade}
+                        <div class="bg-[var(--bg-primary)] p-4 rounded-lg shadow-md border border-[var(--border-color)]"
+                             class:status-won={trade.status === 'Won'}
+                             class:status-lost={trade.status === 'Lost'}
+                        >
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <div class="text-lg font-bold text-[var(--text-primary)]">{trade.symbol || '-'}</div>
+                                    <div class="text-sm {trade.tradeType === CONSTANTS.TRADE_TYPE_LONG ? 'text-[var(--success-color)]' : 'text-[var(--danger-color)]'}">{trade.tradeType.charAt(0).toUpperCase() + trade.tradeType.slice(1)}</div>
                                 </div>
-                                <div class="text-xs text-[var(--text-secondary)]">P/L</div>
+                                <div class="text-right">
+                                    <div class="text-lg font-bold {trade.totalNetProfit.gt(0) ? 'text-[var(--success-color)]' : trade.totalNetProfit.lt(0) ? 'text-[var(--danger-color)]' : ''}">
+                                        {trade.totalNetProfit.toFixed(2)}
+                                    </div>
+                                    <div class="text-xs text-[var(--text-secondary)]">P/L</div>
+                                </div>
+                            </div>
+                            <div class="mt-4 grid grid-cols-2 gap-4">
+                                <div>
+                                    <div class="text-sm">Status</div>
+                                    <select class="status-select input-field p-1 mt-1 w-full" data-id="{trade.id}" on:change={(e) => app.updateTradeStatus(trade.id, (e.target as HTMLSelectElement).value)}>
+                                        <option value="Open" selected={trade.status === 'Open'}>{$_('journal.filterOpen')}</option>
+                                        <option value="Won" selected={trade.status === 'Won'}>{$_('journal.filterWon')}</option>
+                                        <option value="Lost" selected={trade.status === 'Lost'}>{$_('journal.filterLost')}</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <div class="text-sm">Realized P/L</div>
+                                    {#if editingTradeId === trade.id}
+                                        <input
+                                            type="text"
+                                            class="input-field w-full px-2 py-1 mt-1"
+                                            value={trade.realizedPnl}
+                                            use:numberInput={{ maxDecimalPlaces: 4 }}
+                                            use:focus
+                                            on:blur={(e) => { app.updateRealizedPnl(trade.id, (e.target as HTMLInputElement).value); editingTradeId = null; }}
+                                            on:keydown={(e) => { if (e.key === 'Enter') { (e.target as HTMLInputElement).blur(); } else if (e.key === 'Escape') { editingTradeId = null; } }}
+                                        />
+                                    {:else}
+                                        <button type="button" class="input-field-placeholder mt-1 text-left w-full" on:click={() => editingTradeId = trade.id}>
+                                            {formatPnl(trade.realizedPnl)}
+                                        </button>
+                                    {/if}
+                                </div>
+                            </div>
+                            <div class="mt-4 flex justify-between items-center">
+                                <div class="text-sm text-slate-400">{formatDate(trade.date, $locale)}</div>
+                                <button class="delete-trade-btn text-[var(--danger-color)] hover:opacity-80 p-1 rounded-full cursor-pointer" data-id="{trade.id}" title="{$_('journal.delete')}" on:click={() => app.deleteTrade(trade.id)}>{@html icons.delete}</button>
                             </div>
                         </div>
-                        <div class="mt-4 grid grid-cols-2 gap-4">
-                            <div>
-                                <div class="text-sm">Status</div>
-                                <select class="status-select input-field p-1 mt-1 w-full" data-id="{trade.id}" on:change={(e) => app.updateTradeStatus(trade.id, (e.target as HTMLSelectElement).value)}>
-                                    <option value="Open" selected={trade.status === 'Open'}>{$_('journal.filterOpen')}</option>
-                                    <option value="Won" selected={trade.status === 'Won'}>{$_('journal.filterWon')}</option>
-                                    <option value="Lost" selected={trade.status === 'Lost'}>{$_('journal.filterLost')}</option>
-                                </select>
-                            </div>
-                            <div>
-                                <div class="text-sm">Realized P/L</div>
-                                {#if editingTradeId === trade.id}
-                                    <input
-                                        type="text"
-                                        class="input-field w-full px-2 py-1 mt-1"
-                                        value={trade.realizedPnl}
-                                        use:numberInput={{ maxDecimalPlaces: 4 }}
-                                        use:focus
-                                        on:blur={(e) => { app.updateRealizedPnl(trade.id, (e.target as HTMLInputElement).value); editingTradeId = null; }}
-                                        on:keydown={(e) => { if (e.key === 'Enter') { (e.target as HTMLInputElement).blur(); } else if (e.key === 'Escape') { editingTradeId = null; } }}
-                                    />
-                                {:else}
-                                    <button type="button" class="input-field-placeholder mt-1 text-left w-full" on:click={() => editingTradeId = trade.id}>
-                                        {formatPnl(trade.realizedPnl)}
-                                    </button>
-                                {/if}
-                            </div>
-                        </div>
-                        <div class="mt-4 flex justify-between items-center">
-                            <div class="text-sm text-slate-400">{formatDate(trade.date, $locale)}</div>
-                            <button class="delete-trade-btn text-[var(--danger-color)] hover:opacity-80 p-1 rounded-full cursor-pointer" data-id="{trade.id}" title="{$_('journal.delete')}" on:click={() => app.deleteTrade(trade.id)}>{@html icons.delete}</button>
-                        </div>
+                    {/each}
+                {:else}
+                    <div class="text-center text-slate-500 py-12">
+                        <p class="text-lg font-semibold text-[var(--text-primary)] mb-2">{$_('journal.emptyState.title')}</p>
+                        <p class="text-[var(--text-secondary)]">{$_('journal.emptyState.description')}</p>
                     </div>
-                {/each}
-                {#if filteredTrades.length === 0}
-                    <div class="text-center text-slate-500 py-8">{$_('journal.noTradesYet')}</div>
                 {/if}
             </div>
         </div>

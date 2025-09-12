@@ -18,6 +18,7 @@
   },
   "dashboard": {
     "presetLoad": "Load Preset...",
+    "noPresets": "No presets saved yet.",
     "savePresetTitle": "Save current inputs as preset",
     "savePresetAriaLabel": "Save Preset",
     "deletePresetTitle": "Delete selected preset",
@@ -150,6 +151,10 @@
     "notes": "Notes",
     "action": "Action",
     "noTradesYet": "No trades in the journal yet.",
+    "emptyState": {
+      "title": "Your Journal is Empty",
+      "description": "Add your first trade from the main screen to start tracking your performance."
+    },
     "clickToExpand": "Click to expand",
     "delete": "Delete",
     "performancePerSymbol": "Performance per Symbol",
