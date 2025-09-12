@@ -83,6 +83,11 @@
         updateTradeStore(s => ({...s, riskAmount: $calculationStore.currentTradeData!.riskAmount }));
     }
 
+    // Auto-save settings whenever trade inputs change
+    $: if ($tradeStore) {
+        app.saveSettings();
+    }
+
     function handleKeydown(event: KeyboardEvent) {
         if (!event || !event.key) return;
 

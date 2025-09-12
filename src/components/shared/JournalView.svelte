@@ -83,7 +83,7 @@
             <!-- Desktop Table -->
             <div class="hidden md:block">
                 <table class="journal-table w-full">
-                    <thead><tr><th>{$_('journal.date')}</th><th>{$_('journal.symbol')}</th><th>{$_('journal.type')}</th><th>{$_('journal.entry')}</th><th>{$_('journal.sl')}</th><th>Planned P/L</th><th>Realized P/L</th><th>{$_('journal.rr')}</th><th>{$_('journal.status')}</th><th>{$_('journal.notes')}</th><th>{$_('journal.action')}</th></tr></thead>
+                    <thead><tr><th>{$_('journal.date')}</th><th>{$_('journal.symbol')}</th><th>{$_('journal.type')}</th><th>{$_('journal.entry')}</th><th>{$_('journal.sl')}</th><th>{$_('journal.plannedPnl')}</th><th>{$_('journal.realizedPnl')}</th><th>{$_('journal.rr')}</th><th>{$_('journal.status')}</th><th>{$_('journal.notes')}</th><th>{$_('journal.action')}</th></tr></thead>
                     <tbody>
                         {#each filteredTrades as trade}
                             <tr>

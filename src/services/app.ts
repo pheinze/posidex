@@ -64,8 +64,9 @@ export const app = {
     getJournal: (): JournalEntry[] => {
         if (!browser) return [];
         try {
-            const d = localStorage.getItem(CONSTANTS.LOCAL_STORAGE_JOURNAL_KEY);
-            return robustJsonParse<JournalEntry[]>(d) || [];
+            const key = CONSTANTS.LOCAL_STORAGE_JOURNAL_KEY;
+            const d = localStorage.getItem(key);
+            return robustJsonParse<JournalEntry[]>(d, key) || [];
         } catch (e) {
             console.error("Failed to get journal:", e);
             uiStore.showError("Could not load journal.");
@@ -148,15 +149,25 @@ export const app = {
     },
 
     async clearJournal() {
+        console.log("clearJournal called");
         const journal = app.getJournal();
         if (journal.length === 0) {
+            console.log("Journal is empty, showing error.");
             uiStore.showError("The journal is already empty.");
             return;
         }
-        if (await modalManager.show({ title: "Clear Journal", message: "Are you sure you want to permanently delete the entire journal?", type: 'confirm' })) {
+
+        console.log("Showing confirmation modal to clear journal.");
+        const confirmed = await modalManager.show({ title: "Clear Journal", message: "Are you sure you want to permanently delete the entire journal?", type: 'confirm' });
+
+        console.log("Modal confirmation result:", confirmed);
+        if (confirmed) {
+            console.log("User confirmed, clearing journal.");
             app.saveJournal([]);
             journalStore.set([]);
             uiStore.showFeedback('save', 2000);
+        } else {
+            console.log("User cancelled clearing journal.");
         }
     },
 
@@ -172,8 +183,9 @@ export const app = {
     loadSettings: () => {
         if (!browser) return;
         try {
-            const settingsJSON = localStorage.getItem(CONSTANTS.LOCAL_STORAGE_SETTINGS_KEY);
-            const settings = robustJsonParse<ReturnType<typeof getInputsAsObject>>(settingsJSON);
+            const key = CONSTANTS.LOCAL_STORAGE_SETTINGS_KEY;
+            const settingsJSON = localStorage.getItem(key);
+            const settings = robustJsonParse<ReturnType<typeof getInputsAsObject>>(settingsJSON, key);
             if (settings) {
                 updateTradeStore(state => ({
                     ...state,
@@ -191,11 +203,12 @@ export const app = {
         const presetName = await modalManager.show({ title: "Save Preset", message: "Enter a name for your preset:", type: 'prompt' });
         if (typeof presetName === 'string' && presetName) {
             try {
-                const presetsJSON = localStorage.getItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY);
-                const presets = robustJsonParse<Record<string, ReturnType<typeof getInputsAsObject>>>(presetsJSON) || {};
+                const key = CONSTANTS.LOCAL_STORAGE_PRESETS_KEY;
+                const presetsJSON = localStorage.getItem(key);
+                const presets = robustJsonParse<Record<string, ReturnType<typeof getInputsAsObject>>>(presetsJSON, key) || {};
                 if (presets[presetName] && !(await modalManager.show({ title: "Overwrite?", message: `Preset "${presetName}" already exists. Do you want to overwrite it?`, type: 'confirm' }))) return;
                 presets[presetName] = getInputsAsObject();
-                localStorage.setItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY, superjson.stringify(presets));
+                localStorage.setItem(key, superjson.stringify(presets));
                 uiStore.showFeedback('save');
                 app.populatePresetLoader();
                 updatePresetStore(state => ({ ...state, selectedPreset: presetName }));
@@ -211,10 +224,11 @@ export const app = {
         if (!presetName) return;
         if (!(await modalManager.show({ title: "Delete Preset", message: `Really delete preset "${presetName}"?`, type: 'confirm' }))) return;
         try {
-            const presetsJSON = localStorage.getItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY);
-            const presets = robustJsonParse<Record<string, any>>(presetsJSON) || {};
+            const key = CONSTANTS.LOCAL_STORAGE_PRESETS_KEY;
+            const presetsJSON = localStorage.getItem(key);
+            const presets = robustJsonParse<Record<string, any>>(presetsJSON, key) || {};
             delete presets[presetName];
-            localStorage.setItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY, superjson.stringify(presets));
+            localStorage.setItem(key, superjson.stringify(presets));
             app.populatePresetLoader();
             updatePresetStore(state => ({ ...state, selectedPreset: '' }));
         } catch (e) {
@@ -226,8 +240,9 @@ export const app = {
         if (!browser || !presetName) return;
         trackCustomEvent('Preset', 'Load', presetName);
         try {
-            const presetsJSON = localStorage.getItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY);
-            const presets = robustJsonParse<Record<string, ReturnType<typeof getInputsAsObject>>>(presetsJSON);
+            const key = CONSTANTS.LOCAL_STORAGE_PRESETS_KEY;
+            const presetsJSON = localStorage.getItem(key);
+            const presets = robustJsonParse<Record<string, ReturnType<typeof getInputsAsObject>>>(presetsJSON, key);
             const preset = presets?.[presetName];
             if (preset) {
                 resetAllInputs();
@@ -247,8 +262,9 @@ export const app = {
     populatePresetLoader: () => {
         if (!browser) return;
         try {
-            const presetsJSON = localStorage.getItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY);
-            const presets = robustJsonParse<Record<string, any>>(presetsJSON) || {};
+            const key = CONSTANTS.LOCAL_STORAGE_PRESETS_KEY;
+            const presetsJSON = localStorage.getItem(key);
+            const presets = robustJsonParse<Record<string, any>>(presetsJSON, key) || {};
             updatePresetStore(state => ({ ...state, availablePresets: Object.keys(presets) }));
         } catch (e) {
             console.error("Could not populate presets from localStorage:", e);

@@ -1,16 +1,17 @@
 import { Decimal } from 'decimal.js';
 import superjson from '$lib/superjson';
 
-export function robustJsonParse<T>(jsonString: string | null): T | null {
+export function robustJsonParse<T>(jsonString: string | null, key: string): T | null {
     if (!jsonString) return null;
     try {
         return superjson.parse<T>(jsonString);
     } catch (superjsonError) {
         try {
-            console.warn("SuperJSON parsing failed, falling back to JSON.parse. This might indicate old data format.", superjsonError);
+            console.warn(`SuperJSON parsing failed for key "${key}", falling back to JSON.parse.`, superjsonError);
             return JSON.parse(jsonString);
         } catch (jsonError) {
-            console.error("Failed to parse data with both SuperJSON and JSON.parse.", jsonError);
+            console.error(`Failed to parse data with both SuperJSON and JSON.parse for key "${key}". Removing item.`, jsonError);
+            localStorage.removeItem(key);
             return null;
         }
     }
