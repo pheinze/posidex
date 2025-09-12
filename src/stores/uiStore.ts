@@ -14,6 +14,7 @@ interface UiState {
     isPriceFetching: boolean;
     symbolSuggestions: string[];
     showSymbolSuggestions: boolean;
+    invalidFields: string[];
 }
 
 const initialUiState: UiState = {
@@ -26,6 +27,7 @@ const initialUiState: UiState = {
     errorMessage: '',
     showErrorMessage: false,
     isPriceFetching: false,
+    invalidFields: [],
     symbolSuggestions: [],
     showSymbolSuggestions: false,
 };
@@ -65,8 +67,8 @@ function createUiStore() {
             update(state => ({ ...state, [key]: true }));
             setTimeout(() => update(state => ({ ...state, [key]: false })), duration);
         },
-        showError: (message: string) => update(state => ({ ...state, errorMessage: message, showErrorMessage: true })),
-        hideError: () => update(state => ({ ...state, errorMessage: '', showErrorMessage: false })),
+        showError: (message: string, fields: string[] = []) => update(state => ({ ...state, errorMessage: message, showErrorMessage: true, invalidFields: fields })),
+        hideError: () => update(state => ({ ...state, errorMessage: '', showErrorMessage: false, invalidFields: [] })),
     };
 }
 

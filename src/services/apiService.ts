@@ -10,14 +10,24 @@ export interface Kline {
 export const apiService = {
     async fetchBinancePrice(symbol: string): Promise<Decimal> {
         const response = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`);
-        if (!response.ok) throw new Error(`Symbol nicht gefunden oder API-Fehler (${response.status})`);
+        if (!response.ok) {
+            if (response.status === 404 || response.status === 400) { // 400 is often used for invalid symbol format
+                throw new Error(`Symbol "${symbol}" nicht gefunden.`);
+            }
+            throw new Error(`Binance API-Fehler: ${response.statusText} (${response.status})`);
+        }
         const data = await response.json();
         return new Decimal(data.price);
     },
 
     async fetchKlines(symbol: string, interval: string, limit: number = 15): Promise<Kline[]> {
         const response = await fetch(`https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`);
-        if (!response.ok) throw new Error(`Kerzendaten konnten nicht geladen werden (${response.status})`);
+        if (!response.ok) {
+            if (response.status === 404 || response.status === 400) {
+                throw new Error(`Kerzendaten für "${symbol}" nicht gefunden.`);
+            }
+            throw new Error(`Binance API-Fehler: ${response.statusText} (${response.status})`);
+        }
         const data: [number, string, string, string, string, ...unknown[]][] = await response.json();
 
         // Map the raw array data to a more usable object format

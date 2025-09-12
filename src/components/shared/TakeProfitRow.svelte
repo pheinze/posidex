@@ -55,8 +55,11 @@
         if (currentTargets[index]) {
             currentTargets[index].percent = newPercent;
             updateTradeStore(s => ({...s, targets: currentTargets}));
-            app.adjustTpPercentages(index);
         }
+    }
+
+    function handleBlur() {
+        app.adjustTpPercentages(index);
     }
 </script>
 
@@ -81,6 +84,7 @@
                 use:numberInput={{ maxDecimalPlaces: 4 }}
                 value={format(price)}
                 on:input={handlePriceInput}
+                on:blur={handleBlur}
                 class="tp-price input-field w-full px-4 py-2 rounded-md"
                 placeholder="{$_('dashboard.takeProfitRow.pricePlaceholder')}"
                 id="tp-price-{index}"
@@ -90,6 +94,7 @@
                 use:numberInput={{ noDecimals: true, isPercentage: true, minValue: 0, maxValue: 100 }}
                 value={format(percent)}
                 on:input={handlePercentInput}
+                on:blur={handleBlur}
                 class="tp-percent input-field w-full px-4 py-2 rounded-md"
                 class:locked-input={isLocked}
                 disabled={isLocked}
@@ -98,14 +103,14 @@
             >
         </div>
     </div>
-    <button class="lock-tp-btn btn-lock-icon p-1 self-center" title="{$_('dashboard.takeProfitRow.lockButtonTitle')}" tabindex="-1" on:click={toggleLock} use:trackClick={{ category: 'TakeProfitRow', action: 'Click', name: 'ToggleLock' }}>
+    <button class="lock-tp-btn btn-lock-icon p-1 self-center" title="{$_('dashboard.takeProfitRow.lockButtonTitle')}" on:click={toggleLock} use:trackClick={{ category: 'TakeProfitRow', action: 'Click', name: 'ToggleLock' }}>
         {#if isLocked}
             {@html icons.lockClosed}
         {:else}
             {@html icons.lockOpen}
         {/if}
     </button>
-    <button class="remove-tp-btn text-[var(--danger-color)] hover:opacity-80 p-1 self-center" title="{$_('dashboard.takeProfitRow.removeButtonTitle')}" tabindex="-1" on:click={removeRow} use:trackClick={{ category: 'TakeProfitRow', action: 'Click', name: 'RemoveRow' }}>
+    <button class="remove-tp-btn text-danger hover:opacity-80 p-1 self-center" title="{$_('dashboard.takeProfitRow.removeButtonTitle')}" on:click={removeRow} use:trackClick={{ category: 'TakeProfitRow', action: 'Click', name: 'RemoveRow' }}>
         {@html icons.remove}
     </button>
 </div>

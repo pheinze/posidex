@@ -1,4 +1,4 @@
-import { writable } from 'svelte/store';
+import { writable, derived } from 'svelte/store';
 import { CONSTANTS } from '../lib/constants';
 import type { AppState } from './types';
 import { resultsStore, initialResultsState } from './resultsStore';
@@ -27,7 +27,8 @@ export const initialTradeState: Pick<AppState,
     'riskAmount' |
     'journalSearchQuery' |
     'journalFilterStatus' |
-    'currentTradeData'
+    'currentTradeData' |
+    'slippage'
 > = {
     tradeType: CONSTANTS.TRADE_TYPE_LONG,
     accountSize: new Decimal(1000),
@@ -36,6 +37,7 @@ export const initialTradeState: Pick<AppState,
     stopLossPrice: null,
     leverage: new Decimal(CONSTANTS.DEFAULT_LEVERAGE),
     fees: new Decimal(CONSTANTS.DEFAULT_FEES),
+    slippage: new Decimal(0.0),
     symbol: '',
     atrValue: null,
     atrMultiplier: new Decimal(CONSTANTS.DEFAULT_ATR_MULTIPLIER),
@@ -58,6 +60,28 @@ export const initialTradeState: Pick<AppState,
 };
 
 export const tradeStore = writable(initialTradeState);
+
+// Derived store that only updates when calculation-relevant inputs change
+export const calculationInputs = derived(
+    tradeStore,
+    $tradeStore => ({
+        accountSize: $tradeStore.accountSize,
+        riskPercentage: $tradeStore.riskPercentage,
+        entryPrice: $tradeStore.entryPrice,
+        stopLossPrice: $tradeStore.stopLossPrice,
+        leverage: $tradeStore.leverage,
+        fees: $tradeStore.fees,
+        slippage: $tradeStore.slippage,
+        symbol: $tradeStore.symbol,
+        atrValue: $tradeStore.atrValue,
+        atrMultiplier: $tradeStore.atrMultiplier,
+        useAtrSl: $tradeStore.useAtrSl,
+        atrMode: $tradeStore.atrMode,
+        atrTimeframe: $tradeStore.atrTimeframe,
+        tradeType: $tradeStore.tradeType,
+        targets: $tradeStore.targets
+    })
+);
 
 // Helper function to update parts of the store
 export const updateTradeStore = (updater: (state: typeof initialTradeState) => typeof initialTradeState) => {

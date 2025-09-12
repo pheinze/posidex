@@ -3,22 +3,21 @@
     import PortfolioInputs from '../components/inputs/PortfolioInputs.svelte';
     import TradeSetupInputs from '../components/inputs/TradeSetupInputs.svelte';
     import TakeProfitTargets from '../components/inputs/TakeProfitTargets.svelte';
-    import CustomModal from '../components/shared/CustomModal.svelte';
+    import ConfirmModal from '../components/shared/ConfirmModal.svelte';
+    import PromptModal from '../components/shared/PromptModal.svelte';
     import VisualBar from '../components/shared/VisualBar.svelte';
-    import { CONSTANTS, themes, themeIcons, icons } from '../lib/constants';
+    import { CONSTANTS } from '../lib/constants';
     import { app } from '../services/app';
-    import { tradeStore, updateTradeStore, resetAllInputs, toggleAtrInputs } from '../stores/tradeStore';
+    import { tradeStore, updateTradeStore, toggleAtrInputs, calculationInputs } from '../stores/tradeStore';
     import { resultsStore } from '../stores/resultsStore';
-    import { presetStore } from '../stores/presetStore';
     import { uiStore } from '../stores/uiStore';
-    import { modalManager } from '../services/modalManager';
+    import { confirmService } from '../services/confirmService';
     import { onMount } from 'svelte';
     import { _, locale } from '../locales/i18n'; // Import locale
     import { get } from 'svelte/store'; // Import get
     import { loadInstruction } from '../services/markdownLoader';
     import { formatDynamicDecimal } from '../utils/utils';
-    import { trackClick } from '../lib/actions';
-import { trackCustomEvent } from '../services/trackingService';
+    import { trackCustomEvent } from '../services/trackingService';
     import { createBackup, restoreFromBackup } from '../services/backupService';
     import { Decimal } from 'decimal.js';
     
@@ -27,11 +26,29 @@ import { trackCustomEvent } from '../services/trackingService';
     import LanguageSwitcher from '../components/shared/LanguageSwitcher.svelte';
     import Tooltip from '../components/shared/Tooltip.svelte';
     import JournalView from '../components/shared/JournalView.svelte';
-    import CachyIcon from '../components/shared/CachyIcon.svelte';
+    import Header from '../components/layout/Header.svelte';
+    import Modal from '../components/shared/Modal.svelte';
 
     let fileInput: HTMLInputElement;
     let changelogContent = '';
     let guideContent = '';
+
+    let contentModalState = {
+        isOpen: false,
+        title: '',
+        content: ''
+    };
+
+    async function showContentModal(type: 'dashboard' | 'journal') {
+        const instruction = await loadInstruction(type);
+        let titleKey = type === 'dashboard' ? 'dashboard.instructionsTitle' : 'journal.showJournalInstructionsTitle';
+
+        contentModalState = {
+            isOpen: true,
+            title: $_(titleKey),
+            content: instruction.html
+        };
+    }
 
     // Initialisierung der App-Logik, sobald die Komponente gemountet ist
     onMount(() => {
@@ -58,34 +75,11 @@ import { trackCustomEvent } from '../services/trackingService';
         changelogContent = '';
     }
 
-    // Reactive statement to trigger app.calculateAndDisplay() when relevant inputs change
-    $: {
-        // Trigger calculation when any of these inputs change
-        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-        $tradeStore.accountSize,
-        $tradeStore.riskPercentage,
-        $tradeStore.entryPrice,
-        $tradeStore.stopLossPrice,
-        $tradeStore.leverage,
-        $tradeStore.fees,
-        $tradeStore.symbol,
-        $tradeStore.atrValue,
-        $tradeStore.atrMultiplier,
-        $tradeStore.useAtrSl,
-        $tradeStore.atrMode,
-        $tradeStore.atrTimeframe,
-        $tradeStore.tradeType,
-        $tradeStore.targets;
-
-        // Only trigger if all necessary inputs are defined (not null/undefined from initial load)
-        // and not during initial setup where values might be empty
-        if ($tradeStore.accountSize !== undefined && $tradeStore.riskPercentage !== undefined &&
-            $tradeStore.entryPrice !== undefined && $tradeStore.leverage !== undefined &&
-            $tradeStore.fees !== undefined && $tradeStore.symbol !== undefined &&
-            $tradeStore.atrValue !== undefined && $tradeStore.atrMultiplier !== undefined &&
-            $tradeStore.useAtrSl !== undefined && $tradeStore.tradeType !== undefined &&
-            $tradeStore.targets !== undefined) {
-            
+    // When the derived store for calculation inputs changes, trigger a recalculation.
+    $: if ($calculationInputs) {
+        // The check for undefined is still useful to prevent calculation on initial mount
+        // before the store is fully populated from localStorage.
+        if (Object.values($calculationInputs).every(val => val !== undefined)) {
             app.calculateAndDisplay();
         }
     }
@@ -105,31 +99,15 @@ import { trackCustomEvent } from '../services/trackingService';
         app.adjustTpPercentages(null); // Pass null to signify a removal
     }
 
-    function handleThemeSwitch() {
-        const currentIndex = themes.indexOf($uiStore.currentTheme);
-        const nextIndex = (currentIndex + 1) % themes.length;
-        uiStore.setTheme(themes[nextIndex]);
-    }
-
-    // Diese reaktive Variable formatiert den Theme-Namen benutzerfreundlich.
-    // z.B. 'solarized-light' wird zu 'Solarized Light'
-    $: themeTitle = $uiStore.currentTheme
-        .split('-')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ');
-
-    function handlePresetLoad(event: Event) {
-        const selectedPreset = (event.target as HTMLSelectElement).value;
-        app.loadPreset(selectedPreset);
-    }
-
     function handleKeydown(event: KeyboardEvent) {
         if (event && event.key && event.key.toLowerCase() === 'escape') {
             event.preventDefault();
+            // The new generic Modal component handles its own closing on Escape.
+            // We just need to manage the flags that control it.
             if ($uiStore.showJournalModal) uiStore.toggleJournalModal(false);
             if ($uiStore.showGuideModal) uiStore.toggleGuideModal(false);
             if ($uiStore.showChangelogModal) uiStore.toggleChangelogModal(false);
-            if (get(modalManager).isOpen) modalManager._handleModalConfirm(false);
+            if (contentModalState.isOpen) contentModalState.isOpen = false;
             return;
         }
 
@@ -142,10 +120,6 @@ import { trackCustomEvent } from '../services/trackingService';
                 case 's':
                     event.preventDefault();
                     updateTradeStore(s => ({ ...s, tradeType: CONSTANTS.TRADE_TYPE_SHORT }));
-                    break;
-                case 'r':
-                    event.preventDefault();
-                    resetAllInputs();
                     break;
                 case 'j':
                     event.preventDefault();
@@ -170,28 +144,28 @@ import { trackCustomEvent } from '../services/trackingService';
         if (!file) return;
 
         const reader = new FileReader();
-        reader.onload = (e) => {
+        reader.onload = async (e) => {
             const content = e.target?.result as string;
 
-            modalManager.show(
+            const confirmed = await confirmService.show(
                 $_('app.restoreConfirmTitle'),
-                $_('app.restoreConfirmMessage'),
-                'confirm'
-            ).then((confirmed) => {
-                if (confirmed) {
-                    const result = restoreFromBackup(content);
-                    if (result.success) {
-                        uiStore.showFeedback('save'); // Re-use save feedback for now
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 1000);
-                    } else {
-                        uiStore.showError(result.message);
-                    }
+                $_('app.restoreConfirmMessage')
+            );
+
+            if (confirmed) {
+                const result = restoreFromBackup(content);
+                if (result.success) {
+                    // Now that restoreFromBackup updates the stores,
+                    // we just need to re-load the settings into the tradeStore
+                    // and the UI will be reactive.
+                    app.loadSettings();
+                    uiStore.showFeedback('save');
+                } else {
+                    uiStore.showError(result.message);
                 }
-                // Reset file input so the same file can be selected again
-                input.value = '';
-            });
+            }
+            // Reset file input so the same file can be selected again
+            input.value = '';
         };
         reader.onerror = () => {
             uiStore.showError('app.fileReadError');
@@ -208,41 +182,11 @@ import { trackCustomEvent } from '../services/trackingService';
 
 <main class="my-8 w-full max-w-4xl mx-auto calculator-wrapper rounded-2xl shadow-2xl p-6 sm:p-8 fade-in">
 
-    <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
-        <div class="flex justify-between items-center w-full md:w-auto">
-            <div class="flex items-center gap-3 text-[var(--text-primary)]">
-                <CachyIcon class="h-8 w-8" />
-                <h1 class="text-2xl sm:text-3xl font-bold">{$_('app.title')}</h1>
-            </div>
-            <button id="view-journal-btn-mobile" class="text-sm md:hidden bg-[var(--btn-accent-bg)] hover:bg-[var(--btn-accent-hover-bg)] text-[var(--btn-accent-text)] font-bold py-2 px-4 rounded-lg" title="{$_('app.journalButtonTitle')}" on:click={() => uiStore.toggleJournalModal(true)} use:trackClick={{ category: 'Navigation', action: 'Click', name: 'ViewJournalMobile' }}>{$_('app.journalButton')}</button>
-        </div>
-        <div class="flex items-center flex-wrap justify-end gap-2 w-full md:w-auto">
-            <div class="flex items-center flex-wrap justify-end gap-2 md:order-1">
-                <select id="preset-loader" class="input-field px-3 py-2 rounded-md text-sm" on:change={handlePresetLoad} bind:value={$presetStore.selectedPreset}>
-                    <option value="">{$_('dashboard.presetLoad')}</option>
-                    {#each $presetStore.availablePresets as presetName}
-                        <option value={presetName}>{presetName}</option>
-                    {/each}
-                </select>
-                <button id="save-preset-btn" class="text-sm bg-[var(--btn-default-bg)] hover:bg-[var(--btn-default-hover-bg)] text-[var(--btn-default-text)] font-bold py-2.5 px-2.5 rounded-lg" title="{$_('dashboard.savePresetTitle')}" aria-label="{$_('dashboard.savePresetAriaLabel')}" on:click={app.savePreset} use:trackClick={{ category: 'Presets', action: 'Click', name: 'SavePreset' }}>{@html icons.save}</button>
-                <button id="delete-preset-btn" class="text-sm bg-[var(--btn-danger-bg)] hover:bg-[var(--btn-danger-hover-bg)] text-[var(--btn-danger-text)] font-bold py-2.5 px-2.5 rounded-lg disabled:cursor-not-allowed" title="{$_('dashboard.deletePresetTitle')}" disabled={!$presetStore.selectedPreset} on:click={app.deletePreset} use:trackClick={{ category: 'Presets', action: 'Click', name: 'DeletePreset' }}>{@html icons.delete}</button>
-                <button id="reset-btn" class="text-sm bg-[var(--btn-default-bg)] hover:bg-[var(--btn-default-hover-bg)] text-[var(--btn-default-text)] font-bold py-2.5 px-2.5 rounded-lg flex items-center gap-2" title="{$_('dashboard.resetButtonTitle')}" on:click={resetAllInputs} use:trackClick={{ category: 'Actions', action: 'Click', name: 'ResetAll' }}>{@html icons.broom}</button>
-                <button
-                    id="theme-switcher"
-                    class="text-sm bg-[var(--btn-default-bg)] hover:bg-[var(--btn-default-hover-bg)] text-[var(--btn-default-text)] font-bold py-2 px-2.5 rounded-lg"
-                    aria-label="{$_('dashboard.themeSwitcherAriaLabel')}"
-                    on:click={handleThemeSwitch}
-                    title={themeTitle}
-                    use:trackClick={{ category: 'Settings', action: 'Click', name: 'SwitchTheme' }}
-                >{@html themeIcons[$uiStore.currentTheme as keyof typeof themeIcons]}</button>
-            </div>
-            <button id="view-journal-btn-desktop" class="hidden md:inline-block text-sm bg-[var(--btn-accent-bg)] hover:bg-[var(--btn-accent-hover-bg)] text-[var(--btn-accent-text)] font-bold py-2 px-4 rounded-lg md:order-2" title="{$_('app.journalButtonTitle')}" on:click={() => uiStore.toggleJournalModal(true)} use:trackClick={{ category: 'Navigation', action: 'Click', name: 'ViewJournalDesktop' }}>{$_('app.journalButton')}</button>
-        </div>
-    </div>
+    <Header />
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
         <div>
-            <GeneralInputs bind:tradeType={$tradeStore.tradeType} bind:leverage={$tradeStore.leverage} bind:fees={$tradeStore.fees} />
+            <GeneralInputs bind:tradeType={$tradeStore.tradeType} bind:leverage={$tradeStore.leverage} bind:fees={$tradeStore.fees} bind:slippage={$tradeStore.slippage} />
 
             <PortfolioInputs
                 bind:accountSize={$tradeStore.accountSize}
@@ -339,7 +283,7 @@ import { trackCustomEvent } from '../services/trackingService';
             <textarea id="tradeNotes" class="input-field w-full px-4 py-2 rounded-md mb-4" rows="2" placeholder="{$_('dashboard.tradeNotesPlaceholder')}" bind:value={$tradeStore.tradeNotes}></textarea>
             <div class="flex items-center gap-4">
                 <button id="save-journal-btn" class="w-full font-bold py-3 px-4 rounded-lg btn-primary-action" on:click={app.addTrade} disabled={$resultsStore.positionSize === '-'} use:trackClick={{ category: 'Journal', action: 'Click', name: 'SaveTrade' }}>{$_('dashboard.addTradeToJournal')}</button>
-                <button id="show-dashboard-readme-btn" class="font-bold p-3 rounded-lg btn-secondary-action" title="{$_('dashboard.showInstructionsTitle')}" aria-label="{$_('dashboard.showInstructionsAriaLabel')}" on:click={() => app.uiManager.showReadme('dashboard')} use:trackClick={{ category: 'Navigation', action: 'Click', name: 'ShowInstructions' }}>{@html icons.book}</button>
+                <button id="show-dashboard-readme-btn" class="font-bold p-3 rounded-lg btn-secondary-action" title="{$_('dashboard.showInstructionsTitle')}" aria-label="{$_('dashboard.showInstructionsAriaLabel')}" on:click={() => showContentModal('dashboard')}>{@html icons.book}</button>
                 {#if $uiStore.showSaveFeedback}<span id="save-feedback" class="save-feedback" class:visible={$uiStore.showSaveFeedback}>{$_('dashboard.savedFeedback')}</span>{/if}
             </div>
             <div class="mt-4 flex justify-between items-center">
@@ -361,48 +305,25 @@ import { trackCustomEvent } from '../services/trackingService';
     Version 0.92b1 - <button class="text-link" on:click={() => uiStore.toggleGuideModal(true)} use:trackClick={{ category: 'Navigation', action: 'Click', name: 'ShowGuide' }}>{$_('app.guideButton')}</button> | <button class="text-link" on:click={() => uiStore.toggleChangelogModal(true)} use:trackClick={{ category: 'Navigation', action: 'Click', name: 'ShowChangelog' }}>Changelog</button>
 </footer>
 
-<JournalView />
+<JournalView on:showreadme={() => showContentModal('journal')} />
 
-<CustomModal />
+<ConfirmModal />
+<PromptModal />
 
-<div
-    id="changelog-modal"
-    class="modal-overlay"
-    class:visible={$uiStore.showChangelogModal}
-    class:opacity-100={$uiStore.showChangelogModal}
-    on:click={(e) => { if (e.target === e.currentTarget) uiStore.toggleChangelogModal(false) }}
-    on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { if (e.target === e.currentTarget) uiStore.toggleChangelogModal(false) } }}
-    role="button"
-    tabindex="0"
->
-    <div class="modal-content w-full h-full max-w-6xl">
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-2xl font-bold">{$_('app.changelogTitle')}</h2>
-            <button id="close-changelog-btn" class="text-3xl" aria-label="{$_('app.closeChangelogAriaLabel')}" on:click={() => uiStore.toggleChangelogModal(false)} use:trackClick={{ category: 'Navigation', action: 'Click', name: 'CloseChangelog' }}>&times;</button>
-        </div>
-        <div id="changelog-content" class="prose dark:prose-invert max-h-[calc(100vh-10rem)] overflow-y-auto">
-            {@html changelogContent}
-        </div>
+<Modal bind:isOpen={$uiStore.showChangelogModal} title={$_('app.changelogTitle')}>
+    <div class="prose dark:prose-invert max-h-[calc(70vh)] overflow-y-auto">
+        {@html changelogContent}
     </div>
-</div>
+</Modal>
 
-<div
-    id="guide-modal"
-    class="modal-overlay"
-    class:visible={$uiStore.showGuideModal}
-    class:opacity-100={$uiStore.showGuideModal}
-    on:click={(e) => { if (e.target === e.currentTarget) uiStore.toggleGuideModal(false) }}
-    on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { if (e.target === e.currentTarget) uiStore.toggleGuideModal(false) } }}
-    role="button"
-    tabindex="0"
->
-    <div class="modal-content w-full h-full max-w-6xl">
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-2xl font-bold">{$_('app.guideTitle')}</h2>
-            <button id="close-guide-btn" class="text-3xl" aria-label="{$_('app.closeGuideAriaLabel')}" on:click={() => uiStore.toggleGuideModal(false)} use:trackClick={{ category: 'Navigation', action: 'Click', name: 'CloseGuide' }}>&times;</button>
-        </div>
-        <div id="guide-content" class="prose dark:prose-invert max-h-[calc(100vh-10rem)] overflow-y-auto">
-            {@html guideContent}
-        </div>
+<Modal bind:isOpen={$uiStore.showGuideModal} title={$_('app.guideTitle')}>
+    <div class="prose dark:prose-invert max-h-[calc(70vh)] overflow-y-auto">
+        {@html guideContent}
     </div>
-</div>
+</Modal>
+
+<Modal bind:isOpen={contentModalState.isOpen} title={contentModalState.title}>
+    <div class="prose dark:prose-invert max-h-[calc(70vh)] overflow-y-auto">
+        {@html contentModalState.content}
+    </div>
+</Modal>

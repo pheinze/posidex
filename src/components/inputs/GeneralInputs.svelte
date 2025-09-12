@@ -9,6 +9,7 @@
     export let tradeType: string;
     export let leverage: Decimal | null;
     export let fees: Decimal | null;
+    export let slippage: Decimal | null;
 
     function setTradeType(type: string) {
         updateTradeStore(s => ({ ...s, tradeType: type }));
@@ -26,6 +27,12 @@
         const target = e.target as HTMLInputElement;
         const value = target.value;
         updateTradeStore(s => ({ ...s, fees: value === '' ? null : new Decimal(value) }));
+    }
+
+    function handleSlippageInput(e: Event) {
+        const target = e.target as HTMLInputElement;
+        const value = target.value;
+        updateTradeStore(s => ({ ...s, slippage: value === '' ? null : new Decimal(value) }));
     }
 </script>
 
@@ -50,7 +57,7 @@
                 use:trackClick={{ category: 'GeneralInputs', action: 'SetTradeType', name: 'Short' }}
             >{$_('dashboard.generalInputs.shortButton')}</button>
         </div>
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-3 gap-4">
             <input
                 id="leverage-input"
                 type="text"
@@ -68,6 +75,15 @@
                 on:input={handleFeesInput}
                 class="input-field w-full px-4 py-2 rounded-md"
                 placeholder="{$_('dashboard.generalInputs.feesPlaceholder')}"
+            >
+            <input
+                id="slippage-input"
+                type="text"
+                use:numberInput={{ maxDecimalPlaces: 4 }}
+                value={format(slippage)}
+                on:input={handleSlippageInput}
+                class="input-field w-full px-4 py-2 rounded-md"
+                placeholder="Slippage %"
             >
         </div>
     </div>

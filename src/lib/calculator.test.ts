@@ -13,6 +13,7 @@ describe('calculator', () => {
       entryPrice: new Decimal(100),
       leverage: new Decimal(10),
       fees: new Decimal(0.1),
+      slippage: new Decimal(0),
       symbol: 'BTCUSDT',
       useAtrSl: false,
       atrValue: new Decimal(0),
@@ -42,6 +43,7 @@ describe('calculator', () => {
       entryPrice: new Decimal(100),
       leverage: new Decimal(10),
       fees: new Decimal(0.1),
+      slippage: new Decimal(0),
       symbol: 'BTCUSDT',
       useAtrSl: false,
       atrValue: new Decimal(0),
@@ -80,6 +82,7 @@ describe('calculator', () => {
       entryPrice: new Decimal(100),
       leverage: new Decimal(10),
       fees: new Decimal(0.1),
+      slippage: new Decimal(0),
       symbol: 'BTCUSDT',
       useAtrSl: false,
       atrValue: new Decimal(0),
@@ -118,6 +121,7 @@ describe('calculator', () => {
       stopLossPrice: new Decimal(101),
       leverage: new Decimal(10),
       fees: new Decimal(0.1),
+      slippage: new Decimal(0),
       symbol: 'BTCUSDT',
       useAtrSl: false,
       atrValue: new Decimal(0),
@@ -151,6 +155,7 @@ describe('calculator', () => {
       entryPrice: new Decimal(100),
       leverage: new Decimal(10),
       fees: new Decimal(0.1),
+      slippage: new Decimal(0),
       symbol: 'BTCUSDT',
       useAtrSl: false,
       atrValue: new Decimal(0),
@@ -188,6 +193,7 @@ describe('calculator', () => {
       entryPrice: new Decimal(100),
       leverage: new Decimal(10),
       fees: new Decimal(0.1),
+      slippage: new Decimal(0),
       symbol: 'BTCUSDT',
       useAtrSl: false,
       atrValue: new Decimal(0),
@@ -302,6 +308,7 @@ describe('Bugfix Verification Tests', () => {
       entryPrice: new Decimal(10000),
       stopLossPrice: new Decimal(9900),
       fees: new Decimal(0.1),
+      slippage: new Decimal(0),
       // Other values are not relevant for this specific test
     } as any;
     const targets = [{ price: new Decimal(10204), percent: new Decimal(100) }];
@@ -345,6 +352,7 @@ describe('Bugfix Verification Tests', () => {
       entryPrice: new Decimal(100),
       stopLossPrice: new Decimal(99),
       fees: new Decimal(0.1),
+      slippage: new Decimal(0),
     } as any;
     // Targets sum to 120%. The calculation should ignore the last 20%.
     const targets = [
@@ -368,6 +376,7 @@ describe('Bugfix Verification Tests', () => {
       stopLossPrice: new Decimal(99),
       leverage: new Decimal(1),
       fees: new Decimal(100), // 100% fees
+      slippage: new Decimal(0),
     } as any;
 
     const result = calculator.calculateBaseMetrics(values, CONSTANTS.TRADE_TYPE_LONG);
@@ -398,6 +407,7 @@ describe('Correct RRR and Stats Calculation', () => {
       stopLossPrice: new Decimal(90),
       leverage: new Decimal(10),
       fees: new Decimal(0.1),
+      slippage: new Decimal(0),
       symbol: 'BTCUSDT',
       useAtrSl: false,
       atrValue: new Decimal(0),

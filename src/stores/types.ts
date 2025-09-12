@@ -11,6 +11,7 @@ export interface TradeValues {
     atrValue: Decimal;
     atrMultiplier: Decimal;
     stopLossPrice: Decimal;
+    slippage: Decimal;
     targets: Array<{ price: Decimal; percent: Decimal; isLocked: boolean; }>;
     totalPercentSold: Decimal;
 }
@@ -54,6 +55,7 @@ export interface AppState {
     stopLossPrice: Decimal | null;
     leverage: Decimal | null;
     fees: Decimal | null;
+    slippage: Decimal | null;
     symbol: string;
     atrValue: Decimal | null;
     atrMultiplier: Decimal | null;

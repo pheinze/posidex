@@ -7,6 +7,7 @@
     import { trackCustomEvent } from '../../services/trackingService';
     import { onboardingService } from '../../services/onboardingService';
     import { updateTradeStore } from '../../stores/tradeStore';
+    import { uiStore } from '../../stores/uiStore';
     import { Decimal } from 'decimal.js';
 
     const dispatch = createEventDispatcher();
@@ -100,8 +101,10 @@
             bind:value={symbol}
             on:input={() => { handleSymbolInput(); onboardingService.trackFirstInput(); }}
             class="input-field w-full px-4 py-2 rounded-md pr-10"
+            class:invalid={$uiStore.invalidFields.includes('symbol')}
             placeholder="{$_('dashboard.tradeSetupInputs.symbolPlaceholder')}"
             autocomplete="off"
+            disabled={isPriceFetching}
         >
         <button
             type="button"
@@ -109,6 +112,7 @@
             title="{$_('dashboard.tradeSetupInputs.fetchPriceTitle')}"
             aria-label="{$_('dashboard.tradeSetupInputs.fetchPriceAriaLabel')}"
             on:click={handleFetchPriceClick}
+            disabled={isPriceFetching}
         >
             {@html icons.fetch}
         </button>
@@ -128,7 +132,7 @@
             </div>
         {/if}
     </div>
-    <input id="entry-price-input" type="text" use:numberInput={{ maxDecimalPlaces: 4 }} value={format(entryPrice)} on:input={handleEntryPriceInput} class="input-field w-full px-4 py-2 rounded-md mb-4" placeholder="{$_('dashboard.tradeSetupInputs.entryPricePlaceholder')}" on:input={onboardingService.trackFirstInput}>
+    <input id="entry-price-input" type="text" use:numberInput={{ maxDecimalPlaces: 4 }} value={format(entryPrice)} on:input={handleEntryPriceInput} class="input-field w-full px-4 py-2 rounded-md mb-4" class:invalid={$uiStore.invalidFields.includes('entryPrice')} placeholder="{$_('dashboard.tradeSetupInputs.entryPricePlaceholder')}" on:input={onboardingService.trackFirstInput} disabled={isPriceFetching}>
 
     <div class="p-2 rounded-lg mb-4" style="background-color: var(--bg-tertiary);">
         <div class="flex items-center mb-2 {useAtrSl ? 'justify-between' : 'justify-end'}">
@@ -137,38 +141,40 @@
                 <button
                     class="btn-switcher {atrMode === 'manual' ? 'active' : ''}"
                     on:click={() => dispatch('setAtrMode', 'manual')}
+                    disabled={isPriceFetching}
                 >
                     {$_('dashboard.tradeSetupInputs.atrModeManual')}
                 </button>
                 <button
                     class="btn-switcher {atrMode === 'auto' ? 'active' : ''}"
                     on:click={() => dispatch('setAtrMode', 'auto')}
+                    disabled={isPriceFetching}
                 >
                     {$_('dashboard.tradeSetupInputs.atrModeAuto')}
                 </button>
             </div>
             {/if}
-            <label class="flex items-center cursor-pointer">
+            <label class="flex items-center {isPriceFetching ? 'cursor-not-allowed' : 'cursor-pointer'}">
                 <span class="mr-2 text-sm">{$_('dashboard.tradeSetupInputs.atrStopLossLabel')}</span>
-                <input id="use-atr-sl-checkbox" type="checkbox" bind:checked={useAtrSl} on:change={toggleAtrSl} class="sr-only peer" role="switch" aria-checked={useAtrSl}>
+                <input id="use-atr-sl-checkbox" type="checkbox" bind:checked={useAtrSl} on:change={toggleAtrSl} class="sr-only peer" role="switch" aria-checked={useAtrSl} disabled={isPriceFetching}>
                 <div class="atr-toggle-track relative w-11 h-6 peer-focus:outline-none rounded-full peer after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:border after:rounded-full after:h-5 after:w-5"></div>
             </label>
         </div>
         {#if !useAtrSl}
             <div>
-                <input id="stop-loss-price-input" type="text" use:numberInput={{ maxDecimalPlaces: 4 }} value={format(stopLossPrice)} on:input={handleStopLossPriceInput} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.tradeSetupInputs.manualStopLossPlaceholder')}">
+                <input id="stop-loss-price-input" type="text" use:numberInput={{ maxDecimalPlaces: 4 }} value={format(stopLossPrice)} on:input={handleStopLossPriceInput} class="input-field w-full px-4 py-2 rounded-md" class:invalid={$uiStore.invalidFields.includes('stopLossPrice')} placeholder="{$_('dashboard.tradeSetupInputs.manualStopLossPlaceholder')}" disabled={isPriceFetching}>
             </div>
         {:else}
             {#if atrMode === 'manual'}
                 <div class="grid grid-cols-2 gap-2 mt-2">
-                    <input id="atr-value-input" type="text" use:numberInput={{ maxDecimalPlaces: 4 }} value={format(atrValue)} on:input={handleAtrValueInput} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.tradeSetupInputs.atrValuePlaceholder')}">
-                    <input id="atr-multiplier-input" type="text" use:numberInput={{ maxDecimalPlaces: 4 }} value={format(atrMultiplier)} on:input={handleAtrMultiplierInput} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.tradeSetupInputs.multiplierPlaceholder')}">
+                    <input id="atr-value-input" type="text" use:numberInput={{ maxDecimalPlaces: 4 }} value={format(atrValue)} on:input={handleAtrValueInput} class="input-field w-full px-4 py-2 rounded-md" class:invalid={$uiStore.invalidFields.includes('atrValue')} placeholder="{$_('dashboard.tradeSetupInputs.atrValuePlaceholder')}" disabled={isPriceFetching}>
+                    <input id="atr-multiplier-input" type="text" use:numberInput={{ maxDecimalPlaces: 4 }} value={format(atrMultiplier)} on:input={handleAtrMultiplierInput} class="input-field w-full px-4 py-2 rounded-md" class:invalid={$uiStore.invalidFields.includes('atrMultiplier')} placeholder="{$_('dashboard.tradeSetupInputs.multiplierPlaceholder')}" disabled={isPriceFetching}>
                 </div>
             {:else}
                 <div class="grid grid-cols-3 gap-2 mt-2 items-end">
                     <div>
                         <label for="atr-timeframe" class="input-label !mb-1 text-xs">{$_('dashboard.tradeSetupInputs.atrTimeframeLabel')}</label>
-                        <select id="atr-timeframe" bind:value={atrTimeframe} on:change={(e) => dispatch('setAtrTimeframe', e.currentTarget.value)} class="input-field w-full px-4 py-2 rounded-md">
+                        <select id="atr-timeframe" bind:value={atrTimeframe} on:change={(e) => dispatch('setAtrTimeframe', e.currentTarget.value)} class="input-field w-full px-4 py-2 rounded-md" disabled={isPriceFetching}>
                             <option value="5m">5m</option>
                             <option value="15m">15m</option>
                             <option value="1h">1h</option>
@@ -179,15 +185,15 @@
                     <div>
                         <div class="flex justify-between items-center">
                             <label for="atr-value-input-auto" class="input-label !mb-1 text-xs">{$_('dashboard.tradeSetupInputs.atrLabel')}</label>
-                            <button type="button" class="price-fetch-btn {isPriceFetching ? 'animate-spin' : ''}" on:click={() => { trackCustomEvent('ATR', 'Fetch', symbol); dispatch('fetchAtr'); }} title="Fetch ATR Value">
+                            <button type="button" class="price-fetch-btn {isPriceFetching ? 'animate-spin' : ''}" on:click={() => { trackCustomEvent('ATR', 'Fetch', symbol); dispatch('fetchAtr'); }} title="Fetch ATR Value" disabled={isPriceFetching}>
                                 {@html icons.fetch}
                             </button>
                         </div>
-                        <input id="atr-value-input-auto" type="text" use:numberInput={{ maxDecimalPlaces: 4 }} value={format(atrValue)} on:input={handleAtrValueInput} class="input-field w-full px-4 py-2 rounded-md" placeholder="ATR">
+                        <input id="atr-value-input-auto" type="text" use:numberInput={{ maxDecimalPlaces: 4 }} value={format(atrValue)} on:input={handleAtrValueInput} class="input-field w-full px-4 py-2 rounded-md" class:invalid={$uiStore.invalidFields.includes('atrValue')} placeholder="ATR" disabled={isPriceFetching}>
                     </div>
                     <div>
                         <label for="atr-multiplier-input-auto" class="input-label !mb-1 text-xs">{$_('dashboard.tradeSetupInputs.atrMultiplierLabel')}</label>
-                        <input id="atr-multiplier-input-auto" type="text" use:numberInput={{ maxDecimalPlaces: 4 }} value={format(atrMultiplier)} on:input={handleAtrMultiplierInput} class="input-field w-full px-4 py-2 rounded-md" placeholder="1.5">
+                        <input id="atr-multiplier-input-auto" type="text" use:numberInput={{ maxDecimalPlaces: 4 }} value={format(atrMultiplier)} on:input={handleAtrMultiplierInput} class="input-field w-full px-4 py-2 rounded-md" class:invalid={$uiStore.invalidFields.includes('atrMultiplier')} placeholder="1.5" disabled={isPriceFetching}>
                     </div>
                 </div>
             {/if}

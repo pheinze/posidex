@@ -1,8 +1,10 @@
 import { get } from 'svelte/store';
+import superjson from '../lib/superjson';
 import { parseDecimal, formatDynamicDecimal, parseGermanDate } from '../utils/utils';
 import { CONSTANTS } from '../lib/constants';
 import { apiService } from './apiService';
-import { modalManager } from './modalManager';
+import { confirmService } from './confirmService';
+import { promptService } from './promptService';
 import { uiManager } from './uiManager';
 import { calculator } from '../lib/calculator';
 import { tradeStore, updateTradeStore, resetAllInputs, toggleAtrInputs } from '../stores/tradeStore';
@@ -73,6 +75,7 @@ export const app = {
                 entryPrice: parseDecimal(currentTradeState.entryPrice),
                 leverage: parseDecimal(currentTradeState.leverage || CONSTANTS.DEFAULT_LEVERAGE),
                 fees: parseDecimal(currentTradeState.fees || CONSTANTS.DEFAULT_FEES),
+                slippage: parseDecimal(currentTradeState.slippage),
                 symbol: currentTradeState.symbol || '',
                 useAtrSl: currentTradeState.useAtrSl,
                 atrValue: parseDecimal(currentTradeState.atrValue),
@@ -272,35 +275,22 @@ export const app = {
     getJournal: (): JournalEntry[] => {
         if (!browser) return [];
         try {
-            const d = localStorage.getItem(CONSTANTS.LOCAL_STORAGE_JOURNAL_KEY) || '[]';
-            const parsedData = JSON.parse(d);
-            if (!Array.isArray(parsedData)) return [];
-            return parsedData.map(trade => {
-                const newTrade = { ...trade };
-                Object.keys(newTrade).forEach(key => {
-                    if (['accountSize', 'riskPercentage', 'entryPrice', 'stopLossPrice', 'leverage', 'fees', 'atrValue', 'atrMultiplier', 'totalRR', 'totalNetProfit', 'netLoss', 'riskAmount', 'totalFees', 'positionSize', 'realizedPnl'].includes(key)) {
-                        // Ensure nulls are not converted to Decimal(0)
-                        if (newTrade[key] !== null) {
-                            newTrade[key] = new Decimal(newTrade[key] || 0);
-                        }
-                    }
-                });
-                if (newTrade.targets && Array.isArray(newTrade.targets)) {
-                    newTrade.targets = newTrade.targets.map((tp: { price: string | number; percent: string | number }) => ({ ...tp, price: new Decimal(tp.price || 0), percent: new Decimal(tp.percent || 0) }));
-                }
-                return newTrade as JournalEntry;
-            });
-        } catch {
-            console.warn("Could not load journal from localStorage.");
-            uiStore.showError("Journal konnte nicht geladen werden.");
+            const d = localStorage.getItem(CONSTANTS.LOCAL_STORAGE_JOURNAL_KEY);
+            if (!d) return [];
+            const parsedData = superjson.parse<JournalEntry[]>(d);
+            return Array.isArray(parsedData) ? parsedData : [];
+        } catch (e) {
+            console.warn("Could not load and parse journal from localStorage.", e);
+            uiStore.showError("Journal konnte nicht geladen werden. Veraltetes Format?");
             return [];
         }
     },
     saveJournal: (d: JournalEntry[]) => {
         if (!browser) return;
         try {
-            localStorage.setItem(CONSTANTS.LOCAL_STORAGE_JOURNAL_KEY, JSON.stringify(d));
-        } catch {
+            localStorage.setItem(CONSTANTS.LOCAL_STORAGE_JOURNAL_KEY, superjson.stringify(d));
+        } catch (e) {
+            console.error("Failed to save journal to localStorage", e);
             uiStore.showError("Fehler beim Speichern des Journals. Der lokale Speicher ist möglicherweise voll oder blockiert.");
         }
     },
@@ -372,7 +362,7 @@ export const app = {
             uiStore.showError("Das Journal ist bereits leer.");
             return;
         }
-        if (await modalManager.show("Journal leeren", "Möchten Sie wirklich das gesamte Journal unwiderruflich löschen?", "confirm")) {
+        if (await confirmService.show("Journal leeren", "Möchten Sie wirklich das gesamte Journal unwiderruflich löschen?")) {
             app.saveJournal([]);
             journalStore.set([]);
             uiStore.showFeedback('save', 2000);
@@ -386,6 +376,7 @@ export const app = {
             riskPercentage: currentAppState.riskPercentage,
             leverage: currentAppState.leverage,
             fees: currentAppState.fees,
+            slippage: currentAppState.slippage,
             tradeType: currentAppState.tradeType,
             useAtrSl: currentAppState.useAtrSl,
             atrMultiplier: currentAppState.atrMultiplier,
@@ -416,6 +407,7 @@ export const app = {
                     riskPercentage: parseDecimal(settings.riskPercentage),
                     leverage: parseDecimal(settings.leverage || CONSTANTS.DEFAULT_LEVERAGE),
                     fees: parseDecimal(settings.fees || CONSTANTS.DEFAULT_FEES),
+                    slippage: parseDecimal(settings.slippage || '0'),
                     symbol: settings.symbol || '',
                     atrValue: parseDecimal(settings.atrValue),
                     atrMultiplier: parseDecimal(settings.atrMultiplier || CONSTANTS.DEFAULT_ATR_MULTIPLIER),
@@ -436,11 +428,14 @@ export const app = {
     },
     savePreset: async () => {
         if (!browser) return;
-        const presetName = await modalManager.show("Preset speichern", "Geben Sie einen Namen für Ihr Preset ein:", "prompt");
+        const presetName = await promptService.show("Preset speichern", "Geben Sie einen Namen für Ihr Preset ein:");
         if (typeof presetName === 'string' && presetName) {
             try {
                 const presets = JSON.parse(localStorage.getItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY) || '{}');
-                if (presets[presetName] && !(await modalManager.show("Überschreiben?", `Preset "${presetName}" existiert bereits. Möchten Sie es überschreiben?`, "confirm"))) return;
+                if (presets[presetName]) {
+                    const overwrite = await confirmService.show("Überschreiben?", `Preset "${presetName}" existiert bereits. Möchten Sie es überschreiben?`);
+                    if (!overwrite) return;
+                }
                 presets[presetName] = app.getInputsAsObject();
                 localStorage.setItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY, JSON.stringify(presets));
                 uiStore.showFeedback('save');
@@ -455,7 +450,7 @@ export const app = {
         if (!browser) return;
         const presetName = get(presetStore).selectedPreset;
         if (!presetName) return;
-        if (!(await modalManager.show("Preset löschen", `Preset "${presetName}" wirklich löschen?`, "confirm"))) return;
+        if (!(await confirmService.show("Preset löschen", `Preset "${presetName}" wirklich löschen?`))) return;
         try {
             const presets = JSON.parse(localStorage.getItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY) || '{}');
             delete presets[presetName];
@@ -605,7 +600,7 @@ export const app = {
                 const combined = [...currentJournal, ...entries];
                 const unique = Array.from(new Map(combined.map(trade => [trade.id, trade])).values());
 
-                if (await modalManager.show("Import bestätigen", `Sie sind dabei, ${entries.length} Trades zu importieren. Bestehende Trades mit derselben ID werden überschrieben. Fortfahren?`, "confirm")) {
+                if (await confirmService.show("Import bestätigen", `Sie sind dabei, ${entries.length} Trades zu importieren. Bestehende Trades mit derselben ID werden überschrieben. Fortfahren?`)) {
                     journalStore.set(unique);
                     trackCustomEvent('Journal', 'Import', 'CSV', entries.length);
                     uiStore.showFeedback('save', 2000);
@@ -667,8 +662,11 @@ export const app = {
         uiStore.update(state => ({ ...state, isPriceFetching: true }));
         try {
             const klines = await apiService.fetchKlines(symbol, currentTradeState.atrTimeframe);
+            if (klines.length < 15) { // period (14) + 1, fail early
+                throw new Error("Nicht genügend historische Daten für die ATR-Berechnung verfügbar.");
+            }
             const atr = calculator.calculateATR(klines);
-            if (atr.lte(0)) {
+            if (atr.isZero()) {
                 throw new Error("ATR konnte nicht berechnet werden. Prüfen Sie das Symbol oder den Zeitrahmen.");
             }
             updateTradeStore(state => ({ ...state, atrValue: atr.toDP(4) }));

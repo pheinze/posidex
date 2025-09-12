@@ -3,31 +3,52 @@ import { CONSTANTS } from './constants';
 import type { TradeValues, BaseMetrics, IndividualTpResult, TotalMetrics, JournalEntry } from '../stores/types';
 import type { Kline } from '../services/apiService';
 
+function applySlippage(price: Decimal, slippagePercent: Decimal, tradeType: string, context: 'entry' | 'exit'): Decimal {
+    if (slippagePercent.isZero()) return price;
+
+    const slippageFactor = slippagePercent.div(100);
+    if (tradeType === CONSTANTS.TRADE_TYPE_LONG) {
+        // For long trades, slippage makes entry price higher and exit prices (SL/TP) lower
+        return context === 'entry'
+            ? price.times(new Decimal(1).plus(slippageFactor))
+            : price.times(new Decimal(1).minus(slippageFactor));
+    } else { // SHORT
+        // For short trades, slippage makes entry price lower and exit prices (SL/TP) higher
+        return context === 'entry'
+            ? price.times(new Decimal(1).minus(slippageFactor))
+            : price.times(new Decimal(1).plus(slippageFactor));
+    }
+}
+
 export const calculator = {
     calculateBaseMetrics(values: TradeValues, tradeType: string): BaseMetrics | null {
+        const slippage = values.slippage || new Decimal(0);
+        const entryPriceWithSlippage = applySlippage(values.entryPrice, slippage, tradeType, 'entry');
+        const stopLossPriceWithSlippage = applySlippage(values.stopLossPrice, slippage, tradeType, 'exit');
+
         const riskAmount = values.accountSize.times(values.riskPercentage.div(100));
-        const riskPerUnit = values.entryPrice.minus(values.stopLossPrice).abs();
+        const riskPerUnit = entryPriceWithSlippage.minus(stopLossPriceWithSlippage).abs();
         if (riskPerUnit.isZero()) return null;
 
         const positionSize = riskAmount.div(riskPerUnit);
-        const orderVolume = positionSize.times(values.entryPrice);
+        const orderVolume = positionSize.times(entryPriceWithSlippage);
         const requiredMargin = values.leverage.gt(0) ? orderVolume.div(values.leverage) : orderVolume;
         const entryFee = orderVolume.times(values.fees.div(100));
-        const slExitFee = positionSize.times(values.stopLossPrice).times(values.fees.div(100));
+        const slExitFee = positionSize.times(stopLossPriceWithSlippage).times(values.fees.div(100));
         const netLoss = riskAmount.plus(entryFee).plus(slExitFee);
         
         const feeFactor = values.fees.div(100);
         let breakEvenPrice;
         if (tradeType === CONSTANTS.TRADE_TYPE_LONG) {
             const denominator = new Decimal(1).minus(feeFactor);
-            breakEvenPrice = denominator.isZero() ? new Decimal(Infinity) : values.entryPrice.times(feeFactor.plus(1)).div(denominator);
+            breakEvenPrice = denominator.isZero() ? new Decimal(Infinity) : entryPriceWithSlippage.times(feeFactor.plus(1)).div(denominator);
         } else {
-            breakEvenPrice = values.entryPrice.times(new Decimal(1).minus(feeFactor)).div(feeFactor.plus(1));
+            breakEvenPrice = entryPriceWithSlippage.times(new Decimal(1).minus(feeFactor)).div(feeFactor.plus(1));
         }
 
         const estimatedLiquidationPrice = values.leverage.gt(0) ? (tradeType === CONSTANTS.TRADE_TYPE_LONG
-            ? values.entryPrice.times(new Decimal(1).minus(new Decimal(1).div(values.leverage)))
-            : values.entryPrice.times(new Decimal(1).plus(new Decimal(1).div(values.leverage)))) : new Decimal(0);
+            ? entryPriceWithSlippage.times(new Decimal(1).minus(new Decimal(1).div(values.leverage)))
+            : entryPriceWithSlippage.times(new Decimal(1).plus(new Decimal(1).div(values.leverage)))) : new Decimal(0);
         
         return { positionSize, requiredMargin, netLoss, breakEvenPrice, estimatedLiquidationPrice, entryFee, riskAmount };
     },
@@ -66,18 +87,23 @@ export const calculator = {
     },
 
     calculateIndividualTp(tpPrice: Decimal, currentTpPercent: Decimal, baseMetrics: BaseMetrics, values: TradeValues, index: number, tradeType: string): IndividualTpResult {
+        const slippage = values.slippage || new Decimal(0);
+        const entryPriceWithSlippage = applySlippage(values.entryPrice, slippage, tradeType, 'entry');
+        const stopLossPriceWithSlippage = applySlippage(values.stopLossPrice, slippage, tradeType, 'exit');
+        const tpPriceWithSlippage = applySlippage(tpPrice, slippage, tradeType, 'exit');
+
         const { positionSize, requiredMargin } = baseMetrics;
-        const gainPerUnit = tpPrice.minus(values.entryPrice).abs();
+        const gainPerUnit = tpPriceWithSlippage.minus(entryPriceWithSlippage).abs();
         const positionPart = positionSize.times(currentTpPercent.div(100));
         const grossProfitPart = gainPerUnit.times(positionPart);
-        const exitFee = positionPart.times(tpPrice).times(values.fees.div(100));
-        const entryFeePart = positionPart.times(values.entryPrice).times(values.fees.div(100));
+        const exitFee = positionPart.times(tpPriceWithSlippage).times(values.fees.div(100));
+        const entryFeePart = positionPart.times(entryPriceWithSlippage).times(values.fees.div(100));
         const netProfit = grossProfitPart.minus(entryFeePart).minus(exitFee);
 
         // --- FEE-ADJUSTED RRR (OLD LOGIC) ---
-        const riskPerUnit = values.entryPrice.minus(values.stopLossPrice).abs();
+        const riskPerUnit = entryPriceWithSlippage.minus(stopLossPriceWithSlippage).abs();
         const grossRiskOnPart = riskPerUnit.times(positionPart);
-        const slExitFeeOnPart = positionPart.times(values.stopLossPrice).times(values.fees.div(100));
+        const slExitFeeOnPart = positionPart.times(stopLossPriceWithSlippage).times(values.fees.div(100));
         const netRiskOnPart = grossRiskOnPart.plus(entryFeePart).plus(slExitFeeOnPart);
         const feeAdjustedRRR = netRiskOnPart.gt(0) ? netProfit.div(netRiskOnPart) : new Decimal(0);
 
@@ -85,11 +111,11 @@ export const calculator = {
         const riskRewardRatio = riskPerUnit.gt(0) ? gainPerUnit.div(riskPerUnit) : new Decimal(0);
 
         let priceChangePercent = new Decimal(0);
-        if (values.entryPrice.gt(0)) {
+        if (entryPriceWithSlippage.gt(0)) {
             if (tradeType === CONSTANTS.TRADE_TYPE_LONG) {
-                priceChangePercent = tpPrice.minus(values.entryPrice).div(values.entryPrice).times(100);
+                priceChangePercent = tpPriceWithSlippage.minus(entryPriceWithSlippage).div(entryPriceWithSlippage).times(100);
             } else {
-                priceChangePercent = values.entryPrice.minus(tpPrice).div(values.entryPrice).times(100);
+                priceChangePercent = entryPriceWithSlippage.minus(tpPriceWithSlippage).div(entryPriceWithSlippage).times(100);
             }
         }
 
@@ -121,12 +147,14 @@ export const calculator = {
             const positionPartHittingSl = positionSize.times(percentHittingSl.div(100));
 
             // Calculate loss for the SL part
-            const riskPerUnit = values.entryPrice.minus(values.stopLossPrice).abs();
+            const entryPriceWithSlippage = applySlippage(values.entryPrice, values.slippage, tradeType, 'entry');
+            const stopLossPriceWithSlippage = applySlippage(values.stopLossPrice, values.slippage, tradeType, 'exit');
+            const riskPerUnit = entryPriceWithSlippage.minus(stopLossPriceWithSlippage).abs();
             const grossLossOnSlPart = riskPerUnit.times(positionPartHittingSl);
 
             // Calculate fees for the SL part. Entry fee for this part is already included in the total `entryFee`.
-            const entryFeeOnSlPart = positionPartHittingSl.times(values.entryPrice).times(values.fees.div(100));
-            const exitFeeOnSlPart = positionPartHittingSl.times(values.stopLossPrice).times(values.fees.div(100));
+            const entryFeeOnSlPart = positionPartHittingSl.times(entryPriceWithSlippage).times(values.fees.div(100));
+            const exitFeeOnSlPart = positionPartHittingSl.times(stopLossPriceWithSlippage).times(values.fees.div(100));
 
             // Add exit fee for SL part to total fees
             totalFees = totalFees.plus(exitFeeOnSlPart);
