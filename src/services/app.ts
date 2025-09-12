@@ -18,23 +18,34 @@ import superjson from '$lib/superjson';
 
 type TakeProfitTarget = AppState['targets'][number];
 
-// Re-declaring this interface here to avoid circular dependency with backupService
 interface CSVTradeEntry {
     [key: string]: string | undefined;
 }
 
+// This function defines the shape of the settings/preset object that gets saved.
+// It should include all user-configurable inputs from the tradeStore.
 export function getInputsAsObject() {
-    const currentAppState = get(tradeStore);
+    const state = get(tradeStore);
     return {
-        accountSize: currentAppState.accountSize,
-        riskPercentage: currentAppState.riskPercentage,
-        leverage: currentAppState.leverage,
-        fees: currentAppState.fees,
-        tradeType: currentAppState.tradeType,
-        useAtrSl: currentAppState.useAtrSl,
-        atrMultiplier: currentAppState.atrMultiplier,
-        symbol: currentAppState.symbol,
-        targets: currentAppState.targets,
+        tradeType: state.tradeType,
+        accountSize: state.accountSize,
+        riskPercentage: state.riskPercentage,
+        entryPrice: state.entryPrice,
+        stopLossPrice: state.stopLossPrice,
+        leverage: state.leverage,
+        fees: state.fees,
+        symbol: state.symbol,
+        atrValue: state.atrValue,
+        atrMultiplier: state.atrMultiplier,
+        useAtrSl: state.useAtrSl,
+        atrMode: state.atrMode,
+        atrTimeframe: state.atrTimeframe,
+        tradeNotes: state.tradeNotes,
+        targets: state.targets,
+        isPositionSizeLocked: state.isPositionSizeLocked,
+        lockedPositionSize: state.lockedPositionSize,
+        isRiskAmountLocked: state.isRiskAmountLocked,
+        riskAmount: state.riskAmount
     };
 }
 
@@ -55,8 +66,8 @@ export const app = {
         try {
             const d = localStorage.getItem(CONSTANTS.LOCAL_STORAGE_JOURNAL_KEY);
             return robustJsonParse<JournalEntry[]>(d) || [];
-        } catch {
-            console.warn("Could not load journal from localStorage.");
+        } catch (e) {
+            console.error("Failed to get journal:", e);
             uiStore.showError("Could not load journal.");
             return [];
         }
@@ -66,8 +77,8 @@ export const app = {
         if (!browser) return;
         try {
             localStorage.setItem(CONSTANTS.LOCAL_STORAGE_JOURNAL_KEY, superjson.stringify(d));
-        } catch {
-            uiStore.showError("Error saving journal. Local storage may be full or blocked.");
+        } catch (e) {
+            uiStore.showError("Error saving journal. Local storage may be full or blocked. " + e);
         }
     },
 
@@ -154,7 +165,7 @@ export const app = {
         try {
             localStorage.setItem(CONSTANTS.LOCAL_STORAGE_SETTINGS_KEY, superjson.stringify(getInputsAsObject()));
         } catch (e) {
-            console.warn("Could not save settings to localStorage.", e);
+            console.error("Could not save settings to localStorage:", e);
         }
     },
 
@@ -170,8 +181,8 @@ export const app = {
                 }));
                 toggleAtrInputs(settings.useAtrSl || false);
             }
-        } catch {
-            console.warn("Could not load settings from localStorage.");
+        } catch (e) {
+            console.error("Failed to load settings:", e);
         }
     },
 
@@ -180,7 +191,7 @@ export const app = {
         const presetName = await modalManager.show({ title: "Save Preset", message: "Enter a name for your preset:", type: 'prompt' });
         if (typeof presetName === 'string' && presetName) {
             try {
-                const presetsJSON = localStorage.getItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY) || '{}';
+                const presetsJSON = localStorage.getItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY);
                 const presets = robustJsonParse<Record<string, ReturnType<typeof getInputsAsObject>>>(presetsJSON) || {};
                 if (presets[presetName] && !(await modalManager.show({ title: "Overwrite?", message: `Preset "${presetName}" already exists. Do you want to overwrite it?`, type: 'confirm' }))) return;
                 presets[presetName] = getInputsAsObject();
@@ -188,8 +199,8 @@ export const app = {
                 uiStore.showFeedback('save');
                 app.populatePresetLoader();
                 updatePresetStore(state => ({ ...state, selectedPreset: presetName }));
-            } catch {
-                uiStore.showError("Could not save preset. Local storage may be full or blocked.");
+            } catch (e) {
+                uiStore.showError("Could not save preset. " + e);
             }
         }
     },
@@ -206,7 +217,9 @@ export const app = {
             localStorage.setItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY, superjson.stringify(presets));
             app.populatePresetLoader();
             updatePresetStore(state => ({ ...state, selectedPreset: '' }));
-        } catch { uiStore.showError("Could not delete preset."); }
+        } catch (e) {
+            uiStore.showError("Could not delete preset. " + e);
+        }
     },
 
     loadPreset: (presetName: string) => {
@@ -225,8 +238,8 @@ export const app = {
                 updatePresetStore(state => ({ ...state, selectedPreset: presetName }));
                 toggleAtrInputs(preset.useAtrSl || false);
             }
-        } catch (error) {
-            console.error("Error loading preset:", error);
+        } catch (e) {
+            console.error("Error loading preset:", e);
             uiStore.showError("Could not load preset.");
         }
     },
@@ -237,8 +250,8 @@ export const app = {
             const presetsJSON = localStorage.getItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY);
             const presets = robustJsonParse<Record<string, any>>(presetsJSON) || {};
             updatePresetStore(state => ({ ...state, availablePresets: Object.keys(presets) }));
-        } catch {
-            console.warn("Could not populate presets from localStorage.");
+        } catch (e) {
+            console.error("Could not populate presets from localStorage:", e);
             updatePresetStore(state => ({ ...state, availablePresets: [] }));
         }
     },

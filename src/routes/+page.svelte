@@ -77,6 +77,12 @@
         uiStore.setTheme(themes[nextIndex]);
     }
 
+    // When the risk amount is not locked, it should be updated by the calculation results.
+    // This reactive statement creates the feedback loop.
+    $: if (!$tradeStore.isRiskAmountLocked && $calculationStore.currentTradeData?.riskAmount) {
+        updateTradeStore(s => ({...s, riskAmount: $calculationStore.currentTradeData!.riskAmount }));
+    }
+
     function handleKeydown(event: KeyboardEvent) {
         if (!event || !event.key) return;
 

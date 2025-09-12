@@ -30,7 +30,7 @@
         dispatch('toggleLock');
     }
 
-    $: formattedLoss = netLoss ? `-${formatDynamicDecimal(netLoss, 2)}` : '-';
+    $: formattedLoss = netLoss ? formatDynamicDecimal(netLoss, 2) : '-';
 </script>
 
 <div class="result-group">
