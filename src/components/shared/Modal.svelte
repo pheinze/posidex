@@ -25,6 +25,7 @@
         on:keydown|capture={(e) => { if (e.key === 'Escape') handleConfirm(false) }}
         role="dialog"
         aria-modal="true"
+        tabindex="-1"
     >
         <div class="modal-content relative" class:large={modalState.size === 'large'}>
             <h3 class="text-xl font-bold mb-4 pr-8">{modalState.title}</h3>

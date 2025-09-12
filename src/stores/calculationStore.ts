@@ -7,10 +7,12 @@ import { initialResultsState } from './resultsStore';
 import type { TradeValues, BaseMetrics, IndividualTpResult, JournalEntry } from './types';
 import { Decimal } from 'decimal.js';
 
+import type { CalculatedTradeData } from './types';
+
 export interface CalculationResult {
     results: typeof initialResultsState;
     error: string | null;
-    currentTradeData: Partial<JournalEntry> | null;
+    currentTradeData: CalculatedTradeData | null;
 }
 
 export const calculationStore = derived(tradeStore, ($tradeStore): CalculationResult => {
@@ -116,7 +118,7 @@ export const calculationStore = derived(tradeStore, ($tradeStore): CalculationRe
         newResults.showTotalMetricsGroup = true;
     }
 
-    const currentTradeData: Partial<JournalEntry> = { ...values, ...baseMetrics, ...totalMetrics, tradeType: $tradeStore.tradeType, status: 'Open', calculatedTpDetails };
+    const currentTradeData: CalculatedTradeData = { ...values, ...baseMetrics, ...totalMetrics, tradeType: $tradeStore.tradeType, status: 'Open', calculatedTpDetails };
 
     return {
         results: newResults,

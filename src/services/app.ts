@@ -9,7 +9,7 @@ import { tradeStore, updateTradeStore, resetAllInputs, toggleAtrInputs } from '.
 import { presetStore, updatePresetStore } from '../stores/presetStore';
 import { journalStore } from '../stores/journalStore';
 import { uiStore } from '../stores/uiStore';
-import type { JournalEntry, AppState } from '../stores/types';
+import type { JournalEntry, AppState, CalculatedTradeData } from '../stores/types';
 import { Decimal } from 'decimal.js';
 import { browser } from '$app/environment';
 import { trackCustomEvent } from './trackingService';
@@ -17,6 +17,26 @@ import { onboardingService } from './onboardingService';
 import superjson from '$lib/superjson';
 
 type TakeProfitTarget = AppState['targets'][number];
+
+// Re-declaring this interface here to avoid circular dependency with backupService
+interface CSVTradeEntry {
+    [key: string]: string | undefined;
+}
+
+export function getInputsAsObject() {
+    const currentAppState = get(tradeStore);
+    return {
+        accountSize: currentAppState.accountSize,
+        riskPercentage: currentAppState.riskPercentage,
+        leverage: currentAppState.leverage,
+        fees: currentAppState.fees,
+        tradeType: currentAppState.tradeType,
+        useAtrSl: currentAppState.useAtrSl,
+        atrMultiplier: currentAppState.atrMultiplier,
+        symbol: currentAppState.symbol,
+        targets: currentAppState.targets,
+    };
+}
 
 export const app = {
     calculator: calculator,
@@ -51,8 +71,8 @@ export const app = {
         }
     },
 
-    addTrade: (tradeData: Partial<JournalEntry> | null) => {
-        if (!tradeData || !tradeData.positionSize || tradeData.positionSize.lte(0)) {
+    addTrade: (tradeData: CalculatedTradeData | null) => {
+        if (!tradeData || tradeData.positionSize.lte(0)) {
             uiStore.showError("Cannot save an invalid trade.");
             return;
         }
@@ -129,25 +149,10 @@ export const app = {
         }
     },
 
-    getInputsAsObject: () => {
-        const currentAppState = get(tradeStore);
-        return {
-            accountSize: currentAppState.accountSize,
-            riskPercentage: currentAppState.riskPercentage,
-            leverage: currentAppState.leverage,
-            fees: currentAppState.fees,
-            tradeType: currentAppState.tradeType,
-            useAtrSl: currentAppState.useAtrSl,
-            atrMultiplier: currentAppState.atrMultiplier,
-            symbol: currentAppState.symbol,
-            targets: currentAppState.targets,
-        };
-    },
-
     saveSettings: () => {
         if (!browser) return;
         try {
-            localStorage.setItem(CONSTANTS.LOCAL_STORAGE_SETTINGS_KEY, superjson.stringify(app.getInputsAsObject()));
+            localStorage.setItem(CONSTANTS.LOCAL_STORAGE_SETTINGS_KEY, superjson.stringify(getInputsAsObject()));
         } catch (e) {
             console.warn("Could not save settings to localStorage.", e);
         }
@@ -158,7 +163,7 @@ export const app = {
         try {
             const settingsJSON = localStorage.getItem(CONSTANTS.LOCAL_STORAGE_SETTINGS_KEY);
             if (!settingsJSON) return;
-            const settings = superjson.parse<ReturnType<typeof app.getInputsAsObject>>(settingsJSON);
+            const settings = superjson.parse<ReturnType<typeof getInputsAsObject>>(settingsJSON);
             if (settings) {
                 updateTradeStore(state => ({
                     ...state,
@@ -177,9 +182,9 @@ export const app = {
         if (typeof presetName === 'string' && presetName) {
             try {
                 const presetsJSON = localStorage.getItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY) || '{}';
-                const presets = superjson.parse<Record<string, ReturnType<typeof app.getInputsAsObject>>>(presetsJSON);
+                const presets = superjson.parse<Record<string, ReturnType<typeof getInputsAsObject>>>(presetsJSON);
                 if (presets[presetName] && !(await modalManager.show({ title: "Overwrite?", message: `Preset "${presetName}" already exists. Do you want to overwrite it?`, type: 'confirm' }))) return;
-                presets[presetName] = app.getInputsAsObject();
+                presets[presetName] = getInputsAsObject();
                 localStorage.setItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY, superjson.stringify(presets));
                 uiStore.showFeedback('save');
                 app.populatePresetLoader();
@@ -210,7 +215,7 @@ export const app = {
         trackCustomEvent('Preset', 'Load', presetName);
         try {
             const presetsJSON = localStorage.getItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY) || '{}';
-            const presets = superjson.parse<Record<string, ReturnType<typeof app.getInputsAsObject>>>(presetsJSON);
+            const presets = superjson.parse<Record<string, ReturnType<typeof getInputsAsObject>>>(presetsJSON);
             const preset = presets[presetName];
             if (preset) {
                 resetAllInputs();
@@ -237,6 +242,114 @@ export const app = {
             console.warn("Could not populate presets from localStorage.");
             updatePresetStore(state => ({ ...state, availablePresets: [] }));
         }
+    },
+
+    exportToCSV: () => {
+        if (!browser) return;
+        const journalData = get(journalStore);
+        if (journalData.length === 0) { uiStore.showError("Journal is empty."); return; }
+        trackCustomEvent('Journal', 'Export', 'CSV', journalData.length);
+        const headers = ['ID', 'Datum', 'Uhrzeit', 'Symbol', 'Typ', 'Status', 'Konto Guthaben', 'Risiko %', 'Hebel', 'Gebuehren %', 'Einstieg', 'Stop Loss', 'Gewichtetes R/R', 'Gesamt Netto-Gewinn', 'Risiko pro Trade (Waehrung)', 'Gesamte Gebuehren', 'Notizen', ...Array.from({length: 5}, (_, i) => [`TP${i+1} Preis`, `TP${i+1} %`]).flat()];
+        const rows = journalData.map(trade => {
+            const date = new Date(trade.date);
+            const notes = trade.notes ? `"${trade.notes.replace(/"/g, '""').replace(/\n/g, ' ')}"` : '';
+            const tpData = Array.from({length: 5}, (_, i) => [ (trade.targets[i]?.price || new Decimal(0)).toFixed(4), (trade.targets[i]?.percent || new Decimal(0)).toFixed(2) ]).flat();
+            return [ trade.id, date.toLocaleDateString('de-DE'), date.toLocaleTimeString('de-DE'), trade.symbol, trade.tradeType, trade.status,
+                (trade.accountSize || new Decimal(0)).toFixed(2), (trade.riskPercentage || new Decimal(0)).toFixed(2), (trade.leverage || new Decimal(0)).toFixed(2), (trade.fees || new Decimal(0)).toFixed(2), (trade.entryPrice || new Decimal(0)).toFixed(4), (trade.stopLossPrice || new Decimal(0)).toFixed(4),
+                (trade.totalRR || new Decimal(0)).toFixed(2), (trade.totalNetProfit || new Decimal(0)).toFixed(2), (trade.riskAmount || new Decimal(0)).toFixed(2), (trade.totalFees || new Decimal(0)).toFixed(2), notes, ...tpData ].join(',');
+        });
+        const csvContent = "data:text/csv;charset=utf-8," + headers.join(",") + "\n" + rows.join("\n");
+        const link = document.createElement("a");
+        link.href = encodeURI(csvContent);
+        link.download = "TradeJournal.csv";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    },
+
+    importFromCSV: (file: File) => {
+        if (!browser) return;
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            const text = e.target?.result as string;
+            const lines = text.split('\n').filter(line => line.trim() !== '');
+            if (lines.length < 2) {
+                uiStore.showError("CSV is empty or has only a header line.");
+                return;
+            }
+
+            const headers = lines[0].split(',').map(h => h.trim());
+            const requiredHeaders = ['ID', 'Datum', 'Uhrzeit', 'Symbol', 'Typ', 'Status', 'Einstieg', 'Stop Loss'];
+            const missingHeaders = requiredHeaders.filter(h => !headers.includes(h));
+
+            if (missingHeaders.length > 0) {
+                uiStore.showError(`CSV file is missing required columns: ${missingHeaders.join(', ')}`);
+                return;
+            }
+
+            const entries = lines.slice(1).map(line => {
+                const values = line.split(',');
+                const entry: CSVTradeEntry = headers.reduce((obj: Partial<CSVTradeEntry>, header, index) => {
+                    (obj as any)[header as keyof CSVTradeEntry] = values[index] ? values[index].trim() : '';
+                    return obj;
+                }, {}) as CSVTradeEntry;
+
+                try {
+                    const targets = [];
+                    for (let j = 1; j <= 5; j++) {
+                        const priceKey = `TP${j} Preis`;
+                        const percentKey = `TP${j} %`;
+                        if (entry[priceKey] && entry[percentKey]) {
+                            targets.push({
+                                price: parseDecimal(entry[priceKey] as string),
+                                percent: parseDecimal(entry[percentKey] as string),
+                                isLocked: false
+                            });
+                        }
+                    }
+
+                    const typedEntry = entry as any;
+                    return {
+                        id: parseInt(typedEntry.ID, 10),
+                        date: parseGermanDate(typedEntry.Datum, typedEntry.Uhrzeit),
+                        symbol: typedEntry.Symbol,
+                        tradeType: typedEntry.Typ.toLowerCase(),
+                        status: typedEntry.Status,
+                        accountSize: parseDecimal(typedEntry['Konto Guthaben'] || '0'),
+                        riskPercentage: parseDecimal(typedEntry['Risiko %'] || '0'),
+                        leverage: parseDecimal(typedEntry.Hebel || '1'),
+                        fees: parseDecimal(typedEntry['Gebuehren %'] || '0.1'),
+                        entryPrice: parseDecimal(typedEntry.Einstieg),
+                        stopLossPrice: parseDecimal(typedEntry['Stop Loss']),
+                        totalRR: parseDecimal(typedEntry['Gewichtetes R/R'] || '0'),
+                        totalNetProfit: parseDecimal(typedEntry['Gesamt Netto-Gewinn'] || '0'),
+                        riskAmount: parseDecimal(typedEntry['Risiko pro Trade (Waehrung)'] || '0'),
+                        totalFees: parseDecimal(typedEntry['Gesamte Gebuehren'] || '0'),
+                        notes: typedEntry.Notizen ? typedEntry.Notizen.replace(/""/g, '"').slice(1, -1) : '',
+                        targets: targets,
+                        realizedPnl: null
+                    } as JournalEntry;
+                } catch (err: unknown) {
+                    console.warn("Error processing a row:", entry, err);
+                    return null;
+                }
+            }).filter((entry): entry is JournalEntry => entry !== null);
+
+            if (entries.length > 0) {
+                const currentJournal = get(journalStore);
+                const combined = [...currentJournal, ...entries];
+                const unique = Array.from(new Map(combined.map(trade => [trade.id, trade])).values());
+
+                if (await modalManager.show({title: "Confirm Import", message: `You are about to import ${entries.length} trades. Existing trades with the same ID will be overwritten. Continue?`, type: "confirm"})) {
+                    journalStore.set(unique);
+                    trackCustomEvent('Journal', 'Import', 'CSV', entries.length);
+                    uiStore.showFeedback('save', 2000);
+                }
+            } else {
+                uiStore.showError("No valid entries found in the CSV file.");
+            }
+        };
+        reader.readAsText(file);
     },
 
     handleFetchPrice: async () => {
@@ -286,6 +399,15 @@ export const app = {
         } finally {
             uiStore.update(state => ({ ...state, isPriceFetching: false }));
         }
+    },
+
+    updateSymbolSuggestions: (query: string) => {
+        const upperQuery = query.toUpperCase().replace('/', '');
+        let filtered: string[] = [];
+        if (upperQuery) {
+            filtered = CONSTANTS.SUGGESTED_SYMBOLS.filter(s => s.startsWith(upperQuery));
+        }
+        uiStore.update(s => ({ ...s, symbolSuggestions: filtered, showSymbolSuggestions: filtered.length > 0 }));
     },
 
     selectSymbolSuggestion: (symbol: string) => {

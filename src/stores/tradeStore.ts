@@ -1,7 +1,7 @@
 import { writable } from 'svelte/store';
 import { CONSTANTS } from '../lib/constants';
 import type { AppState } from './types';
-import { resultsStore, initialResultsState } from './resultsStore';
+import { initialResultsState } from './resultsStore';
 import { uiStore } from './uiStore';
 import { Decimal } from 'decimal.js';
 
@@ -93,6 +93,6 @@ export const toggleAtrInputs = (useAtrSl: boolean) => {
  */
 export const resetAllInputs = () => {
     tradeStore.set(initialTradeState);
-    resultsStore.set(initialResultsState);
+    // resultsStore is removed, calculationStore will react to tradeStore reset.
     uiStore.showError('dashboard.promptForData');
 };

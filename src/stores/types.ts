@@ -27,9 +27,9 @@ export interface BaseMetrics {
 
 export interface IndividualTpResult {
     netProfit: Decimal;
-    riskRewardRatio: Decimal; // The new, standard RRR
+    riskRewardRatio: Decimal;
     priceChangePercent: Decimal;
-    partialROC: Decimal; // Renamed from returnOnCapital
+    partialROC: Decimal;
     partialVolume: Decimal;
     exitFee: Decimal;
     index: number;
@@ -41,7 +41,13 @@ export interface TotalMetrics {
     totalRR: Decimal;
     totalFees: Decimal;
     riskAmount: Decimal;
-    totalROC: Decimal; // The new, total Return on Capital
+    totalROC: Decimal;
+}
+
+export interface CalculatedTradeData extends TradeValues, BaseMetrics, TotalMetrics {
+    tradeType: string;
+    status: string;
+    calculatedTpDetails: IndividualTpResult[];
 }
 
 export interface AppState {
@@ -63,18 +69,18 @@ export interface AppState {
     targets: Array<{ price: Decimal | null; percent: Decimal | null; isLocked: boolean }>;
 
     // Calculated Results
-    positionSize: string;
-    requiredMargin: string;
-    netLoss: string;
-    entryFee: string;
-    estimatedLiquidationPrice: string;
-    breakEvenPrice: string;
-    totalRR: string;
-    totalNetProfit: string;
-    totalPercentSold: string;
-    riskAmountCurrency: string;
-    totalFees: string;
-    totalROC: string;
+    positionSize: Decimal | null;
+    requiredMargin: Decimal | null;
+    netLoss: Decimal | null;
+    entryFee: Decimal | null;
+    estimatedLiquidationPrice: Decimal | null;
+    breakEvenPrice: Decimal | null;
+    totalRR: Decimal | null;
+    totalNetProfit: Decimal | null;
+    totalPercentSold: Decimal | null;
+    riskAmountCurrency: Decimal | null;
+    totalFees: Decimal | null;
+    totalROC: Decimal | null;
     calculatedTpDetails: IndividualTpResult[];
 
     // UI State
@@ -95,37 +101,15 @@ export interface AppState {
     symbolSuggestions: string[];
     showSymbolSuggestions: boolean;
     showJournalModal: boolean;
-    showChangelogModal: boolean; // Added for changelog modal
+    showChangelogModal: boolean;
     journalSearchQuery: string;
     journalFilterStatus: string;
-    currentTradeData: CurrentTradeData | null;
+    currentTradeData: CalculatedTradeData | null;
 }
 
-export interface CurrentTradeData extends TradeValues, BaseMetrics, TotalMetrics {
-    tradeType: string;
-    status: string;
-    calculatedTpDetails: IndividualTpResult[];
-}
-
-export interface JournalEntry {
+export interface JournalEntry extends CalculatedTradeData {
     id: number;
     date: string;
-    symbol: string;
-    tradeType: string;
-    status: string;
-    accountSize: Decimal;
-    riskPercentage: Decimal;
-    leverage: Decimal;
-    fees: Decimal;
-    entryPrice: Decimal;
-    stopLossPrice: Decimal;
-    totalRR: Decimal;
-    totalNetProfit: Decimal;
-    realizedPnl: Decimal | null;
-    riskAmount: Decimal;
-    netLoss: Decimal;
-    totalFees: Decimal;
     notes: string;
-    targets: Array<{ price: Decimal; percent: Decimal; isLocked: boolean }>;
-    calculatedTpDetails: IndividualTpResult[];
+    realizedPnl: Decimal | null;
 }

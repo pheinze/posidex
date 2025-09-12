@@ -4,12 +4,13 @@
     import TradeSetupInputs from '../components/inputs/TradeSetupInputs.svelte';
     import TakeProfitTargets from '../components/inputs/TakeProfitTargets.svelte';
     import VisualBar from '../components/shared/VisualBar.svelte';
-    import { CONSTANTS, themes } from '../lib/constants';
+    import { CONSTANTS, themes, icons } from '../lib/constants';
     import { app } from '../services/app';
     import { tradeStore, updateTradeStore, resetAllInputs, toggleAtrInputs } from '../stores/tradeStore';
     import { calculationStore } from '../stores/calculationStore';
     import { presetStore } from '../stores/presetStore';
     import { uiStore } from '../stores/uiStore';
+    import { journalStore } from '../stores/journalStore';
     import { modalManager } from '../services/modalManager';
     import { onMount } from 'svelte';
     import { _, locale } from '../locales/i18n';
@@ -17,6 +18,7 @@
     import { loadInstruction } from '../services/markdownLoader';
     import { formatDynamicDecimal } from '../utils/utils';
     import { trackClick } from '../lib/actions';
+    import { trackCustomEvent } from '../services/trackingService';
     import { createBackup, restoreFromBackup } from '../services/backupService';
     import { Decimal } from 'decimal.js';
     
@@ -95,7 +97,7 @@
 
     function handleBackupClick() {
         createBackup();
-        trackClick({ category: 'Backup', action: 'Click', name: 'CreateBackup' });
+        trackCustomEvent('Backup', 'Click', 'CreateBackup');
     }
 
     function handleRestoreClick() {
@@ -119,9 +121,10 @@
                 if (confirmed) {
                     const result = restoreFromBackup(content);
                     if (result.success && result.data) {
-                        tradeStore.set(result.data.settings);
-                        journalStore.set(result.data.journal);
-                        presetStore.update(s => ({...s, availablePresets: Object.keys(result.data.presets)}));
+                        const { settings, journal, presets } = result.data;
+                        tradeStore.update(s => ({ ...s, ...settings }));
+                        journalStore.set(journal);
+                        presetStore.update(s => ({...s, availablePresets: Object.keys(presets)}));
                         uiStore.showFeedback('save');
                     } else {
                         uiStore.showError(result.message);
@@ -132,7 +135,7 @@
         };
         reader.onerror = () => uiStore.showError('app.fileReadError');
         reader.readAsText(file);
-        trackClick({ category: 'Backup', action: 'Click', name: 'RestoreBackup' });
+        trackCustomEvent('Backup', 'Click', 'RestoreBackup');
     }
 </script>
 

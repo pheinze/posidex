@@ -64,7 +64,12 @@ export const uiManager = {
             titleKey = 'app.changelogTitle';
         }
         const translatedTitle = get(_)(titleKey);
-        modalManager.show(translatedTitle, instruction.html, 'alert');
+        modalManager.show({
+            title: translatedTitle,
+            message: instruction.html,
+            type: 'alert',
+            size: 'large'
+        });
     }
 };
 
