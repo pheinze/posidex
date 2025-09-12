@@ -105,7 +105,7 @@ export const app = {
                 atrValue: parseDecimal(currentTradeState.atrValue),
                 atrMultiplier: parseDecimal(currentTradeState.atrMultiplier || CONSTANTS.DEFAULT_ATR_MULTIPLIER),
                 stopLossPrice: parseDecimal(currentTradeState.stopLossPrice),
-                targets: currentTradeState.targets.map(t => ({ price: parseDecimal(t.price), percent: parseDecimal(t.percent), isLocked: t.isLocked })),
+                targets: currentTradeState.targets.map(t => ({ id: t.id, price: parseDecimal(t.price), percent: parseDecimal(t.percent), isLocked: t.isLocked })),
                 totalPercentSold: new Decimal(0)
             };
 

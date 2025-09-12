@@ -98,7 +98,7 @@
                 type="text"
                 use:numberInput={{ maxDecimalPlaces: 4 }}
                 value={format(accountSize)}
-                on:input={(e) => { handleAccountSizeInput(e); onboardingService.trackFirstInput(e); }}
+                on:input={(e) => { handleAccountSizeInput(e); onboardingService.trackFirstInput(); }}
                 class="input-field w-full px-4 py-2 rounded-md"
                 placeholder="{$_('dashboard.portfolioInputs.accountSizePlaceholder')}"
             >
@@ -110,7 +110,7 @@
                 type="text"
                 use:numberInput={{ noDecimals: true, isPercentage: true, maxValue: 100, minValue: 0 }}
                 value={format(riskPercentage)}
-                on:input={(e) => { handleRiskPercentageInput(e); onboardingService.trackFirstInput(e); }}
+                on:input={(e) => { handleRiskPercentageInput(e); onboardingService.trackFirstInput(); }}
                 class="input-field w-full px-4 py-2 rounded-md"
                 placeholder="{$_('dashboard.portfolioInputs.riskPerTradePlaceholder')}"
                 disabled={isRiskAmountLocked || isPositionSizeLocked}

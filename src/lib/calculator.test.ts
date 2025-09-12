@@ -20,7 +20,6 @@ describe('calculator', () => {
       stopLossPrice: new Decimal(99),
       targets: [],
       totalPercentSold: new Decimal(0),
-      isLocked: false,
     };
     const tradeType = CONSTANTS.TRADE_TYPE_LONG;
 
@@ -85,7 +84,7 @@ describe('calculator', () => {
       atrValue: new Decimal(0),
       atrMultiplier: new Decimal(0),
       stopLossPrice: new Decimal(99),
-      targets: [{ price: new Decimal(105), percent: new Decimal(50), isLocked: false }], // Only the percent is used from here
+      targets: [{ id: 0, price: new Decimal(105), percent: new Decimal(50), isLocked: false }], // Only the percent is used from here
       totalPercentSold: new Decimal(0),
     };
     const tpPrice = new Decimal(105);
@@ -158,8 +157,8 @@ describe('calculator', () => {
       atrMultiplier: new Decimal(0),
       stopLossPrice: new Decimal(99),
       targets: [
-        { price: new Decimal(105), percent: new Decimal(50), isLocked: false },
-        { price: new Decimal(110), percent: new Decimal(50), isLocked: false },
+        { id: 0, price: new Decimal(105), percent: new Decimal(50), isLocked: false },
+        { id: 1, price: new Decimal(110), percent: new Decimal(50), isLocked: false },
       ],
       totalPercentSold: new Decimal(100),
     };
@@ -196,7 +195,7 @@ describe('calculator', () => {
       stopLossPrice: new Decimal(99),
       targets: [
         // 50% of position goes to TP
-        { price: new Decimal(105), percent: new Decimal(50), isLocked: false },
+        { id: 0, price: new Decimal(105), percent: new Decimal(50), isLocked: false },
         // The other 50% will hit the Stop Loss
       ],
       totalPercentSold: new Decimal(50),
@@ -305,7 +304,7 @@ describe('Bugfix Verification Tests', () => {
       fees: new Decimal(0.1),
       // Other values are not relevant for this specific test
     } as any;
-    const targets = [{ price: new Decimal(10204), percent: new Decimal(100) }];
+    const targets = [{ id: 0, price: new Decimal(10204), percent: new Decimal(100), isLocked: false }];
 
     // Let's trace the calculation for this test.
     // grossProfit = (10204 - 10000) * 1 = 204
@@ -349,8 +348,8 @@ describe('Bugfix Verification Tests', () => {
     } as any;
     // Targets sum to 120%. The calculation should ignore the last 20%.
     const targets = [
-      { price: new Decimal(110), percent: new Decimal(60) },
-      { price: new Decimal(120), percent: new Decimal(60) },
+      { id: 0, price: new Decimal(110), percent: new Decimal(60), isLocked: false },
+      { id: 1, price: new Decimal(120), percent: new Decimal(60), isLocked: false },
     ];
 
     // Manually calculate expected profit for 100%

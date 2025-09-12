@@ -117,3 +117,18 @@
         </div>
     </div>
 {/if}
+
+<style>
+    .input-field-placeholder {
+        @apply w-full px-2 py-1 h-[34px] border border-transparent rounded-md cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700;
+        line-height: 1.5; /* Adjust to vertically center text if needed */
+    }
+    .status-won {
+        background-color: color-mix(in srgb, var(--success-color) 10%, var(--bg-primary));
+        border-left: 4px solid var(--success-color);
+    }
+    .status-lost {
+        background-color: color-mix(in srgb, var(--danger-color) 10%, var(--bg-primary));
+        border-left: 4px solid var(--danger-color);
+    }
+</style>

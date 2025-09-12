@@ -95,10 +95,6 @@ import { trackCustomEvent } from '../services/trackingService';
         uiStore.showError(e.detail);
     }
 
-    function handleTargetsChange(event: CustomEvent<Array<{ price: Decimal | null; percent: Decimal | null; isLocked: boolean }>>) {
-        updateTradeStore(s => ({ ...s, targets: event.detail }));
-    }
-
     function handleTpRemove(event: CustomEvent<number>) {
         const index = event.detail;
         const newTargets = $tradeStore.targets.filter((_, i) => i !== index);
@@ -298,7 +294,7 @@ import { trackCustomEvent } from '../services/trackingService';
         />
     </div>
 
-    <TakeProfitTargets bind:targets={$tradeStore.targets} on:change={handleTargetsChange} on:remove={handleTpRemove} calculatedTpDetails={$resultsStore.calculatedTpDetails} />
+    <TakeProfitTargets bind:targets={$tradeStore.targets} on:remove={handleTpRemove} calculatedTpDetails={$resultsStore.calculatedTpDetails} />
 
     {#if $uiStore.showErrorMessage}
         <div id="error-message" class="text-center text-sm font-medium mt-4 md:col-span-2" style:color="var(--danger-color)">{$_($uiStore.errorMessage)}</div>

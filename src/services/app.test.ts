@@ -31,9 +31,9 @@ describe('app service - adjustTpPercentages (Proportional Logic)', () => {
         updateTradeStore(state => ({
             ...state,
             targets: [
-                { price: new Decimal(110), percent: new Decimal(50), isLocked: false },
-                { price: new Decimal(120), percent: new Decimal(30), isLocked: false },
-                { price: new Decimal(130), percent: new Decimal(20), isLocked: false },
+                { id: 0, price: new Decimal(110), percent: new Decimal(50), isLocked: false },
+                { id: 1, price: new Decimal(120), percent: new Decimal(30), isLocked: false },
+                { id: 2, price: new Decimal(130), percent: new Decimal(20), isLocked: false },
             ]
         }));
     });
@@ -108,9 +108,9 @@ describe('app service - adjustTpPercentages (Proportional Logic)', () => {
         updateTradeStore(state => ({
             ...state,
             targets: [
-                { price: new Decimal(110), percent: new Decimal(50), isLocked: true },
-                { price: new Decimal(120), percent: new Decimal(30), isLocked: true },
-                { price: new Decimal(130), percent: new Decimal(20), isLocked: false },
+                { id: 0, price: new Decimal(110), percent: new Decimal(50), isLocked: true },
+                { id: 1, price: new Decimal(120), percent: new Decimal(30), isLocked: true },
+                { id: 2, price: new Decimal(130), percent: new Decimal(20), isLocked: false },
             ]
         }));
         const currentTargets = get(tradeStore).targets;
@@ -146,9 +146,9 @@ describe('app service - adjustTpPercentages (Proportional Logic)', () => {
         updateTradeStore(state => ({
             ...state,
             targets: [
-                { price: new Decimal(110), percent: new Decimal(60), isLocked: true },
-                { price: new Decimal(120), percent: new Decimal(60), isLocked: true },
-                { price: new Decimal(130), percent: new Decimal(0), isLocked: false },
+                { id: 0, price: new Decimal(110), percent: new Decimal(60), isLocked: true },
+                { id: 1, price: new Decimal(120), percent: new Decimal(60), isLocked: true },
+                { id: 2, price: new Decimal(130), percent: new Decimal(0), isLocked: false },
             ]
         }));
         // User unlocks TP2. The app should see the total is 120 and fix it.
