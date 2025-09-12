@@ -1,6 +1,6 @@
-import { get } from 'svelte/store';
-import { writable } from 'svelte/store';
+import { get, writable } from 'svelte/store';
 import { browser } from '$app/environment';
+import type { ComponentType } from 'svelte';
 
 /**
  * Defines the state structure for a modal dialog.
@@ -11,13 +11,19 @@ export interface ModalState {
     /** The main message or question displayed in the modal body. */
     message: string;
     /** The type of modal, which determines its buttons and behavior. */
-    type: 'alert' | 'confirm' | 'prompt';
+    type: 'alert' | 'confirm' | 'prompt' | 'component';
     /** The default value for the input field in a 'prompt' modal. */
     defaultValue?: string;
     /** Whether the modal is currently visible. */
     isOpen: boolean;
     /** The resolve function of the Promise returned by `show()`, used to return the result. */
-    resolve: ((value: boolean | string) => void) | null;
+    resolve: ((value: any) => void) | null;
+    /** The Svelte component to render for 'component' type modals. */
+    component?: ComponentType | null;
+    /** The props to pass to the rendered Svelte component. */
+    props?: Record<string, any>;
+    /** The size of the modal window. */
+    size?: 'normal' | 'large';
 }
 
 /**
@@ -31,6 +37,8 @@ const modalState = writable<ModalState>({
     defaultValue: '',
     isOpen: false,
     resolve: null,
+    component: null,
+    props: {}
 });
 
 /**
@@ -39,25 +47,20 @@ const modalState = writable<ModalState>({
 export const modalManager = {
     /**
      * Displays a modal and returns a Promise that resolves with the user's interaction.
-     * @param title The title for the modal.
-     * @param message The message to display.
-     * @param type The type of modal ('alert', 'confirm', 'prompt').
-     * @param defaultValue Optional default value for prompt inputs.
-     * @returns A Promise that resolves to `true` (for confirm), a `string` (for prompt), or `false` (for cancel/close).
+     * @param options The configuration for the modal.
+     * @returns A Promise that resolves with the result of the user interaction.
      */
-    show(title: string, message: string, type: 'alert' | 'confirm' | 'prompt', defaultValue: string = ''): Promise<boolean | string> {
+    show(options: Partial<ModalState>): Promise<any> {
         return new Promise((resolve) => {
-            if (!browser) { // Only show modal in browser environment
-                console.warn("Modal cannot be shown in SSR environment.");
-                resolve(false); // Or handle as appropriate for your app
+            if (!browser) {
+                resolve(false);
                 return;
             }
 
+            const currentState = get(modalState);
             modalState.set({
-                title,
-                message,
-                type,
-                defaultValue,
+                ...currentState,
+                ...options,
                 isOpen: true,
                 resolve,
             });

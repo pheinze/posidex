@@ -4,6 +4,7 @@
 	import { uiStore } from '../stores/uiStore';
 	import { onMount } from 'svelte';
 	import superjson from '$lib/superjson';
+	import Modal from '../components/shared/Modal.svelte';
 
 	let { children, data } = $props();
 
@@ -31,3 +32,5 @@
 <div class="px-4">
 	{@render children?.()}
 </div>
+
+<Modal />

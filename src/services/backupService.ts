@@ -1,50 +1,36 @@
 import { browser } from '$app/environment';
 import { CONSTANTS } from '../lib/constants';
+import superjson from '$lib/superjson';
+import type { JournalEntry } from '../stores/types';
+import type { getInputsAsObject } from '../services/app';
 
-const BACKUP_VERSION = 1;
+const BACKUP_VERSION = 2; // Incremented version due to data structure change (superjson)
 const APP_NAME = 'R-Calculator';
 
-/**
- * Defines the structure for the data payload within the backup file.
- * Data is stored as raw strings from localStorage.
- */
 interface BackupData {
-  /** A JSON string of the user's settings. */
   settings: string | null;
-  /** A JSON string of the user's saved presets. */
   presets: string | null;
-  /** A JSON string of the user's journal entries. */
   journal: string | null;
 }
 
-/**
- * Defines the overall structure of the backup JSON file.
- */
 interface BackupFile {
-  /** The version of the backup format. */
   backupVersion: number;
-  /** The ISO 8601 timestamp of when the backup was created. */
   timestamp: string;
-  /** The name of the application that created the backup. */
   appName: string;
-  /** The container for the actual user data. */
   data: BackupData;
 }
 
-/**
- * Retrieves raw data directly from localStorage.
- * @param key The localStorage key.
- * @returns The raw string data or null if not found.
- */
+export interface RestoredData {
+    settings: ReturnType<typeof getInputsAsObject>;
+    presets: Record<string, ReturnType<typeof getInputsAsObject>>;
+    journal: JournalEntry[];
+}
+
 function getDataFromLocalStorage(key: string): string | null {
   if (!browser) return null;
   return localStorage.getItem(key);
 }
 
-/**
- * Creates a JSON backup file of all user data (settings, presets, journal)
- * and triggers a download in the user's browser.
- */
 export function createBackup() {
   if (!browser) return;
 
@@ -73,14 +59,7 @@ export function createBackup() {
   URL.revokeObjectURL(link.href);
 }
 
-/**
- * Restores user data from the content of a JSON backup file.
- * This function validates the backup and writes the data to localStorage.
- * A page reload is required after a successful restore to apply the new data.
- * @param jsonContent The string content of the uploaded JSON backup file.
- * @returns An object indicating success or failure, along with a user-friendly message.
- */
-export function restoreFromBackup(jsonContent: string): { success: boolean; message: string } {
+export function restoreFromBackup(jsonContent: string): { success: boolean; message: string; data?: RestoredData } {
   if (!browser) {
     return { success: false, message: 'Backup can only be restored in a browser environment.' };
   }
@@ -88,7 +67,6 @@ export function restoreFromBackup(jsonContent: string): { success: boolean; mess
   try {
     const backup: BackupFile = JSON.parse(jsonContent);
 
-    // --- Validation ---
     if (backup.appName !== APP_NAME) {
       return { success: false, message: 'This backup file is not for this application.' };
     }
@@ -99,22 +77,29 @@ export function restoreFromBackup(jsonContent: string): { success: boolean; mess
       return { success: false, message: 'Invalid backup file format: Missing data.' };
     }
 
-    // --- Restore to localStorage ---
+    const restoredData: Partial<RestoredData> = {};
+
     if (backup.data.settings) {
-      localStorage.setItem(CONSTANTS.LOCAL_STORAGE_SETTINGS_KEY, backup.data.settings);
+        restoredData.settings = superjson.parse(backup.data.settings);
+        localStorage.setItem(CONSTANTS.LOCAL_STORAGE_SETTINGS_KEY, backup.data.settings);
     }
     if (backup.data.presets) {
-      localStorage.setItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY, backup.data.presets);
+        restoredData.presets = superjson.parse(backup.data.presets);
+        localStorage.setItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY, backup.data.presets);
     }
     if (backup.data.journal) {
-      localStorage.setItem(CONSTANTS.LOCAL_STORAGE_JOURNAL_KEY, backup.data.journal);
+        restoredData.journal = superjson.parse(backup.data.journal);
+        localStorage.setItem(CONSTANTS.LOCAL_STORAGE_JOURNAL_KEY, backup.data.journal);
     }
 
-    // The app will re-initialize with the new data on reload.
-    return { success: true, message: 'Restore successful! The application will now reload.' };
+    if (!restoredData.settings || !restoredData.presets || !restoredData.journal) {
+        return { success: false, message: 'Backup data is incomplete or corrupted.' };
+    }
+
+    return { success: true, message: 'Restore successful!', data: restoredData as RestoredData };
 
   } catch (error) {
     console.error('Failed to parse or restore backup file.', error);
-    return { success: false, message: 'The selected file is not a valid backup file.' };
+    return { success: false, message: 'The selected file is not a valid backup file or is corrupted.' };
   }
 }

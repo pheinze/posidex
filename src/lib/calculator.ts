@@ -49,8 +49,8 @@ export const calculator = {
      * @returns The calculated ATR value as a Decimal. Returns 0 if there is not enough data.
      */
     calculateATR(klines: Kline[], period: number = 14): Decimal {
-        if (klines.length < period + 1) {
-            return new Decimal(0); // Not enough data to calculate ATR.
+        if (!klines || klines.length < period + 1) {
+            throw new Error('Not enough historical data to calculate ATR. Please select a valid symbol or a different timeframe.');
         }
 
         // 1. Calculate all True Ranges

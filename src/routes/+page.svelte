@@ -3,22 +3,20 @@
     import PortfolioInputs from '../components/inputs/PortfolioInputs.svelte';
     import TradeSetupInputs from '../components/inputs/TradeSetupInputs.svelte';
     import TakeProfitTargets from '../components/inputs/TakeProfitTargets.svelte';
-    import CustomModal from '../components/shared/CustomModal.svelte';
     import VisualBar from '../components/shared/VisualBar.svelte';
-    import { CONSTANTS, themes, themeIcons, icons } from '../lib/constants';
+    import { CONSTANTS, themes } from '../lib/constants';
     import { app } from '../services/app';
     import { tradeStore, updateTradeStore, resetAllInputs, toggleAtrInputs } from '../stores/tradeStore';
-    import { resultsStore } from '../stores/resultsStore';
+    import { calculationStore } from '../stores/calculationStore';
     import { presetStore } from '../stores/presetStore';
     import { uiStore } from '../stores/uiStore';
     import { modalManager } from '../services/modalManager';
     import { onMount } from 'svelte';
-    import { _, locale } from '../locales/i18n'; // Import locale
-    import { get } from 'svelte/store'; // Import get
+    import { _, locale } from '../locales/i18n';
+    import { get } from 'svelte/store';
     import { loadInstruction } from '../services/markdownLoader';
     import { formatDynamicDecimal } from '../utils/utils';
     import { trackClick } from '../lib/actions';
-import { trackCustomEvent } from '../services/trackingService';
     import { createBackup, restoreFromBackup } from '../services/backupService';
     import { Decimal } from 'decimal.js';
     
@@ -27,67 +25,33 @@ import { trackCustomEvent } from '../services/trackingService';
     import LanguageSwitcher from '../components/shared/LanguageSwitcher.svelte';
     import Tooltip from '../components/shared/Tooltip.svelte';
     import JournalView from '../components/shared/JournalView.svelte';
+    import Header from '../components/layout/Header.svelte';
     import CachyIcon from '../components/shared/CachyIcon.svelte';
 
     let fileInput: HTMLInputElement;
-    let changelogContent = '';
-    let guideContent = '';
 
-    // Initialisierung der App-Logik, sobald die Komponente gemountet ist
     onMount(() => {
         app.init();
     });
 
-    // Load changelog content when modal is opened
-    $: if ($uiStore.showChangelogModal && changelogContent === '') {
-        loadInstruction('changelog').then(content => {
-            changelogContent = content.html;
+    async function showGuide() {
+        const content = await loadInstruction('guide');
+        modalManager.show({
+            title: $_('app.guideTitle'),
+            message: content.html,
+            type: 'alert',
+            size: 'large'
         });
     }
 
-    // Load guide content when modal is opened
-    $: if ($uiStore.showGuideModal && guideContent === '') {
-        loadInstruction('guide').then(content => {
-            guideContent = content.html;
+    async function showChangelog() {
+        const content = await loadInstruction('changelog');
+        modalManager.show({
+            title: $_('app.changelogTitle'),
+            message: content.html,
+            type: 'alert',
+            size: 'large'
         });
-    }
-
-    // Reset content when locale changes to force refetch
-    $: if ($locale) {
-        guideContent = '';
-        changelogContent = '';
-    }
-
-    // Reactive statement to trigger app.calculateAndDisplay() when relevant inputs change
-    $: {
-        // Trigger calculation when any of these inputs change
-        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-        $tradeStore.accountSize,
-        $tradeStore.riskPercentage,
-        $tradeStore.entryPrice,
-        $tradeStore.stopLossPrice,
-        $tradeStore.leverage,
-        $tradeStore.fees,
-        $tradeStore.symbol,
-        $tradeStore.atrValue,
-        $tradeStore.atrMultiplier,
-        $tradeStore.useAtrSl,
-        $tradeStore.atrMode,
-        $tradeStore.atrTimeframe,
-        $tradeStore.tradeType,
-        $tradeStore.targets;
-
-        // Only trigger if all necessary inputs are defined (not null/undefined from initial load)
-        // and not during initial setup where values might be empty
-        if ($tradeStore.accountSize !== undefined && $tradeStore.riskPercentage !== undefined &&
-            $tradeStore.entryPrice !== undefined && $tradeStore.leverage !== undefined &&
-            $tradeStore.fees !== undefined && $tradeStore.symbol !== undefined &&
-            $tradeStore.atrValue !== undefined && $tradeStore.atrMultiplier !== undefined &&
-            $tradeStore.useAtrSl !== undefined && $tradeStore.tradeType !== undefined &&
-            $tradeStore.targets !== undefined) {
-            
-            app.calculateAndDisplay();
-        }
     }
 
     function handleTradeSetupError(e: CustomEvent<string>) {
@@ -102,7 +66,7 @@ import { trackCustomEvent } from '../services/trackingService';
         const index = event.detail;
         const newTargets = $tradeStore.targets.filter((_, i) => i !== index);
         updateTradeStore(s => ({ ...s, targets: newTargets }));
-        app.adjustTpPercentages(null); // Pass null to signify a removal
+        app.adjustTpPercentages(null);
     }
 
     function handleThemeSwitch() {
@@ -111,53 +75,27 @@ import { trackCustomEvent } from '../services/trackingService';
         uiStore.setTheme(themes[nextIndex]);
     }
 
-    // Diese reaktive Variable formatiert den Theme-Namen benutzerfreundlich.
-    // z.B. 'solarized-light' wird zu 'Solarized Light'
-    $: themeTitle = $uiStore.currentTheme
-        .split('-')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ');
-
-    function handlePresetLoad(event: Event) {
-        const selectedPreset = (event.target as HTMLSelectElement).value;
-        app.loadPreset(selectedPreset);
-    }
-
     function handleKeydown(event: KeyboardEvent) {
-        if (event && event.key && event.key.toLowerCase() === 'escape') {
+        if (event.key.toLowerCase() === 'escape') {
             event.preventDefault();
             if ($uiStore.showJournalModal) uiStore.toggleJournalModal(false);
-            if ($uiStore.showGuideModal) uiStore.toggleGuideModal(false);
-            if ($uiStore.showChangelogModal) uiStore.toggleChangelogModal(false);
             if (get(modalManager).isOpen) modalManager._handleModalConfirm(false);
             return;
         }
 
-        if (event && event.key && event.altKey) {
+        if (event.altKey) {
             switch (event.key.toLowerCase()) {
-                case 'l':
-                    event.preventDefault();
-                    updateTradeStore(s => ({ ...s, tradeType: CONSTANTS.TRADE_TYPE_LONG }));
-                    break;
-                case 's':
-                    event.preventDefault();
-                    updateTradeStore(s => ({ ...s, tradeType: CONSTANTS.TRADE_TYPE_SHORT }));
-                    break;
-                case 'r':
-                    event.preventDefault();
-                    resetAllInputs();
-                    break;
-                case 'j':
-                    event.preventDefault();
-                    uiStore.toggleJournalModal(true);
-                    break;
+                case 'l': event.preventDefault(); updateTradeStore(s => ({ ...s, tradeType: CONSTANTS.TRADE_TYPE_LONG })); break;
+                case 's': event.preventDefault(); updateTradeStore(s => ({ ...s, tradeType: CONSTANTS.TRADE_TYPE_SHORT })); break;
+                case 'r': event.preventDefault(); resetAllInputs(); break;
+                case 'j': event.preventDefault(); uiStore.toggleJournalModal(true); break;
             }
         }
     }
 
     function handleBackupClick() {
         createBackup();
-        trackCustomEvent('Backup', 'Click', 'CreateBackup');
+        trackClick({ category: 'Backup', action: 'Click', name: 'CreateBackup' });
     }
 
     function handleRestoreClick() {
@@ -173,32 +111,28 @@ import { trackCustomEvent } from '../services/trackingService';
         reader.onload = (e) => {
             const content = e.target?.result as string;
 
-            modalManager.show(
-                $_('app.restoreConfirmTitle'),
-                $_('app.restoreConfirmMessage'),
-                'confirm'
-            ).then((confirmed) => {
+            modalManager.show({
+                title: $_('app.restoreConfirmTitle'),
+                message: $_('app.restoreConfirmMessage'),
+                type: 'confirm'
+            }).then((confirmed) => {
                 if (confirmed) {
                     const result = restoreFromBackup(content);
-                    if (result.success) {
-                        uiStore.showFeedback('save'); // Re-use save feedback for now
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 1000);
+                    if (result.success && result.data) {
+                        tradeStore.set(result.data.settings);
+                        journalStore.set(result.data.journal);
+                        presetStore.update(s => ({...s, availablePresets: Object.keys(result.data.presets)}));
+                        uiStore.showFeedback('save');
                     } else {
                         uiStore.showError(result.message);
                     }
                 }
-                // Reset file input so the same file can be selected again
                 input.value = '';
             });
         };
-        reader.onerror = () => {
-            uiStore.showError('app.fileReadError');
-        };
+        reader.onerror = () => uiStore.showError('app.fileReadError');
         reader.readAsText(file);
-
-        trackCustomEvent('Backup', 'Click', 'RestoreBackup');
+        trackClick({ category: 'Backup', action: 'Click', name: 'RestoreBackup' });
     }
 </script>
 
@@ -208,37 +142,14 @@ import { trackCustomEvent } from '../services/trackingService';
 
 <main class="my-8 w-full max-w-4xl mx-auto calculator-wrapper rounded-2xl shadow-2xl p-6 sm:p-8 fade-in">
 
-    <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
-        <div class="flex justify-between items-center w-full md:w-auto">
-            <div class="flex items-center gap-3 text-[var(--text-primary)]">
-                <CachyIcon class="h-8 w-8" />
-                <h1 class="text-2xl sm:text-3xl font-bold">{$_('app.title')}</h1>
-            </div>
-            <button id="view-journal-btn-mobile" class="text-sm md:hidden bg-[var(--btn-accent-bg)] hover:bg-[var(--btn-accent-hover-bg)] text-[var(--btn-accent-text)] font-bold py-2 px-4 rounded-lg" title="{$_('app.journalButtonTitle')}" on:click={() => uiStore.toggleJournalModal(true)} use:trackClick={{ category: 'Navigation', action: 'Click', name: 'ViewJournalMobile' }}>{$_('app.journalButton')}</button>
-        </div>
-        <div class="flex items-center flex-wrap justify-end gap-2 w-full md:w-auto">
-            <div class="flex items-center flex-wrap justify-end gap-2 md:order-1">
-                <select id="preset-loader" class="input-field px-3 py-2 rounded-md text-sm" on:change={handlePresetLoad} bind:value={$presetStore.selectedPreset}>
-                    <option value="">{$_('dashboard.presetLoad')}</option>
-                    {#each $presetStore.availablePresets as presetName}
-                        <option value={presetName}>{presetName}</option>
-                    {/each}
-                </select>
-                <button id="save-preset-btn" class="text-sm bg-[var(--btn-default-bg)] hover:bg-[var(--btn-default-hover-bg)] text-[var(--btn-default-text)] font-bold py-2.5 px-2.5 rounded-lg" title="{$_('dashboard.savePresetTitle')}" aria-label="{$_('dashboard.savePresetAriaLabel')}" on:click={app.savePreset} use:trackClick={{ category: 'Presets', action: 'Click', name: 'SavePreset' }}>{@html icons.save}</button>
-                <button id="delete-preset-btn" class="text-sm bg-[var(--btn-danger-bg)] hover:bg-[var(--btn-danger-hover-bg)] text-[var(--btn-danger-text)] font-bold py-2.5 px-2.5 rounded-lg disabled:cursor-not-allowed" title="{$_('dashboard.deletePresetTitle')}" disabled={!$presetStore.selectedPreset} on:click={app.deletePreset} use:trackClick={{ category: 'Presets', action: 'Click', name: 'DeletePreset' }}>{@html icons.delete}</button>
-                <button id="reset-btn" class="text-sm bg-[var(--btn-default-bg)] hover:bg-[var(--btn-default-hover-bg)] text-[var(--btn-default-text)] font-bold py-2.5 px-2.5 rounded-lg flex items-center gap-2" title="{$_('dashboard.resetButtonTitle')}" on:click={resetAllInputs} use:trackClick={{ category: 'Actions', action: 'Click', name: 'ResetAll' }}>{@html icons.broom}</button>
-                <button
-                    id="theme-switcher"
-                    class="text-sm bg-[var(--btn-default-bg)] hover:bg-[var(--btn-default-hover-bg)] text-[var(--btn-default-text)] font-bold py-2 px-2.5 rounded-lg"
-                    aria-label="{$_('dashboard.themeSwitcherAriaLabel')}"
-                    on:click={handleThemeSwitch}
-                    title={themeTitle}
-                    use:trackClick={{ category: 'Settings', action: 'Click', name: 'SwitchTheme' }}
-                >{@html themeIcons[$uiStore.currentTheme as keyof typeof themeIcons]}</button>
-            </div>
-            <button id="view-journal-btn-desktop" class="hidden md:inline-block text-sm bg-[var(--btn-accent-bg)] hover:bg-[var(--btn-accent-hover-bg)] text-[var(--btn-accent-text)] font-bold py-2 px-4 rounded-lg md:order-2" title="{$_('app.journalButtonTitle')}" on:click={() => uiStore.toggleJournalModal(true)} use:trackClick={{ category: 'Navigation', action: 'Click', name: 'ViewJournalDesktop' }}>{$_('app.journalButton')}</button>
-        </div>
-    </div>
+    <Header
+        on:presetLoad={(e) => app.loadPreset(e.detail)}
+        on:savePreset={() => app.savePreset()}
+        on:deletePreset={() => app.deletePreset()}
+        on:resetAll={resetAllInputs}
+        on:switchTheme={handleThemeSwitch}
+        on:viewJournal={() => uiStore.toggleJournalModal(true)}
+    />
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
         <div>
@@ -252,7 +163,6 @@ import { trackCustomEvent } from '../services/trackingService';
                 isPositionSizeLocked={$tradeStore.isPositionSizeLocked}
                 on:toggleRiskAmountLock={() => app.toggleRiskAmountLock()}
             />
-
         </div>
 
         <TradeSetupInputs
@@ -264,29 +174,26 @@ import { trackCustomEvent } from '../services/trackingService';
             bind:stopLossPrice={$tradeStore.stopLossPrice}
             bind:atrMode={$tradeStore.atrMode}
             bind:atrTimeframe={$tradeStore.atrTimeframe}
-
             on:showError={handleTradeSetupError}
-            
             on:fetchPrice={() => app.handleFetchPrice()}
             on:toggleAtrInputs={(e) => toggleAtrInputs(e.detail)}
             on:selectSymbolSuggestion={(e) => app.selectSymbolSuggestion(e.detail)}
             on:setAtrMode={(e) => app.setAtrMode(e.detail)}
             on:setAtrTimeframe={(e) => app.setAtrTimeframe(e.detail)}
             on:fetchAtr={() => app.fetchAtr()}
-
-            atrFormulaDisplay={$resultsStore.atrFormulaText}
-            showAtrFormulaDisplay={$resultsStore.showAtrFormulaDisplay}
-            isAtrSlInvalid={$resultsStore.isAtrSlInvalid}
+            atrFormulaDisplay={$calculationStore.results.atrFormulaText}
+            showAtrFormulaDisplay={$calculationStore.results.showAtrFormulaDisplay}
+            isAtrSlInvalid={$calculationStore.results.isAtrSlInvalid}
             isPriceFetching={$uiStore.isPriceFetching}
             symbolSuggestions={$uiStore.symbolSuggestions}
             showSymbolSuggestions={$uiStore.showSymbolSuggestions}
         />
     </div>
 
-    <TakeProfitTargets bind:targets={$tradeStore.targets} on:change={handleTargetsChange} on:remove={handleTpRemove} calculatedTpDetails={$resultsStore.calculatedTpDetails} />
+    <TakeProfitTargets bind:targets={$tradeStore.targets} on:change={handleTargetsChange} on:remove={handleTpRemove} calculatedTpDetails={$calculationStore.results.calculatedTpDetails} />
 
-    {#if $uiStore.showErrorMessage}
-        <div id="error-message" class="text-center text-sm font-medium mt-4 md:col-span-2" style:color="var(--danger-color)">{$_($uiStore.errorMessage)}</div>
+    {#if $calculationStore.error}
+        <div id="error-message" class="text-center text-sm font-medium mt-4 md:col-span-2" style:color="var(--danger-color)">{$_($calculationStore.error)}</div>
     {/if}
 
     <section id="results" class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-x-8">
@@ -294,31 +201,31 @@ import { trackCustomEvent } from '../services/trackingService';
             <SummaryResults
                 isPositionSizeLocked={$tradeStore.isPositionSizeLocked}
                 showCopyFeedback={$uiStore.showCopyFeedback}
-                positionSize={$resultsStore.positionSize}
-                netLoss={$resultsStore.netLoss}
-                requiredMargin={$resultsStore.requiredMargin}
-                entryFee={$resultsStore.entryFee}
-                estimatedLiquidationPrice={$resultsStore.estimatedLiquidationPrice}
-                breakEvenPrice={$resultsStore.breakEvenPrice}
+                positionSize={$calculationStore.results.positionSize}
+                netLoss={$calculationStore.results.netLoss}
+                requiredMargin={$calculationStore.results.requiredMargin}
+                entryFee={$calculationStore.results.entryFee}
+                estimatedLiquidationPrice={$calculationStore.results.estimatedLiquidationPrice}
+                breakEvenPrice={$calculationStore.results.breakEvenPrice}
                 on:toggleLock={() => app.togglePositionSizeLock()}
                 on:copy={() => uiStore.showFeedback('copy')}
             />
-            {#if $resultsStore.showTotalMetricsGroup}
+            {#if $calculationStore.results.showTotalMetricsGroup}
                 <div id="total-metrics-group" class="result-group">
                     <h2 class="section-header">{$_('dashboard.totalTradeMetrics')}<Tooltip text={$_('dashboard.totalTradeMetricsTooltip')} /></h2>
-                    <div class="result-item"><span class="result-label">{$_('dashboard.riskPerTradeCurrency')}<Tooltip text={$_('dashboard.riskPerTradeCurrencyTooltip')} /></span><span id="riskAmountCurrency" class="result-value" style:color="var(--danger-color)">{$resultsStore.riskAmountCurrency}</span></div>
-                    <div class="result-item"><span class="result-label">{$_('dashboard.totalFees')}<Tooltip text={$_('dashboard.totalFeesTooltip')} /></span><span id="totalFees" class="result-value">{$resultsStore.totalFees}</span></div>
-                    <div class="result-item"><span class="result-label">{$_('dashboard.weightedRR')}<Tooltip text={$_('dashboard.weightedRRTooltip')} /></span><span id="totalRR" class="result-value">{$resultsStore.totalRR}</span></div>
-                    <div class="result-item"><span class="result-label">{$_('dashboard.totalNetProfit')}<Tooltip text={$_('dashboard.totalNetProfitTooltip')} /></span><span id="totalNetProfit" class="result-value" style:color="var(--success-color)">{$resultsStore.totalNetProfit}</span></div>
-                    <div class="result-item"><span class="result-label">{$_('dashboard.totalReturnOnCapital')}<Tooltip text={$_('dashboard.returnOnCapitalTooltip')} /></span><span id="totalROC" class="result-value" style:color="var(--success-color)">{$resultsStore.totalROC}%</span></div>
-                    <div class="result-item"><span class="result-label">{$_('dashboard.soldPosition')}<Tooltip text={$_('dashboard.soldPositionTooltip')} /></span><span id="totalPercentSold" class="result-value">{$resultsStore.totalPercentSold}</span></div>
+                    <div class="result-item"><span class="result-label">{$_('dashboard.riskPerTradeCurrency')}<Tooltip text={$_('dashboard.riskPerTradeCurrencyTooltip')} /></span><span id="riskAmountCurrency" class="result-value" style:color="var(--danger-color)">{formatDynamicDecimal($calculationStore.results.riskAmountCurrency, 2)}</span></div>
+                    <div class="result-item"><span class="result-label">{$_('dashboard.totalFees')}<Tooltip text={$_('dashboard.totalFeesTooltip')} /></span><span id="totalFees" class="result-value">{formatDynamicDecimal($calculationStore.results.totalFees, 2)}</span></div>
+                    <div class="result-item"><span class="result-label">{$_('dashboard.weightedRR')}<Tooltip text={$_('dashboard.weightedRRTooltip')} /></span><span id="totalRR" class="result-value">{formatDynamicDecimal($calculationStore.results.totalRR, 2)}</span></div>
+                    <div class="result-item"><span class="result-label">{$_('dashboard.totalNetProfit')}<Tooltip text={$_('dashboard.totalNetProfitTooltip')} /></span><span id="totalNetProfit" class="result-value" style:color="var(--success-color)">+{formatDynamicDecimal($calculationStore.results.totalNetProfit, 2)}</span></div>
+                    <div class="result-item"><span class="result-label">{$_('dashboard.totalReturnOnCapital')}<Tooltip text={$_('dashboard.returnOnCapitalTooltip')} /></span><span id="totalROC" class="result-value" style:color="var(--success-color)">{formatDynamicDecimal($calculationStore.results.totalROC, 2)}%</span></div>
+                    <div class="result-item"><span class="result-label">{$_('dashboard.soldPosition')}<Tooltip text={$_('dashboard.soldPositionTooltip')} /></span><span id="totalPercentSold" class="result-value">{formatDynamicDecimal($calculationStore.results.totalPercentSold, 0)}%</span></div>
                 </div>
             {/if}
         </div>
         <div id="tp-results-container">
-            {#each $resultsStore.calculatedTpDetails as tpDetail: IndividualTpResult}
+            {#each $calculationStore.results.calculatedTpDetails as tpDetail: IndividualTpResult}
                 <div class="result-group !mt-0 md:!mt-6">
-                    <h2 class="section-header">{$_('dashboard.takeProfit')} {(tpDetail as IndividualTpResult).index + 1} ({(tpDetail as IndividualTpResult).percentSold.toFixed(0)}%)</h2>
+                    <h2 class="section-header">{$_('dashboard.takeProfit')} {tpDetail.index + 1} ({tpDetail.percentSold.toFixed(0)}%)</h2>
                     <div class="result-item"><span class="result-label">{$_('dashboard.riskRewardRatio')}</span><span class="result-value" style:color={tpDetail.riskRewardRatio.gte(2) ? 'var(--success-color)' : tpDetail.riskRewardRatio.gte(1.5) ? 'var(--warning-color)' : 'var(--danger-color)'}>{formatDynamicDecimal(tpDetail.riskRewardRatio, 2)}</span></div>
                     <div class="result-item"><span class="result-label">{$_('dashboard.netProfit')}<Tooltip text={$_('dashboard.netProfitTooltip')} /></span><span class="result-value" style:color="var(--success-color)">+{formatDynamicDecimal(tpDetail.netProfit, 2)}</span></div>
                     <div class="result-item"><span class="result-label">{$_('dashboard.priceChange')}<Tooltip text={$_('dashboard.priceChangeTooltip')} /></span><span class="result-value" style:color={tpDetail.priceChangePercent.gt(0) ? 'var(--success-color)' : 'var(--danger-color)'}>{formatDynamicDecimal(tpDetail.priceChangePercent, 2)}%</span></div>
@@ -333,12 +240,12 @@ import { trackCustomEvent } from '../services/trackingService';
             stopLossPrice={$tradeStore.stopLossPrice}
             tradeType={$tradeStore.tradeType}
             targets={$tradeStore.targets}
-            calculatedTpDetails={$resultsStore.calculatedTpDetails}
+            calculatedTpDetails={$calculationStore.results.calculatedTpDetails}
         />
         <footer class="md:col-span-2">
             <textarea id="tradeNotes" class="input-field w-full px-4 py-2 rounded-md mb-4" rows="2" placeholder="{$_('dashboard.tradeNotesPlaceholder')}" bind:value={$tradeStore.tradeNotes}></textarea>
             <div class="flex items-center gap-4">
-                <button id="save-journal-btn" class="w-full font-bold py-3 px-4 rounded-lg btn-primary-action" on:click={app.addTrade} disabled={$resultsStore.positionSize === '-'} use:trackClick={{ category: 'Journal', action: 'Click', name: 'SaveTrade' }}>{$_('dashboard.addTradeToJournal')}</button>
+                <button id="save-journal-btn" class="w-full font-bold py-3 px-4 rounded-lg btn-primary-action" on:click={() => app.addTrade($calculationStore.currentTradeData)} disabled={!$calculationStore.currentTradeData} use:trackClick={{ category: 'Journal', action: 'Click', name: 'SaveTrade' }}>{$_('dashboard.addTradeToJournal')}</button>
                 <button id="show-dashboard-readme-btn" class="font-bold p-3 rounded-lg btn-secondary-action" title="{$_('dashboard.showInstructionsTitle')}" aria-label="{$_('dashboard.showInstructionsAriaLabel')}" on:click={() => app.uiManager.showReadme('dashboard')} use:trackClick={{ category: 'Navigation', action: 'Click', name: 'ShowInstructions' }}>{@html icons.book}</button>
                 {#if $uiStore.showSaveFeedback}<span id="save-feedback" class="save-feedback" class:visible={$uiStore.showSaveFeedback}>{$_('dashboard.savedFeedback')}</span>{/if}
             </div>
@@ -358,51 +265,7 @@ import { trackCustomEvent } from '../services/trackingService';
 </main>
 
 <footer class="w-full max-w-4xl mx-auto text-center py-4 text-sm text-gray-500">
-    Version 0.92b1 - <button class="text-link" on:click={() => uiStore.toggleGuideModal(true)} use:trackClick={{ category: 'Navigation', action: 'Click', name: 'ShowGuide' }}>{$_('app.guideButton')}</button> | <button class="text-link" on:click={() => uiStore.toggleChangelogModal(true)} use:trackClick={{ category: 'Navigation', action: 'Click', name: 'ShowChangelog' }}>Changelog</button>
+    Version 0.92b1 - <button class="text-link" on:click={showGuide} use:trackClick={{ category: 'Navigation', action: 'Click', name: 'ShowGuide' }}>{$_('app.guideButton')}</button> | <button class="text-link" on:click={showChangelog} use:trackClick={{ category: 'Navigation', action: 'Click', name: 'ShowChangelog' }}>Changelog</button>
 </footer>
 
 <JournalView />
-
-<CustomModal />
-
-<div
-    id="changelog-modal"
-    class="modal-overlay"
-    class:visible={$uiStore.showChangelogModal}
-    class:opacity-100={$uiStore.showChangelogModal}
-    on:click={(e) => { if (e.target === e.currentTarget) uiStore.toggleChangelogModal(false) }}
-    on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { if (e.target === e.currentTarget) uiStore.toggleChangelogModal(false) } }}
-    role="button"
-    tabindex="0"
->
-    <div class="modal-content w-full h-full max-w-6xl">
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-2xl font-bold">{$_('app.changelogTitle')}</h2>
-            <button id="close-changelog-btn" class="text-3xl" aria-label="{$_('app.closeChangelogAriaLabel')}" on:click={() => uiStore.toggleChangelogModal(false)} use:trackClick={{ category: 'Navigation', action: 'Click', name: 'CloseChangelog' }}>&times;</button>
-        </div>
-        <div id="changelog-content" class="prose dark:prose-invert max-h-[calc(100vh-10rem)] overflow-y-auto">
-            {@html changelogContent}
-        </div>
-    </div>
-</div>
-
-<div
-    id="guide-modal"
-    class="modal-overlay"
-    class:visible={$uiStore.showGuideModal}
-    class:opacity-100={$uiStore.showGuideModal}
-    on:click={(e) => { if (e.target === e.currentTarget) uiStore.toggleGuideModal(false) }}
-    on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { if (e.target === e.currentTarget) uiStore.toggleGuideModal(false) } }}
-    role="button"
-    tabindex="0"
->
-    <div class="modal-content w-full h-full max-w-6xl">
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-2xl font-bold">{$_('app.guideTitle')}</h2>
-            <button id="close-guide-btn" class="text-3xl" aria-label="{$_('app.closeGuideAriaLabel')}" on:click={() => uiStore.toggleGuideModal(false)} use:trackClick={{ category: 'Navigation', action: 'Click', name: 'CloseGuide' }}>&times;</button>
-        </div>
-        <div id="guide-content" class="prose dark:prose-invert max-h-[calc(100vh-10rem)] overflow-y-auto">
-            {@html guideContent}
-        </div>
-    </div>
-</div>
