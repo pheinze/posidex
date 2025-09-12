@@ -74,6 +74,51 @@ export function parseGermanDate(dateStr: string, timeStr: string): string {
     return date.toISOString();
 }
 
+export function parseDateFlexible(dateStr: string, timeStr?: string): string {
+    if (!dateStr) {
+        throw new Error('Date string cannot be empty.');
+    }
+    const normalizedDateStr = dateStr.trim();
+    const normalizedTimeStr = timeStr ? timeStr.trim() : '00:00:00';
+
+    // Attempt to parse different date formats
+    const formats = [
+        // 1. YYYY-MM-DD
+        (d: string) => d.match(/^(\d{4})-(\d{2})-(\d{2})$/),
+        // 2. DD.MM.YYYY
+        (d: string) => {
+            const parts = d.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+            return parts ? [parts[0], parts[3], parts[2], parts[1]] : null; // Rearrange to YYYY, MM, DD
+        },
+        // 3. MM/DD/YYYY
+        (d: string) => {
+            const parts = d.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+            return parts ? [parts[0], parts[3], parts[1], parts[2]] : null; // Rearrange to YYYY, MM, DD
+        },
+    ];
+
+    for (const format of formats) {
+        const parts = format(normalizedDateStr);
+        if (parts) {
+            const [, year, month, day] = parts;
+            const isoString = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${normalizedTimeStr}.000Z`;
+            const date = new Date(isoString);
+            // Final check to ensure date is valid (e.g. not 31.02.2024)
+            if (!isNaN(date.getTime()) && date.toISOString().startsWith(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`)) {
+                return date.toISOString();
+            }
+        }
+    }
+
+    // As a last resort, try the native Date constructor, which can be surprisingly flexible
+    const nativeDate = new Date(`${normalizedDateStr} ${normalizedTimeStr}`);
+    if (!isNaN(nativeDate.getTime())) {
+        return nativeDate.toISOString();
+    }
+
+    throw new Error(`Invalid date format: "${dateStr}". Please use YYYY-MM-DD, DD.MM.YYYY, or MM/DD/YYYY.`);
+}
+
 /**
  * Formats a date string or object into a consistent, localized string.
  * @param date - The date to format (ISO string or Date object).

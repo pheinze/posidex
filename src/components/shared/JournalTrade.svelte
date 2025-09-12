@@ -13,6 +13,7 @@
     export let editingTradeId: number | null;
 
     let editingPnlValue: string = '';
+    let isDeleting = false;
 
     function startEditing() {
         editingPnlValue = trade.realizedPnl ? trade.realizedPnl.toString() : '';
@@ -66,7 +67,7 @@
                     bind:value={editingPnlValue}
                     use:numberInput={{ maxDecimalPlaces: 4 }}
                     use:focus
-                    on:blur={saveEditing}
+                    on:blur={() => { if (!isDeleting) saveEditing(); }}
                     on:keydown={(e) => { if (e.key === 'Enter') saveEditing(); else if (e.key === 'Escape') cancelEditing(); }}
                 />
             {:else}
@@ -84,7 +85,9 @@
             </select>
         </td>
         <td class="notes-cell" title="{$_('journal.clickToExpand')}" on:click={(e) => (e.target as HTMLElement).classList.toggle('expanded')}>{trade.notes || ''}</td>
-        <td class="text-center"><button class="delete-trade-btn text-[var(--danger-color)] hover:opacity-80 p-1 rounded-full" title="{$_('journal.delete')}" on:click={() => app.deleteTrade(trade.id)}>{@html icons.delete}</button></td>
+        <td class="text-center">
+            <button class="delete-trade-btn text-[var(--danger-color)] hover:opacity-80 p-1 rounded-full" title="{$_('journal.delete')}" on:mousedown={() => isDeleting = true} on:click={() => app.deleteTrade(trade.id)}>{@html icons.delete}</button>
+        </td>
     </tr>
 {:else}
     <div class="bg-[var(--bg-primary)] p-4 rounded-lg shadow-md border border-[var(--border-color)]"
@@ -121,7 +124,7 @@
                         bind:value={editingPnlValue}
                         use:numberInput={{ maxDecimalPlaces: 4 }}
                         use:focus
-                        on:blur={saveEditing}
+                        on:blur={() => { if (!isDeleting) saveEditing(); }}
                         on:keydown={(e) => { if (e.key === 'Enter') saveEditing(); else if (e.key === 'Escape') cancelEditing(); }}
                     />
                 {:else}
@@ -133,7 +136,7 @@
         </div>
         <div class="mt-4 flex justify-between items-center">
             <div class="text-sm text-slate-400">{formatDate(trade.date, $locale)}</div>
-            <button class="delete-trade-btn text-[var(--danger-color)] hover:opacity-80 p-1 rounded-full cursor-pointer" title="{$_('journal.delete')}" on:click={() => app.deleteTrade(trade.id)}>{@html icons.delete}</button>
+            <button class="delete-trade-btn text-[var(--danger-color)] hover:opacity-80 p-1 rounded-full cursor-pointer" title="{$_('journal.delete')}" on:mousedown={() => isDeleting = true} on:click={() => app.deleteTrade(trade.id)}>{@html icons.delete}</button>
         </div>
     </div>
 {/if}

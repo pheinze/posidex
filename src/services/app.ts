@@ -1,5 +1,5 @@
 import { get } from 'svelte/store';
-import { parseDecimal, formatDynamicDecimal, parseGermanDate, formatDate } from '../utils/utils';
+import { parseDecimal, formatDynamicDecimal, parseGermanDate, formatDate, parseDateFlexible } from '../utils/utils';
 import { CONSTANTS } from '../lib/constants';
 import { locale } from '../locales/i18n';
 import { apiService } from './apiService';
@@ -74,7 +74,9 @@ export const app = {
         if (browser) {
             app.loadSettings();
             app.populatePresetLoader();
-            app.calculateAndDisplay();
+            // BUGFIX: The call to calculateAndDisplay() was removed from here.
+            // The reactive block in `+page.svelte` is now the single source of truth
+            // for triggering calculations after settings are loaded.
         }
     },
 
@@ -129,7 +131,14 @@ export const app = {
             }
 
             if (values.useAtrSl) {
-                if (values.entryPrice.gt(0) && values.atrValue.gt(0) && values.atrMultiplier.gt(0)) {
+                // BUGFIX: Add an explicit guard to prevent ATR calculation without a valid entry price.
+                if (values.entryPrice.lte(0)) {
+                    // Mark as invalid if ATR values are present but entry is not, then exit.
+                    newResults.isAtrSlInvalid = values.atrValue.gt(0) || values.atrMultiplier.gt(0);
+                    return { status: CONSTANTS.STATUS_INCOMPLETE };
+                }
+
+                if (values.atrValue.gt(0) && values.atrMultiplier.gt(0)) {
                     const operator = currentTradeState.tradeType === CONSTANTS.TRADE_TYPE_LONG ? '-' : '+';
                     values.stopLossPrice = currentTradeState.tradeType === CONSTANTS.TRADE_TYPE_LONG
                         ? values.entryPrice.minus(values.atrValue.times(values.atrMultiplier))
@@ -137,7 +146,8 @@ export const app = {
 
                     newResults.showAtrFormulaDisplay = true;
                     newResults.atrFormulaText = `SL = ${values.entryPrice.toFixed(4)} ${operator} (${values.atrValue} × ${values.atrMultiplier}) = ${values.stopLossPrice.toFixed(4)}`;
-                } else if (values.atrValue.gt(0) && values.atrMultiplier.gt(0)) {
+                } else {
+                    // This case handles when useAtrSl is true but atrValue/Multiplier are missing.
                     return { status: CONSTANTS.STATUS_INCOMPLETE };
                 }
             } else {
@@ -683,7 +693,7 @@ export const app = {
 
                     return {
                         id: parseInt(getValue('id'), 10),
-                        date: parseGermanDate(getValue('date'), getValue('time')),
+                        date: parseDateFlexible(getValue('date'), getValue('time')),
                         symbol: getValue('symbol'),
                         tradeType: getValue('tradeType').toLowerCase(),
                         status: getValue('status'),
@@ -894,62 +904,78 @@ export const app = {
         const currentAppState = get(tradeStore);
         const originalTargets = currentAppState.targets;
 
-        if (changedIndex !== null && originalTargets[changedIndex]?.isLocked) {
-            return;
-        }
-
         const targets = JSON.parse(JSON.stringify(originalTargets));
         const ONE_HUNDRED = new Decimal(100);
         const ZERO = new Decimal(0);
 
         const decTargets = targets.map((t: TakeProfitTarget) => ({
-            price: t.price,
+            ...t,
             percent: parseDecimal(t.percent),
-            isLocked: t.isLocked,
         }));
 
         const lockedSum = decTargets
             .filter((t: TakeProfitTarget) => t.isLocked)
-            .reduce((sum: Decimal, t: {percent: Decimal}) => sum.plus(t.percent), ZERO);
+            .reduce((sum: Decimal, t: { percent: Decimal }) => sum.plus(t.percent), ZERO);
 
-        if (lockedSum.gt(ONE_HUNDRED)) return;
-
-        const unlockedTargets = decTargets.filter((t: TakeProfitTarget) => !t.isLocked);
-        if (unlockedTargets.length === 0) return;
-
-        const unlockedTargetSum = ONE_HUNDRED.minus(lockedSum);
-        const unlockedCurrentSum = unlockedTargets.reduce((sum: Decimal, t: {percent: Decimal}) => sum.plus(t.percent), ZERO);
-
-        if (unlockedCurrentSum.equals(unlockedTargetSum) && unlockedTargets.every((t: {percent: Decimal}) => t.percent.isInteger())) {
+        if (lockedSum.gt(ONE_HUNDRED)) {
+            // Don't adjust if locked targets already exceed 100%, let validation handle it.
             return;
         }
 
-        if (unlockedCurrentSum.isZero()) {
-            if (unlockedTargetSum.gt(0)) {
-                const share = unlockedTargetSum.div(unlockedTargets.length);
-                unlockedTargets.forEach((t: {percent: Decimal}) => t.percent = share);
+        let targetsToAdjust = decTargets.filter((t: TakeProfitTarget) => !t.isLocked);
+        let sumToDistribute = ONE_HUNDRED.minus(lockedSum);
+
+        // BUGFIX: Implement intuitive "pivot" adjustment logic.
+        // If a specific, unlocked target was changed, treat it as a pivot.
+        if (changedIndex !== null && decTargets[changedIndex] && !decTargets[changedIndex].isLocked) {
+            const pivotTarget = decTargets[changedIndex];
+            const pivotValue = pivotTarget.percent;
+
+            const sumOfLockedAndPivot = lockedSum.plus(pivotValue);
+
+            // If the user's input for the pivot is valid within the remaining space...
+            if (sumOfLockedAndPivot.lte(ONE_HUNDRED)) {
+                // ...adjust only the *other* unlocked targets.
+                targetsToAdjust = decTargets.filter((t: TakeProfitTarget, i: number) => !t.isLocked && i !== changedIndex);
+                sumToDistribute = ONE_HUNDRED.minus(sumOfLockedAndPivot);
+            } else {
+                // Otherwise, the user's input is too high. We will adjust all unlocked targets
+                // proportionally, including the one just changed. This provides responsive feedback.
+                targetsToAdjust = decTargets.filter((t: TakeProfitTarget) => !t.isLocked);
+                sumToDistribute = ONE_HUNDRED.minus(lockedSum);
             }
-        } else {
-            const scalingFactor = unlockedTargetSum.div(unlockedCurrentSum);
-            unlockedTargets.forEach((t: {percent: Decimal}) => t.percent = t.percent.times(scalingFactor));
         }
 
-        let roundedSum = ZERO;
-        for (let i = 0; i < unlockedTargets.length - 1; i++) {
-            const rounded = unlockedTargets[i].percent.toDecimalPlaces(0, Decimal.ROUND_HALF_UP);
-            unlockedTargets[i].percent = rounded;
-            roundedSum = roundedSum.plus(rounded);
-        }
+        if (targetsToAdjust.length > 0) {
+            const currentSumToAdjust = targetsToAdjust.reduce((sum: Decimal, t: { percent: Decimal }) => sum.plus(t.percent), ZERO);
 
-        if (unlockedTargets.length > 0) {
-            const lastTarget = unlockedTargets[unlockedTargets.length - 1];
-            lastTarget.percent = unlockedTargetSum.minus(roundedSum).toDecimalPlaces(0, Decimal.ROUND_HALF_UP);
+            if (currentSumToAdjust.isZero()) {
+                // If all targets to adjust are 0, distribute the sum equally.
+                if (sumToDistribute.gt(0)) {
+                    const share = sumToDistribute.div(targetsToAdjust.length);
+                    targetsToAdjust.forEach((t: { percent: Decimal }) => t.percent = share);
+                }
+            } else {
+                // Otherwise, scale them proportionally.
+                const scalingFactor = sumToDistribute.div(currentSumToAdjust);
+                targetsToAdjust.forEach((t: { percent: Decimal }) => t.percent = t.percent.times(scalingFactor));
+            }
+
+            // Apply rounding to all but the last element to avoid rounding errors.
+            let roundedSum = ZERO;
+            for (let i = 0; i < targetsToAdjust.length - 1; i++) {
+                const rounded = targetsToAdjust[i].percent.toDecimalPlaces(0, Decimal.ROUND_HALF_UP);
+                targetsToAdjust[i].percent = rounded;
+                roundedSum = roundedSum.plus(rounded);
+            }
+            // The last element gets the remainder.
+            const lastTarget = targetsToAdjust[targetsToAdjust.length - 1];
+            lastTarget.percent = sumToDistribute.minus(roundedSum).toDecimalPlaces(0, Decimal.ROUND_HALF_UP);
         }
 
         const finalTargets = decTargets.map((t: TakeProfitTarget) => ({
-            price: t.price,
+            ...t,
             percent: t.percent, // Keep as Decimal
-            isLocked: t.isLocked
         }));
 
         const hasChanged = originalTargets.length !== finalTargets.length || originalTargets.some((original, index) => {
@@ -997,9 +1023,16 @@ export const app = {
      * @param value - The new percentage value as a string from the input field.
      */
     updateTakeProfitPercent: (index: number, value: string) => {
+        let isLocked = false;
         updateTradeStore(state => {
             const newTargets = [...state.targets];
             if (!newTargets[index]) return state;
+
+            // BUGFIX: Do not allow updates to locked targets.
+            if (newTargets[index].isLocked) {
+                isLocked = true;
+                return state;
+            }
 
             if (value.trim() === '') {
                 newTargets[index].percent = null;
@@ -1013,8 +1046,11 @@ export const app = {
             }
             return { ...state, targets: newTargets };
         });
-        // We still need to call adjustTpPercentages after a percent change
-        app.adjustTpPercentages(index);
+
+        // Only adjust percentages if the field was not locked.
+        if (!isLocked) {
+            app.adjustTpPercentages(index);
+        }
     },
 
     /**

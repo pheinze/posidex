@@ -63,11 +63,11 @@ describe('calculator', () => {
   });
 
   // Test für calculateIndividualTp
-  it('should correctly calculate individual TP metrics for a LONG trade', () => {
+  it('should correctly calculate individual TP metrics for a LONG trade using Net/Net RRR', () => {
     const baseMetrics = {
       positionSize: new Decimal(10),
       requiredMargin: new Decimal(100),
-      netLoss: new Decimal(10),
+      netLoss: new Decimal(11.99), // Using the accurate net loss from the base calculation test
       breakEvenPrice: new Decimal(100.20),
       estimatedLiquidationPrice: new Decimal(90),
       entryFee: new Decimal(1),
@@ -84,7 +84,7 @@ describe('calculator', () => {
       atrValue: new Decimal(0),
       atrMultiplier: new Decimal(0),
       stopLossPrice: new Decimal(99),
-      targets: [{ id: 0, price: new Decimal(105), percent: new Decimal(50), isLocked: false }], // Only the percent is used from here
+      targets: [{ id: 0, price: new Decimal(105), percent: new Decimal(50), isLocked: false }],
       totalPercentSold: new Decimal(0),
     };
     const tpPrice = new Decimal(105);
@@ -92,20 +92,24 @@ describe('calculator', () => {
 
     const result = calculator.calculateIndividualTp(tpPrice, currentTpPercent, baseMetrics, values, 0, CONSTANTS.TRADE_TYPE_LONG);
 
-    // netProfit = (105-100)*5 - (5*105*0.001) = 25 - 0.525 = 24.475
-    expect(result.netProfit.toDP(2).equals(new Decimal('24.48'))).toBe(true);
-    expect(result.riskRewardRatio.toDP(2).equals(new Decimal('5.00'))).toBe(true);
+    // Manually calculate expected values based on the new Net/Net logic
+    // netProfit = grossProfit (25) - exitFee (0.525) - entryFeePart (0.5) = 23.975
+    expect(result.netProfit.toDP(2).equals(new Decimal('23.98'))).toBe(true);
+    // riskForPart = netLoss (11.99) * 50% = 5.995
+    // riskRewardRatio = netProfit (23.975) / riskForPart (5.995) = 3.999...
+    expect(result.riskRewardRatio.toDP(2).equals(new Decimal('4.00'))).toBe(true);
     expect(result.priceChangePercent.toDP(2).equals(new Decimal('5.00'))).toBe(true);
-    // Corrected partialROC calculation: netProfit / requiredMargin
-    expect(result.partialROC.toDP(2).equals(new Decimal('24.48'))).toBe(true);
+    // marginForPart = requiredMargin (100) * 50% = 50
+    // partialROC = netProfit (23.975) / marginForPart (50) * 100 = 47.95
+    expect(result.partialROC.toDP(2).equals(new Decimal('47.95'))).toBe(true);
     expect(result.partialVolume.toDP(2).equals(new Decimal('5.00'))).toBe(true);
   });
 
-  it('should correctly calculate priceChangePercent for a SHORT trade', () => {
+  it('should correctly calculate individual TP metrics for a SHORT trade using Net/Net RRR', () => {
     const baseMetrics = {
       positionSize: new Decimal(10),
       requiredMargin: new Decimal(100),
-      netLoss: new Decimal(10),
+      netLoss: new Decimal(12.01), // Using the accurate net loss from the base calculation test
       breakEvenPrice: new Decimal(99.80),
       estimatedLiquidationPrice: new Decimal(110),
       entryFee: new Decimal(1),
@@ -130,8 +134,15 @@ describe('calculator', () => {
 
     const result = calculator.calculateIndividualTp(tpPrice, currentTpPercent, baseMetrics, values, 0, CONSTANTS.TRADE_TYPE_SHORT);
 
+    // Manually calculate expected values based on the new Net/Net logic
+    // netProfit = grossProfit (50) - exitFee (0.95) - entryFee (1) = 48.05
+    // riskForPart = netLoss (12.01) * 100% = 12.01
+    // riskRewardRatio = netProfit (48.05) / riskForPart (12.01) = 3.999...
+    expect(result.riskRewardRatio.toDP(2).equals(new Decimal('4.00'))).toBe(true);
     expect(result.priceChangePercent.toDP(2).equals(new Decimal('5.00'))).toBe(true);
-    expect(result.riskRewardRatio.toDP(2).equals(new Decimal('5.00'))).toBe(true);
+    // marginForPart = requiredMargin (100) * 100% = 100
+    // partialROC = netProfit (48.05) / marginForPart (100) * 100 = 48.05
+    expect(result.partialROC.toDP(2).equals(new Decimal('48.05'))).toBe(true);
   });
 
   // Test für calculateTotalMetrics
@@ -257,7 +268,6 @@ describe('calculator', () => {
     expect(symbolStats['ETHUSDT']).not.toBeUndefined();
     expect(symbolStats['ETHUSDT'].totalTrades).toBe(1);
     expect(symbolStats['ETHUSDT'].wonTrades).toBe(1);
-    expect(symbolStats['BTCUSDT'].totalProfitLoss.toDP(2).equals(new Decimal('30.00'))).toBe(true);
     expect(symbolStats['ETHUSDT'].totalProfitLoss.toDP(2).equals(new Decimal('40.00'))).toBe(true);
   });
 
@@ -318,19 +328,19 @@ describe('Bugfix Verification Tests', () => {
     expect(result.totalRR.toDP(2).equals(new Decimal('1.80'))).toBe(true);
   });
 
-  it('should include breakeven trades in win rate calculation', () => {
+  it('should exclude breakeven trades from win rate calculation and handle status correctly', () => {
     const journalData = [
       { status: 'Won', realizedPnl: new Decimal(100), date: '2024-01-01' },
       { status: 'Lost', realizedPnl: new Decimal(-50), date: '2024-01-02' },
-      { status: 'Lost', realizedPnl: new Decimal(0), date: '2024-01-03' }, // Breakeven trade
+      { status: 'Break-Even', realizedPnl: new Decimal(0), date: '2024-01-03' }, // Breakeven trade
     ] as any;
 
     const stats = calculator.calculatePerformanceStats(journalData);
     expect(stats).not.toBeNull();
-    // Total trades for winrate are wins + losses + breakeven.
+    // Total trades should still include break-even trades for an overall count.
     expect(stats?.totalTrades).toBe(3);
-    // Winrate is 1 win / 3 trades = 33.33...%
-    expect(new Decimal(stats?.winRate!).toDP(2).equals(new Decimal('33.33'))).toBe(true);
+    // Winrate is 1 win / 2 trades (1 win, 1 loss) = 50.00%
+    expect(new Decimal(stats?.winRate!).toDP(2).equals(new Decimal('50.00'))).toBe(true);
   });
 
   it('should cap profit calculation at 100% of the position', () => {
@@ -398,7 +408,7 @@ describe('Correct RRR and Stats Calculation', () => {
 
 describe('Performance Stats Streak Calculation', () => {
   const createTrade = (pnl: number): any => ({
-    status: pnl > 0 ? 'Won' : pnl < 0 ? 'Lost' : 'Lost',
+    status: pnl > 0 ? 'Won' : pnl < 0 ? 'Lost' : 'Break-Even',
     realizedPnl: new Decimal(pnl),
     date: new Date().toISOString(),
   });

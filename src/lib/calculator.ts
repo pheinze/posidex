@@ -92,17 +92,20 @@ export const calculator = {
      * @returns An object with the calculated metrics for this TP target.
      */
     calculateIndividualTp(tpPrice: Decimal, currentTpPercent: Decimal, baseMetrics: BaseMetrics, values: TradeValues, index: number, tradeType: string): IndividualTpResult {
-        const { positionSize, requiredMargin } = baseMetrics;
+        const { positionSize, requiredMargin, netLoss, entryFee } = baseMetrics;
         const gainPerUnit = tpPrice.minus(values.entryPrice).abs();
         const positionPart = positionSize.times(currentTpPercent.div(100));
         const grossProfitPart = gainPerUnit.times(positionPart);
         const exitFee = positionPart.times(tpPrice).times(values.fees.div(100));
-        // The entry fee is handled once for the entire position in `calculateTotalMetrics`.
-        const netProfit = grossProfitPart.minus(exitFee);
 
-        // --- STANDARD GROSS RRR (NEW LOGIC) ---
-        const riskPerUnit = values.entryPrice.minus(values.stopLossPrice).abs();
-        const riskRewardRatio = riskPerUnit.gt(0) ? gainPerUnit.div(riskPerUnit) : new Decimal(0);
+        // BUGFIX: Calculate true net profit for this part, including its share of the entry fee.
+        const percentOfPosition = currentTpPercent.div(100);
+        const entryFeeForPart = entryFee.times(percentOfPosition);
+        const netProfit = grossProfitPart.minus(exitFee).minus(entryFeeForPart);
+
+        // BUGFIX: Unify RRR calculation to be Net/Net, consistent with totalRR.
+        const riskForPart = netLoss.times(percentOfPosition);
+        const riskRewardRatio = riskForPart.gt(0) ? netProfit.div(riskForPart) : new Decimal(0);
 
         let priceChangePercent = new Decimal(0);
         if (values.entryPrice.gt(0)) {
@@ -113,7 +116,9 @@ export const calculator = {
             }
         }
 
-        const partialROC = requiredMargin.gt(0) ? netProfit.div(requiredMargin).times(100) : new Decimal(0);
+        // BUGFIX: Calculate ROC based on the margin for this part of the position.
+        const marginForPart = requiredMargin.times(percentOfPosition);
+        const partialROC = marginForPart.gt(0) ? netProfit.div(marginForPart).times(100) : new Decimal(0);
         return { netProfit, riskRewardRatio, priceChangePercent, partialROC, partialVolume: positionPart, exitFee, index: index, percentSold: currentTpPercent };
     },
 
@@ -180,7 +185,7 @@ export const calculator = {
     calculatePerformanceStats(journalData: JournalEntry[]) {
         // Filter for closed trades that have a realized P/L value. Old trades without it are ignored.
         const validTrades = journalData.filter(t =>
-            (t.status === 'Won' || t.status === 'Lost') &&
+            (t.status === 'Won' || t.status === 'Lost' || t.status === 'Break-Even') &&
             t.realizedPnl !== null &&
             t.realizedPnl !== undefined
         );
@@ -197,8 +202,12 @@ export const calculator = {
 
         const wonTrades = tradesWithPnl.filter(t => t.realizedPnlValue.gt(0));
         const lostTrades = tradesWithPnl.filter(t => t.realizedPnlValue.lt(0));
-        const totalTrades = tradesWithPnl.length; // Includes breakeven trades for a more accurate win rate
-        const winRate = totalTrades > 0 ? (wonTrades.length / totalTrades) * 100 : 0;
+        const totalTrades = tradesWithPnl.length;
+
+        // BUGFIX: For consistent win rate, only include non-break-even trades in calculation.
+        const tradesForWinRate = tradesWithPnl.filter(t => !t.realizedPnlValue.isZero());
+        const totalTradesForWinRate = tradesForWinRate.length;
+        const winRate = totalTradesForWinRate > 0 ? (wonTrades.length / totalTradesForWinRate) * 100 : 0;
         
         const totalProfit = wonTrades.reduce((sum, t) => sum.plus(t.realizedPnlValue), new Decimal(0));
         const totalLoss = lostTrades.reduce((sum, t) => sum.plus(t.realizedPnlValue.abs()), new Decimal(0));
@@ -232,8 +241,9 @@ export const calculator = {
 
         const recoveryFactor = maxDrawdown.gt(0) ? cumulativeProfit.dividedBy(maxDrawdown) : new Decimal(0);
 
-        const winRateDecimal = totalTrades > 0 ? new Decimal(wonTrades.length).div(totalTrades) : new Decimal(0);
-        const lossRateDecimal = totalTrades > 0 ? new Decimal(lostTrades.length).div(totalTrades) : new Decimal(0);
+        // BUGFIX: Base expectancy calculation on win/loss rates that exclude break-even trades.
+        const winRateDecimal = totalTradesForWinRate > 0 ? new Decimal(wonTrades.length).div(totalTradesForWinRate) : new Decimal(0);
+        const lossRateDecimal = totalTradesForWinRate > 0 ? new Decimal(lostTrades.length).div(totalTradesForWinRate) : new Decimal(0);
         const expectancy = (winRateDecimal.times(avgWin)).minus(lossRateDecimal.times(avgLossOnly));
 
         let totalProfitLong = new Decimal(0), totalLossLong = new Decimal(0), totalProfitShort = new Decimal(0), totalLossShort = new Decimal(0);
@@ -291,23 +301,17 @@ export const calculator = {
      * @returns An object that maps each symbol to its performance metrics (total trades, wins, total P/L).
      */
     calculateSymbolPerformance(journalData: JournalEntry[]) {
-        const closedTrades = journalData.filter(t => t.status === 'Won' || t.status === 'Lost');
-        const symbolPerformance: { [key: string]: { totalTrades: number; wonTrades: number; totalProfitLoss: Decimal; totalPlannedProfitLoss: Decimal; } } = {};
+        const closedTrades = journalData.filter(t => t.status === 'Won' || t.status === 'Lost' || t.status === 'Break-Even');
+        const symbolPerformance: { [key: string]: { totalTrades: number; wonTrades: number; totalProfitLoss: Decimal; } } = {};
 
         closedTrades.forEach(trade => {
             try {
                 if (!trade.symbol) return;
                 if (!symbolPerformance[trade.symbol]) {
-                    symbolPerformance[trade.symbol] = { totalTrades: 0, wonTrades: 0, totalProfitLoss: new Decimal(0), totalPlannedProfitLoss: new Decimal(0) };
+                    symbolPerformance[trade.symbol] = { totalTrades: 0, wonTrades: 0, totalProfitLoss: new Decimal(0) };
                 }
 
-                // Calculate planned P/L (old logic)
-                const plannedPnl = trade.status === 'Won'
-                    ? new Decimal(trade.totalNetProfit || 0)
-                    : new Decimal(trade.netLoss || 0).negated();
-                symbolPerformance[trade.symbol].totalPlannedProfitLoss = symbolPerformance[trade.symbol].totalPlannedProfitLoss.plus(plannedPnl);
-
-                // Calculate realized P/L (new logic)
+                // Calculate realized P/L
                 if (trade.realizedPnl !== null && trade.realizedPnl !== undefined) {
                     const realizedPnl = new Decimal(trade.realizedPnl);
                     symbolPerformance[trade.symbol].totalProfitLoss = symbolPerformance[trade.symbol].totalProfitLoss.plus(realizedPnl);

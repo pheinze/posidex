@@ -21,7 +21,7 @@ vi.mock('./apiService', () => ({
     }
 }));
 
-describe('app service - adjustTpPercentages (Proportional Logic)', () => {
+describe('app service - adjustTpPercentages (Pivot Logic)', () => {
 
     beforeEach(() => {
         // Deep copy and set initial state for each test to ensure isolation
@@ -38,110 +38,90 @@ describe('app service - adjustTpPercentages (Proportional Logic)', () => {
         }));
     });
 
-    it('should distribute proportionally when a TP is decreased', () => {
-        const currentTargets = get(tradeStore).targets;
-        currentTargets[1].percent = new Decimal(20);
-        updateTradeStore(s => ({...s, targets: currentTargets}));
-        app.adjustTpPercentages(1);
+    it('should pivot and adjust others when a TP is decreased', () => {
+        // Action: User changes TP2 from 30% to 20%
+        app.updateTakeProfitPercent(1, '20'); // This calls adjustTpPercentages(1) internally
 
         const targets = get(tradeStore).targets;
-        expect(targets[0].percent!.equals(new Decimal(56))).toBe(true);
-        expect(targets[1].percent!.equals(new Decimal(22))).toBe(true);
-        expect(targets[2].percent!.equals(new Decimal(22))).toBe(true);
+        // Expectation: TP2 is fixed at 20. Remaining 80 is split proportionally between TP1 (50) and TP3 (20).
+        // Their sum is 70. Scaling factor = 80/70.
+        // New TP1 = 50 * (80/70) = 57.14 -> 57
+        // New TP3 = 20 * (80/70) = 22.85 -> 23 (remainder)
+        expect(targets[0].percent!.equals(new Decimal(57))).toBe(true);
+        expect(targets[1].percent!.equals(new Decimal(20))).toBe(true); // Pivot is respected
+        expect(targets[2].percent!.equals(new Decimal(23))).toBe(true);
     });
 
-    it('should distribute proportionally to unlocked TPs when one is locked', () => {
-        const currentTargets = get(tradeStore).targets;
-        currentTargets[0].isLocked = true; // TP1 is locked at 50%
-        updateTradeStore(s => ({...s, targets: currentTargets}));
-
-        currentTargets[2].percent = new Decimal(10);
-        updateTradeStore(s => ({...s, targets: currentTargets}));
-        app.adjustTpPercentages(2);
+    it('should pivot and adjust other unlocked TPs when one is locked', () => {
+        // Action: Lock TP1 at 50%. Then change TP3 from 20% to 10%.
+        app.toggleTakeProfitLock(0);
+        app.updateTakeProfitPercent(2, '10');
 
         const targets = get(tradeStore).targets;
+        // Expectation: TP1 is 50 (locked), TP3 is 10 (pivot). Remaining 40% must go to TP2.
+        expect(targets[0].percent!.equals(new Decimal(50))).toBe(true); // Locked
+        expect(targets[1].percent!.equals(new Decimal(40))).toBe(true);
+        expect(targets[2].percent!.equals(new Decimal(10))).toBe(true); // Pivot is respected
+    });
+
+    it('should pivot and adjust others when a TP is increased', () => {
+        // Action: User changes TP1 from 50% to 70%.
+        app.updateTakeProfitPercent(0, '70');
+
+        const targets = get(tradeStore).targets;
+        // Expectation: TP1 is 70 (pivot). Remaining 30% is split between TP2 (30) and TP3 (20).
+        // Their sum is 50. Scaling factor = 30/50 = 0.6.
+        // New TP2 = 30 * 0.6 = 18
+        // New TP3 = 20 * 0.6 = 12
+        expect(targets[0].percent!.equals(new Decimal(70))).toBe(true); // Pivot
+        expect(targets[1].percent!.equals(new Decimal(18))).toBe(true);
+        expect(targets[2].percent!.equals(new Decimal(12))).toBe(true);
+    });
+
+    it('should scale all unlocked if pivot input is too high', () => {
+        // Action: Lock TP1 at 50%. Change TP2 from 30% to 60% (invalid, total > 100).
+        app.toggleTakeProfitLock(0);
+        app.updateTakeProfitPercent(1, '60');
+
+        const targets = get(tradeStore).targets;
+        // Expectation: Since pivot (60) + locked (50) > 100, the pivot logic is skipped.
+        // Instead, all unlocked targets (TP2 at 60, TP3 at 20) are scaled to fit the remaining 50%.
+        // Their sum is 80. Scaling factor = 50/80 = 0.625.
+        // New TP2 = 60 * 0.625 = 37.5 -> 38
+        // New TP3 = 20 * 0.625 = 12.5 -> 12
         expect(targets[0].percent!.equals(new Decimal(50))).toBe(true); // Locked
         expect(targets[1].percent!.equals(new Decimal(38))).toBe(true);
         expect(targets[2].percent!.equals(new Decimal(12))).toBe(true);
     });
 
-    it('should distribute proportionally when a TP is increased', () => {
-        const currentTargets = get(tradeStore).targets;
-        currentTargets[0].percent = new Decimal(70);
-        updateTradeStore(s => ({...s, targets: currentTargets}));
-        app.adjustTpPercentages(0);
+
+    it('should set single unlocked TP to remainder', () => {
+        // Action: Lock TP1 (50) and TP2 (30). Then change TP3.
+        app.toggleTakeProfitLock(0);
+        app.toggleTakeProfitLock(1);
+        app.updateTakeProfitPercent(2, '99'); // User enters a new value
 
         const targets = get(tradeStore).targets;
-        expect(targets[0].percent!.equals(new Decimal(58))).toBe(true);
-        expect(targets[1].percent!.equals(new Decimal(25))).toBe(true);
-        expect(targets[2].percent!.equals(new Decimal(17))).toBe(true);
-    });
-
-    it('should distribute proportionally on large increase', () => {
-        const currentTargets = get(tradeStore).targets;
-        currentTargets[0].percent = new Decimal(80);
-        updateTradeStore(s => ({...s, targets: currentTargets}));
-        app.adjustTpPercentages(0);
-
-        const targets = get(tradeStore).targets;
-        expect(targets[0].percent!.equals(new Decimal(62))).toBe(true);
-        expect(targets[1].percent!.equals(new Decimal(23))).toBe(true);
-        expect(targets[2].percent!.equals(new Decimal(15))).toBe(true);
-    });
-
-    it('should not take deficit from locked TPs', () => {
-        const currentTargets = get(tradeStore).targets;
-        currentTargets[2].isLocked = true; // T3 is locked at 20
-        updateTradeStore(s => ({...s, targets: currentTargets}));
-
-        currentTargets[0].percent = new Decimal(75);
-        updateTradeStore(s => ({...s, targets: currentTargets}));
-        app.adjustTpPercentages(0);
-
-        const targets = get(tradeStore).targets;
-        expect(targets[0].percent!.equals(new Decimal(57))).toBe(true);
-        expect(targets[1].percent!.equals(new Decimal(23))).toBe(true);
-        expect(targets[2].percent!.equals(new Decimal(20))).toBe(true); // Locked
-    });
-
-    it('should correct the value if only one unlocked TP is edited', () => {
-        updateTradeStore(state => ({
-            ...state,
-            targets: [
-                { id: 0, price: new Decimal(110), percent: new Decimal(50), isLocked: true },
-                { id: 1, price: new Decimal(120), percent: new Decimal(30), isLocked: true },
-                { id: 2, price: new Decimal(130), percent: new Decimal(20), isLocked: false },
-            ]
-        }));
-        const currentTargets = get(tradeStore).targets;
-        currentTargets[2].percent = new Decimal(30);
-        updateTradeStore(s => ({...s, targets: currentTargets}));
-        app.adjustTpPercentages(2);
-
-        const targets = get(tradeStore).targets;
+        // Expectation: TP1 and TP2 are locked (80%). Remaining 20% must go to TP3.
+        expect(targets[0].percent!.equals(new Decimal(50))).toBe(true);
+        expect(targets[1].percent!.equals(new Decimal(30))).toBe(true);
         expect(targets[2].percent!.equals(new Decimal(20))).toBe(true);
     });
 
-    it('should ignore changes to a locked field', () => {
-        updateTradeStore(state => {
-            state.targets[0].isLocked = true;
-            return state;
-        });
-
-        updateTradeStore(state => {
-            if (state.targets[0]) state.targets[0].percent = new Decimal(99);
-            return state;
-        });
-
-        app.adjustTpPercentages(0);
+    it('should not adjust other TPs if the changed TP is locked', () => {
+        // Action: Lock TP1. Then try to change its value.
+        app.toggleTakeProfitLock(0);
+        app.updateTakeProfitPercent(0, '99');
 
         const targets = get(tradeStore).targets;
-        expect(targets[0].percent!.equals(new Decimal(99))).toBe(true);
-        expect(targets[1].percent!.equals(new Decimal(30))).toBe(true); // Unchanged
-        expect(targets[2].percent!.equals(new Decimal(20))).toBe(true); // Unchanged
+        // Expectation: The change is ignored because the field is locked. Nothing is adjusted.
+        // Note: The UI should prevent this, but the logic should be robust.
+        expect(targets[0].percent!.equals(new Decimal(50))).toBe(true);
+        expect(targets[1].percent!.equals(new Decimal(30))).toBe(true);
+        expect(targets[2].percent!.equals(new Decimal(20))).toBe(true);
     });
 
-    it('should re-balance correctly when a lock is released', () => {
+    it('should re-balance all unlocked when a lock is released', () => {
         // Setup an invalid state created by locking
         updateTradeStore(state => ({
             ...state,
@@ -151,19 +131,22 @@ describe('app service - adjustTpPercentages (Proportional Logic)', () => {
                 { id: 2, price: new Decimal(130), percent: new Decimal(0), isLocked: false },
             ]
         }));
-        // User unlocks TP2. The app should see the total is 120 and fix it.
-        // The `adjustTpPercentages` is called from the UI on lock toggle.
-        const currentTargets = get(tradeStore).targets;
-        currentTargets[1].isLocked = false;
-        updateTradeStore(s => ({...s, targets: currentTargets}));
-        app.adjustTpPercentages(1); // The changedIndex is the one unlocked
+
+        // Action: User unlocks TP2. `adjustTpPercentages` is called without a specific changedIndex
+        // in the real app, but we simulate it by passing the index of the unlocked field.
+        app.toggleTakeProfitLock(1); // This calls adjustTpPercentages(1) internally
 
         const targets = get(tradeStore).targets;
         const total = targets.reduce((sum, t) => sum.plus(t.percent || 0), new Decimal(0));
+        // Expectation: The change was to a lock, so the "pivot" logic is skipped.
+        // All unlocked TPs (TP2 at 60, TP3 at 0) are scaled to fit the remaining 40%.
+        // Their sum is 60. Scaling factor = 40/60.
+        // New TP2 = 60 * (40/60) = 40.
+        // New TP3 = 0 * (40/60) = 0.
         expect(total.equals(new Decimal(100))).toBe(true);
         expect(targets[0].percent!.equals(new Decimal(60))).toBe(true); // Locked, unchanged
-        // The unlocked TPs (TP2 and TP3) should share the remaining 40%
         expect(targets[1].percent!.equals(new Decimal(40))).toBe(true);
+        expect(targets[2].percent!.equals(new Decimal(0))).toBe(true);
     });
 });
 

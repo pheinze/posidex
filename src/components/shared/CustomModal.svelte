@@ -19,9 +19,25 @@
 
     let modalState: ModalState = { title: '', message: '', type: 'alert', defaultValue: '', isOpen: false, resolve: null };
     let modalEl: HTMLDivElement;
+    let lastFocusedElement: HTMLElement | null = null;
 
     modalManager.subscribe(state => {
+        // Detect when the modal is opening
+        if (state.isOpen && !modalState.isOpen) {
+            lastFocusedElement = document.activeElement as HTMLElement;
+        }
+        // Detect when the modal is closing
+        else if (!state.isOpen && modalState.isOpen) {
+            if (lastFocusedElement) {
+                tick().then(() => {
+                    lastFocusedElement?.focus();
+                    lastFocusedElement = null; // Reset for the next time
+                });
+            }
+        }
+
         modalState = state;
+        // When the modal becomes visible, focus the first interactive element.
         if (state.isOpen && modalEl) {
             tick().then(() => {
                 const firstFocusable = modalEl.querySelector<HTMLElement>('button, input[type="text"], [href], select, textarea, [tabindex]:not([tabindex="-1"])');
