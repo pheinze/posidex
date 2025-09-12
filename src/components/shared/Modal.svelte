@@ -9,6 +9,8 @@
 	let previouslyFocusedElement: HTMLElement;
 
 	function handleKeydown(event: KeyboardEvent) {
+		if (!isOpen) return;
+
 		if (event.key === 'Escape') {
 			close();
 		}
@@ -41,34 +43,32 @@
 		isOpen = false;
 	}
 
-	onMount(() => {
-		const handleOpen = () => {
-			if (isOpen) {
-				previouslyFocusedElement = document.activeElement as HTMLElement;
-				setTimeout(() => {
-					modalElement.focus();
-				}, 100);
-			}
-		};
+    function handleOpen() {
+        if (isOpen) {
+            previouslyFocusedElement = document.activeElement as HTMLElement;
+            setTimeout(() => {
+                modalElement?.focus();
+            }, 100);
+        }
+    }
 
-		const handleClose = () => {
-			if (!isOpen && previouslyFocusedElement) {
-				previouslyFocusedElement.focus();
-			}
-		};
+    function handleClose() {
+        if (!isOpen && previouslyFocusedElement) {
+            previouslyFocusedElement.focus();
+        }
+    }
 
-		// Reactive handling of isOpen changes
-		$: if (isOpen) {
-			handleOpen();
-		} else {
-			handleClose();
-		}
-	});
+    // Reactive handling of isOpen changes
+    $: if (isOpen) {
+        handleOpen();
+    } else {
+        handleClose();
+    }
 </script>
 
-{#if isOpen}
-	<svelte:window on:keydown={handleKeydown} />
+<svelte:window on:keydown={handleKeydown} />
 
+{#if isOpen}
 	<!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
 	<div
 		class="modal-overlay"

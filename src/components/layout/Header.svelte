@@ -25,7 +25,18 @@
         const selectedPreset = (event.target as HTMLSelectElement).value;
         app.loadPreset(selectedPreset);
     }
+
+    function handleKeydown(event: KeyboardEvent) {
+        if (event && event.key && event.altKey) {
+            if (event.key.toLowerCase() === 'r') {
+                event.preventDefault();
+                resetAllInputs();
+            }
+        }
+    }
 </script>
+
+<svelte:window on:keydown={handleKeydown} />
 
 <header class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
     <div class="flex justify-between items-center w-full md:w-auto">
