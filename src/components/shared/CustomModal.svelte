@@ -15,11 +15,19 @@
     import { fade } from 'svelte/transition';
     import { _ } from '../../locales/i18n';
     import { trackClick } from '../../lib/actions';
+    import { tick } from 'svelte';
 
-        let modalState: ModalState = { title: '', message: '', type: 'alert', defaultValue: '', isOpen: false, resolve: null };
+    let modalState: ModalState = { title: '', message: '', type: 'alert', defaultValue: '', isOpen: false, resolve: null };
+    let modalEl: HTMLDivElement;
 
     modalManager.subscribe(state => {
         modalState = state;
+        if (state.isOpen && modalEl) {
+            tick().then(() => {
+                const firstFocusable = modalEl.querySelector<HTMLElement>('button, input[type="text"], [href], select, textarea, [tabindex]:not([tabindex="-1"])');
+                firstFocusable?.focus();
+            });
+        }
     });
 
     function handleConfirm(result: boolean | string) {
@@ -29,6 +37,27 @@
     function handleInput(event: Event) {
         modalState.defaultValue = (event.target as HTMLInputElement).value;
     }
+
+    function handleKeydown(e: KeyboardEvent) {
+        if (e.key === 'Escape') {
+            handleConfirm(false);
+            return;
+        }
+
+        if (e.key === 'Tab' && modalEl) {
+            const focusable = Array.from(modalEl.querySelectorAll<HTMLElement>('button, input[type="text"], [href], select, textarea, [tabindex]:not([tabindex="-1"])')).filter(el => !el.hasAttribute('disabled'));
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+
+            if (e.shiftKey && document.activeElement === first) {
+                e.preventDefault();
+                last.focus();
+            } else if (!e.shiftKey && document.activeElement === last) {
+                e.preventDefault();
+                first.focus();
+            }
+        }
+    }
 </script>
 
 {#if modalState.isOpen}
@@ -37,18 +66,20 @@
         class:visible={modalState.isOpen}
         transition:fade|local={{ duration: 150 }}
         on:click={(e) => { if (e.target === e.currentTarget) handleConfirm(false) }}
-        on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { if (e.target === e.currentTarget) handleConfirm(false) } }}
-        role="button"
-        tabindex="0"
+        on:keydown={handleKeydown}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-title"
+        tabindex="-1"
     >
-        <div class="modal-content relative">
+        <div class="modal-content relative" bind:this={modalEl}>
             <button
                 class="absolute top-4 right-5 text-3xl leading-none"
                 aria-label="{$_('app.closeChangelogAriaLabel')}"
                 on:click={() => handleConfirm(false)}
                 use:trackClick={{ category: 'CustomModal', action: 'Click', name: 'CloseViaX' }}
             >&times;</button>
-            <h3 class="text-xl font-bold mb-4 pr-8">{modalState.title}</h3>
+            <h3 id="modal-title" class="text-xl font-bold mb-4 pr-8">{modalState.title}</h3>
             <div class="prose dark:prose-invert mb-4 max-h-[70vh] overflow-y-auto pr-2 w-full max-w-none">{@html modalState.message}</div>
             {#if modalState.type === 'prompt'}
                 <input type="text" class="input-field w-full px-3 py-2 rounded-md mb-4" placeholder="{$_('dashboard.customModal.promptPlaceholder')}" bind:value={modalState.defaultValue} on:input={handleInput}>
@@ -76,7 +107,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        z-index: 50;
+        z-index: var(--z-index-modal);
         visibility: hidden;
         opacity: 0;
         transition: visibility 0s, opacity 0.3s linear;

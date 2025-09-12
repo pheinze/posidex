@@ -57,7 +57,7 @@
             <button
                 type="button"
                 class="bar-marker {marker.isEntry ? 'entry-marker' : ''} {marker.index !== undefined ? 'tp-marker' : ''}"
-                style="left: {marker.pos}%; z-index: {marker.index !== undefined ? 20 - marker.index : 'auto'};"
+                style="left: {marker.pos}%; z-index: {marker.index !== undefined ? `calc(var(--z-index-visual-bar-marker) - ${marker.index})` : 'auto'};"
                 aria-label={ariaLabel}
             >
                 <span class="marker-label" style="transform: translateX(-50%);" aria-hidden="true">{marker.label}</span>

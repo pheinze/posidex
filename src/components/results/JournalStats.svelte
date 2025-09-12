@@ -23,18 +23,21 @@
 
     let stats: ReturnType<typeof calculator.calculatePerformanceStats> | null = null;
     let isLoading = true;
+    let errorMessage: string | null = null;
 
     $: {
         // Use a self-invoking async function inside the reactive block
         // to handle the calculation and loading state.
         (async () => {
             isLoading = true;
+            errorMessage = null;
             await tick(); // Allow UI to update to show loading state
             try {
                 stats = calculator.calculatePerformanceStats(journalData);
             } catch (error) {
                 console.error("Error calculating journal performance stats:", error);
-                stats = null; // Clear stats on error to show 'no data' message
+                stats = null; // Clear stats on error
+                errorMessage = error instanceof Error ? error.message : "An unknown error occurred while calculating stats.";
             } finally {
                 isLoading = false;
             }
@@ -53,6 +56,11 @@
 
 {#if isLoading}
     <div class="text-center text-slate-500 py-4">Loading stats...</div>
+{:else if errorMessage}
+    <div class="text-center text-[var(--danger-color)] py-4">
+        <p>{$_('journal.stats.errorTitle')}</p>
+        <p class="text-xs">{errorMessage}</p>
+    </div>
 {:else if stats}
     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 text-center">
         <div class="stat-item">

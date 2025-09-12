@@ -95,6 +95,7 @@
     const format = (val: Decimal | null) => (val === null || val === undefined) ? '' : String(val);
 
     function handleEntryPriceInput(e: Event) {
+        onboardingService.trackFirstInput();
         const target = e.target as HTMLInputElement;
         const value = target.value;
 
@@ -187,7 +188,7 @@
             {@html icons.fetch}
         </button>
         {#if showSymbolSuggestions}
-            <div class="absolute top-full left-0 w-full rounded-md shadow-lg mt-1 overflow-hidden border border-[var(--border-color)] z-20 bg-[var(--bg-secondary)]">
+            <div class="absolute top-full left-0 w-full rounded-md shadow-lg mt-1 overflow-hidden border border-[var(--border-color)] bg-[var(--bg-secondary)]" style="z-index: var(--z-index-dropdown);">
                 {#each symbolSuggestions as s}
                     <div
                         class="suggestion-item p-2 cursor-pointer hover:bg-[var(--accent-color)] hover:text-white"
@@ -202,7 +203,7 @@
             </div>
         {/if}
     </div>
-    <input id="entry-price-input" type="text" use:numberInput={{ maxDecimalPlaces: 4 }} value={format(entryPrice)} on:input={handleEntryPriceInput} class="input-field w-full px-4 py-2 rounded-md mb-4" placeholder="{$_('dashboard.tradeSetupInputs.entryPricePlaceholder')}" on:input={onboardingService.trackFirstInput}>
+    <input id="entry-price-input" type="text" use:numberInput={{ maxDecimalPlaces: 4 }} value={format(entryPrice)} on:input={handleEntryPriceInput} class="input-field w-full px-4 py-2 rounded-md mb-4" placeholder="{$_('dashboard.tradeSetupInputs.entryPricePlaceholder')}">
 
     <div class="p-2 rounded-lg mb-4" style="background-color: var(--bg-tertiary);">
         <div class="flex items-center mb-2 {useAtrSl ? 'justify-between' : 'justify-end'}">

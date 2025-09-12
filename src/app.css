@@ -42,6 +42,11 @@
     --btn-success-bg: #22c55e; --btn-success-hover-bg: #16a34a; --btn-success-text: #e2e8f0;
     --toggle-bg-off: #475569; --toggle-bg-on: #0ea5e9; --toggle-circle-bg: var(--text-primary);
     --overlay-color: rgba(0, 0, 0, 0.7);
+
+    /* Z-Indexes */
+    --z-index-modal: 50;
+    --z-index-dropdown: 20;
+    --z-index-visual-bar-marker: 15; /* Base for markers, allows for up to 5 markers before going under 10 */
 }
 .theme-light {
     --bg-primary: #f1f5f9; --bg-secondary: #ffffff; --bg-tertiary: #e2e8f0;

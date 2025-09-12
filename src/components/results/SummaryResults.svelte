@@ -35,20 +35,26 @@
     export let estimatedLiquidationPrice: string | null;
     export let breakEvenPrice: string | null;
 
-    let copyError = false;
+    let copyError: string | null = null;
 
     async function handleCopy() {
         trackCustomEvent('Result', 'Copy', 'PositionSize');
         if (!positionSize) return;
+        copyError = null;
 
-        copyError = false;
+        if (!navigator.clipboard) {
+            copyError = $_('dashboard.summaryResults.copyNotAvailable');
+            setTimeout(() => copyError = null, 3000);
+            return;
+        }
+
         try {
             await navigator.clipboard.writeText(positionSize);
             dispatch('copy'); // Signal success to parent
         } catch (err) {
             console.error("Failed to copy position size:", err);
-            copyError = true;
-            setTimeout(() => copyError = false, 2500); // Reset error message
+            copyError = $_('dashboard.summaryResults.copyErrorFeedback');
+            setTimeout(() => copyError = null, 2500); // Reset error message
         }
     }
 
@@ -74,7 +80,7 @@
                 {@html icons.copy}
             </button>
             {#if showCopyFeedback}<span id="copy-feedback" class="copy-feedback visible">{$_('dashboard.summaryResults.copiedFeedback')}</span>{/if}
-            {#if copyError}<span id="copy-error-feedback" class="copy-feedback visible error">{$_('dashboard.summaryResults.copyErrorFeedback')}</span>{/if}
+            {#if copyError}<span id="copy-error-feedback" class="copy-feedback visible error">{copyError}</span>{/if}
         </div>
         <span id="positionSize" class="result-value text-lg" style:color="var(--success-color)">{positionSize ?? '-'}</span>
     </div>

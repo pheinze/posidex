@@ -106,6 +106,7 @@
       "copyPositionSizeAriaLabel": "Positionsgröße kopieren",
       "copiedFeedback": "Kopiert!",
       "copyErrorFeedback": "Kopieren fehlgeschlagen!",
+      "copyNotAvailable": "Zwischenablage nicht verfügbar.",
       "maxNetLossLabel": "Max. Verlust (Netto)",
       "maxNetLossTooltip": "Der maximale Betrag, den du bei diesem Trade verlieren kannst, einschließlich aller Gebühren.",
       "profitAtBestTargetLabel": "Gewinn am besten Ziel",
@@ -182,7 +183,8 @@
       "avgRMultipleTooltip": "Der durchschnittliche Gewinn oder Verlust im Verhältnis zum ursprünglichen Risiko (R).",
       "avgWinLossRatio": "Durchschn. Gewinn/Verlust",
       "avgWinLossRatioTooltip": "Der durchschnittliche Gewinn aus Gewinntrades geteilt durch den durchschnittlichen Verlust aus Verlusttrades.",
-      "currentStreak": "Aktuelle Serie"
+      "currentStreak": "Aktuelle Serie",
+      "errorTitle": "Statistiken konnten nicht geladen werden."
     }
   },
   "seo": {

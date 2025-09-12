@@ -106,6 +106,7 @@
       "copyPositionSizeAriaLabel": "Copy Position Size",
       "copiedFeedback": "Copied!",
       "copyErrorFeedback": "Copy failed!",
+      "copyNotAvailable": "Clipboard not available.",
       "maxNetLossLabel": "Max. Net Loss",
       "maxNetLossTooltip": "The maximum amount you can lose on this trade, including all fees.",
       "profitAtBestTargetLabel": "Profit at Best Target",
@@ -182,7 +183,8 @@
       "avgRMultipleTooltip": "The average profit or loss in relation to the initial risk (R).",
       "avgWinLossRatio": "Avg. Win/Loss",
       "avgWinLossRatioTooltip": "The average profit of winning trades divided by the average loss of losing trades.",
-      "currentStreak": "Current Streak"
+      "currentStreak": "Current Streak",
+      "errorTitle": "Could not load stats."
     }
   },
   "seo": {

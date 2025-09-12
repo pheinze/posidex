@@ -12,6 +12,26 @@
     export let viewMode: 'table' | 'card';
     export let editingTradeId: number | null;
 
+    let editingPnlValue: string = '';
+
+    function startEditing() {
+        editingPnlValue = trade.realizedPnl ? trade.realizedPnl.toString() : '';
+        editingTradeId = trade.id;
+    }
+
+    function cancelEditing() {
+        editingTradeId = null;
+    }
+
+    function saveEditing() {
+        // Only update if the value has actually changed to avoid unnecessary store writes
+        const originalValue = trade.realizedPnl ? trade.realizedPnl.toString() : '';
+        if (editingPnlValue !== originalValue) {
+            app.updateRealizedPnl(trade.id, editingPnlValue);
+        }
+        editingTradeId = null;
+    }
+
     function focus(node: HTMLInputElement) {
         tick().then(() => {
             node.focus();
@@ -43,14 +63,14 @@
                 <input
                     type="text"
                     class="input-field w-24 px-2 py-1"
-                    value={trade.realizedPnl}
+                    bind:value={editingPnlValue}
                     use:numberInput={{ maxDecimalPlaces: 4 }}
                     use:focus
-                    on:blur={(e) => { app.updateRealizedPnl(trade.id, (e.target as HTMLInputElement).value); editingTradeId = null; }}
-                    on:keydown={(e) => { if (e.key === 'Enter') { (e.target as HTMLInputElement).blur(); } else if (e.key === 'Escape') { editingTradeId = null; } }}
+                    on:blur={saveEditing}
+                    on:keydown={(e) => { if (e.key === 'Enter') saveEditing(); else if (e.key === 'Escape') cancelEditing(); }}
                 />
             {:else}
-                <button type="button" class="input-field-placeholder text-left w-full h-full min-h-[34px] px-2 py-1" on:click={() => editingTradeId = trade.id}>
+                <button type="button" class="input-field-placeholder text-left w-full h-full min-h-[34px] px-2 py-1" on:click={startEditing}>
                     {formatPnl(trade.realizedPnl)}
                 </button>
             {/if}
@@ -98,14 +118,14 @@
                     <input
                         type="text"
                         class="input-field w-full px-2 py-1 mt-1"
-                        value={trade.realizedPnl}
+                        bind:value={editingPnlValue}
                         use:numberInput={{ maxDecimalPlaces: 4 }}
                         use:focus
-                        on:blur={(e) => { app.updateRealizedPnl(trade.id, (e.target as HTMLInputElement).value); editingTradeId = null; }}
-                        on:keydown={(e) => { if (e.key === 'Enter') { (e.target as HTMLInputElement).blur(); } else if (e.key === 'Escape') { editingTradeId = null; } }}
+                        on:blur={saveEditing}
+                        on:keydown={(e) => { if (e.key === 'Enter') saveEditing(); else if (e.key === 'Escape') cancelEditing(); }}
                     />
                 {:else}
-                    <button type="button" class="input-field-placeholder mt-1 text-left w-full" on:click={() => editingTradeId = trade.id}>
+                    <button type="button" class="input-field-placeholder mt-1 text-left w-full" on:click={startEditing}>
                         {formatPnl(trade.realizedPnl)}
                     </button>
                 {/if}

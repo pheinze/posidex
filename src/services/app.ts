@@ -963,4 +963,73 @@ export const app = {
             updateTradeStore(state => ({ ...state, targets: finalTargets }));
         }
     },
+
+    /**
+     * Updates the price of a specific Take-Profit target.
+     * This function is designed to be called from the input handler in the UI.
+     * @param index - The index of the target to update.
+     * @param value - The new price value as a string from the input field.
+     */
+    updateTakeProfitPrice: (index: number, value: string) => {
+        updateTradeStore(state => {
+            const newTargets = [...state.targets];
+            if (!newTargets[index]) return state; // Should not happen, but a good guard
+
+            if (value.trim() === '') {
+                newTargets[index].price = null;
+            } else {
+                try {
+                    newTargets[index].price = new Decimal(value);
+                } catch (error) {
+                    // Invalid intermediate state (e.g. '-'), do nothing to the store
+                    return state;
+                }
+            }
+            return { ...state, targets: newTargets };
+        });
+    },
+
+    /**
+     * Updates the percentage of a specific Take-Profit target.
+     * This function is designed to be called from the input handler in the UI.
+     * It also triggers the logic to auto-balance other TP percentages.
+     * @param index - The index of the target to update.
+     * @param value - The new percentage value as a string from the input field.
+     */
+    updateTakeProfitPercent: (index: number, value: string) => {
+        updateTradeStore(state => {
+            const newTargets = [...state.targets];
+            if (!newTargets[index]) return state;
+
+            if (value.trim() === '') {
+                newTargets[index].percent = null;
+            } else {
+                try {
+                    newTargets[index].percent = new Decimal(value);
+                } catch (error) {
+                    // Invalid intermediate state, do nothing
+                    return state;
+                }
+            }
+            return { ...state, targets: newTargets };
+        });
+        // We still need to call adjustTpPercentages after a percent change
+        app.adjustTpPercentages(index);
+    },
+
+    /**
+     * Toggles the lock state of a specific Take-Profit target.
+     * @param index - The index of the target to toggle.
+     */
+    toggleTakeProfitLock: (index: number) => {
+        updateTradeStore(state => {
+            const newTargets = [...state.targets];
+            if (!newTargets[index]) return state;
+
+            newTargets[index].isLocked = !newTargets[index].isLocked;
+            return { ...state, targets: newTargets };
+        });
+        // Adjust percentages after a lock state changes
+        app.adjustTpPercentages(index);
+    },
 };

@@ -20,9 +20,7 @@
     import { numberInput } from '../../utils/inputUtils';
     import { _ } from '../../locales/i18n';
     import { trackClick } from '../../lib/actions';
-    import { updateTradeStore, tradeStore } from '../../stores/tradeStore';
     import { app } from '../../services/app';
-    import { get } from 'svelte/store';
     import type { IndividualTpResult } from '../../stores/types';
     import { Decimal } from 'decimal.js';
 
@@ -34,14 +32,11 @@
     export let isLocked: boolean;
     export let tpDetail: IndividualTpResult | undefined = undefined;
 
+    // The toggleLock and removeRow logic is not complete in the app service,
+    // so it's left here for now. A future refactoring could move this logic
+    // into the app service as well, for example app.toggleTargetLock(index).
     function toggleLock() {
-        const newLockState = !isLocked;
-        const currentTargets = get(tradeStore).targets;
-        if (currentTargets[index]) {
-            currentTargets[index].isLocked = newLockState;
-            updateTradeStore(s => ({ ...s, targets: currentTargets }));
-            app.adjustTpPercentages(index);
-        }
+        app.toggleTakeProfitLock(index);
     }
 
     function removeRow() {
@@ -52,46 +47,12 @@
 
     function handlePriceInput(e: Event) {
         const target = e.target as HTMLInputElement;
-        const value = target.value;
-        const currentTargets = [...get(tradeStore).targets];
-
-        if (!currentTargets[index]) return;
-
-        if (value.trim() === '') {
-            currentTargets[index].price = null;
-            updateTradeStore(s => ({ ...s, targets: currentTargets }));
-            return;
-        }
-
-        try {
-            currentTargets[index].price = new Decimal(value);
-            updateTradeStore(s => ({ ...s, targets: currentTargets }));
-        } catch (error) {
-            // Invalid intermediate state, do nothing
-        }
+        app.updateTakeProfitPrice(index, target.value);
     }
 
     function handlePercentInput(e: Event) {
         const target = e.target as HTMLInputElement;
-        const value = target.value;
-        const currentTargets = [...get(tradeStore).targets];
-
-        if (!currentTargets[index]) return;
-
-        if (value.trim() === '') {
-            currentTargets[index].percent = null;
-            updateTradeStore(s => ({ ...s, targets: currentTargets }));
-            app.adjustTpPercentages(index);
-            return;
-        }
-
-        try {
-            currentTargets[index].percent = new Decimal(value);
-            updateTradeStore(s => ({ ...s, targets: currentTargets }));
-            app.adjustTpPercentages(index);
-        } catch (error) {
-            // Invalid intermediate state, do nothing
-        }
+        app.updateTakeProfitPercent(index, target.value);
     }
 </script>
 
