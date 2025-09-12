@@ -71,7 +71,7 @@
             {#if tpDetail}
                 <div class="text-xs text-[var(--text-secondary)] text-right">
                     <span class="mr-2">{$_('dashboard.takeProfitRow.winLabel')} <span class="text-[var(--success-color)]">+${tpDetail.netProfit.toFixed(2)}</span></span>
-                    <span>{$_('dashboard.takeProfitRow.rrLabel')} <span class="{tpDetail.feeAdjustedRRR.gte(2) ? 'text-[var(--success-color)]' : tpDetail.feeAdjustedRRR.gte(1.5) ? 'text-[var(--warning-color)]' : 'text-[var(--danger-color)]'}">{tpDetail.feeAdjustedRRR.toFixed(2)}</span></span>
+                    <span>{$_('dashboard.takeProfitRow.rrLabel')} <span class="{tpDetail.riskRewardRatio.gte(2) ? 'text-[var(--success-color)]' : tpDetail.riskRewardRatio.gte(1.5) ? 'text-[var(--warning-color)]' : 'text-[var(--danger-color)]'}">{tpDetail.riskRewardRatio.toFixed(2)}</span></span>
                 </div>
             {/if}
         </div>

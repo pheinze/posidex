@@ -172,19 +172,18 @@
         <h3 class="text-xl font-bold mt-6 mb-4">{$_('journal.performancePerSymbol')}</h3>
         <div id="symbol-performance-stats" class="max-h-48 overflow-y-auto border border-[var(--border-color)] rounded-md p-2">
             <table class="journal-table w-full">
-                <thead><tr><th>{$_('journal.symbol')}</th><th>{$_('journal.trades')}</th><th>{$_('journal.profitPercent')}</th><th>Planned P/L</th><th>Realized P/L</th></tr></thead>
+                <thead><tr><th>{$_('journal.symbol')}</th><th>{$_('journal.trades')}</th><th>{$_('journal.winRate')}</th><th>{$_('journal.realizedPnl')}</th></tr></thead>
                 <tbody id="symbol-performance-table-body">
                     {#each Object.entries(app.calculator.calculateSymbolPerformance($journalStore)) as [symbol, data]}
                         <tr>
                             <td>{symbol}</td>
                             <td>{data.totalTrades}</td>
                             <td>{(data.totalTrades > 0 ? (data.wonTrades / data.totalTrades) * 100 : 0).toFixed(1)}%</td>
-                            <td class="{data.totalPlannedProfitLoss.gt(0) ? 'text-[var(--success-color)]' : data.totalPlannedProfitLoss.lt(0) ? 'text-[var(--danger-color)]' : ''}">{data.totalPlannedProfitLoss.toFixed(2)}</td>
                             <td class="{data.totalProfitLoss.gt(0) ? 'text-[var(--success-color)]' : data.totalProfitLoss.lt(0) ? 'text-[var(--danger-color)]' : ''}">{data.totalProfitLoss.toFixed(2)}</td>
                         </tr>
                     {/each}
                     {#if Object.keys(app.calculator.calculateSymbolPerformance($journalStore)).length === 0}
-                        <tr><td colspan="5" class="text-center text-slate-500 py-4">{$_('journal.noData')}</td></tr>
+                        <tr><td colspan="4" class="text-center text-slate-500 py-4">{$_('journal.noData')}</td></tr>
                     {/if}
                 </tbody>
             </table>
