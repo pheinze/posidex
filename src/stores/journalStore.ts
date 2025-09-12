@@ -4,6 +4,13 @@ import { Decimal } from 'decimal.js';
 import { CONSTANTS } from '../lib/constants';
 import type { JournalEntry } from './types';
 
+/**
+ * Loads journal entries from the browser's Local Storage.
+ * This function only runs on the client-side. It reads the raw JSON data,
+ * parses it, and converts numeric fields that require precision into `Decimal` objects.
+ * @returns An array of `JournalEntry` objects. Returns an empty array if
+ * not in a browser, if no data exists, or if an error occurs.
+ */
 function loadJournalFromLocalStorage(): JournalEntry[] {
     if (!browser) return [];
     try {
@@ -29,6 +36,12 @@ function loadJournalFromLocalStorage(): JournalEntry[] {
     }
 }
 
+/**
+ * A Svelte `writable` store that manages the list of trade journal entries.
+ * The store is initialized with data loaded from Local Storage.
+ * Any changes to the store are automatically written back to Local Storage
+ * to ensure data persistence across sessions.
+ */
 export const journalStore = writable<JournalEntry[]>(loadJournalFromLocalStorage());
 
 journalStore.subscribe(value => {

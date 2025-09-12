@@ -1,4 +1,34 @@
 <script lang="ts">
+    /**
+     * @component TradeSetupInputs
+     *
+     * This component provides the UI for the core trade setup, including the
+     * trading symbol, entry price, and stop-loss. It features an advanced
+     * section for calculating the stop-loss based on Average True Range (ATR),
+     * with both manual and automatic (API-fetched) modes.
+     *
+     * @props {string} symbol - The trading symbol (e.g., BTCUSDT).
+     * @props {Decimal | null} entryPrice - The entry price for the trade.
+     * @props {boolean} useAtrSl - Toggles the ATR stop-loss feature on or off.
+     * @props {Decimal | null} atrValue - The value of the ATR.
+     * @props {Decimal | null} atrMultiplier - The multiplier for the ATR value.
+     * @props {Decimal | null} stopLossPrice - The final stop-loss price, either manual or calculated.
+     * @props {'manual' | 'auto'} atrMode - The mode for ATR calculation.
+     * @props {string} atrTimeframe - The timeframe for fetching ATR data (e.g., '1d', '4h').
+     * @props {string} atrFormulaDisplay - The formatted string showing the ATR calculation.
+     * @props {boolean} showAtrFormulaDisplay - Controls the visibility of the ATR formula.
+     * @props {boolean} isAtrSlInvalid - Indicates if the calculated ATR stop-loss is invalid.
+     * @props {boolean} isPriceFetching - Indicates if a price or ATR is currently being fetched.
+     * @props {string[]} symbolSuggestions - An array of symbol suggestions for the input.
+     * @props {boolean} showSymbolSuggestions - Controls the visibility of the symbol suggestions dropdown.
+     *
+     * @event toggleAtrInputs - Dispatched when the user toggles the ATR SL switch.
+     * @event fetchPrice - Dispatched when the user clicks the fetch price button.
+     * @event selectSymbolSuggestion - Dispatched when the user selects a symbol from the suggestions.
+     * @event setAtrMode - Dispatched when the user switches between manual and auto ATR mode.
+     * @event setAtrTimeframe - Dispatched when the user changes the ATR timeframe.
+     * @event fetchAtr - Dispatched when the user clicks the fetch ATR button in auto mode.
+     */
     import { icons } from '../../lib/constants';
     import { debounce } from '../../utils/utils';
     import { createEventDispatcher } from 'svelte';

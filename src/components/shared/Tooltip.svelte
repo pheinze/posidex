@@ -1,4 +1,12 @@
 <script lang="ts">
+  /**
+   * @component Tooltip
+   *
+   * A simple, reusable tooltip component that appears on hover or focus.
+   * It is designed for accessibility, responding to both mouse and keyboard events.
+   *
+   * @props {string} [text=''] - The text content to display inside the tooltip.
+   */
   export let text = '';
   let visible = false;
   let tooltipEl: HTMLElement;

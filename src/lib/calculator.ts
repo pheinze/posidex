@@ -3,7 +3,16 @@ import { CONSTANTS } from './constants';
 import type { TradeValues, BaseMetrics, IndividualTpResult, TotalMetrics, JournalEntry } from '../stores/types';
 import type { Kline } from '../services/apiService';
 
+/**
+ * An object that encapsulates all core calculation functions for the trading application.
+ */
 export const calculator = {
+    /**
+     * Calculates basic trading metrics based on user inputs.
+     * @param values - An object containing the input values for the trade (account size, risk, prices, etc.).
+     * @param tradeType - The type of trade ('long' or 'short').
+     * @returns An object with the calculated base metrics, or null if the risk per unit is zero.
+     */
     calculateBaseMetrics(values: TradeValues, tradeType: string): BaseMetrics | null {
         const riskAmount = values.accountSize.times(values.riskPercentage.div(100));
         const riskPerUnit = values.entryPrice.minus(values.stopLossPrice).abs();
@@ -32,6 +41,13 @@ export const calculator = {
         return { positionSize, requiredMargin, netLoss, breakEvenPrice, estimatedLiquidationPrice, entryFee, riskAmount };
     },
 
+    /**
+     * Calculates the Average True Range (ATR) from a series of candlestick data.
+     * Uses Wilder's Smoothing Method.
+     * @param klines - An array of candlestick objects (Kline).
+     * @param period - The period for the ATR calculation (default is 14).
+     * @returns The calculated ATR value as a Decimal. Returns 0 if there is not enough data.
+     */
     calculateATR(klines: Kline[], period: number = 14): Decimal {
         if (klines.length < period + 1) {
             return new Decimal(0); // Not enough data to calculate ATR.
@@ -65,6 +81,16 @@ export const calculator = {
         return atr;
     },
 
+    /**
+     * Calculates the metrics for a single Take-Profit target.
+     * @param tpPrice - The price of the take-profit target.
+     * @param currentTpPercent - The percentage of the position to be sold at this target.
+     * @param baseMetrics - The previously calculated base metrics.
+     * @param values - The original input values of the trade.
+     * @param index - The index of the target.
+     * @param tradeType - The type of trade ('long' or 'short').
+     * @returns An object with the calculated metrics for this TP target.
+     */
     calculateIndividualTp(tpPrice: Decimal, currentTpPercent: Decimal, baseMetrics: BaseMetrics, values: TradeValues, index: number, tradeType: string): IndividualTpResult {
         const { positionSize, requiredMargin } = baseMetrics;
         const gainPerUnit = tpPrice.minus(values.entryPrice).abs();
@@ -90,6 +116,16 @@ export const calculator = {
         const partialROC = requiredMargin.gt(0) ? netProfit.div(requiredMargin).times(100) : new Decimal(0);
         return { netProfit, riskRewardRatio, priceChangePercent, partialROC, partialVolume: positionPart, exitFee, index: index, percentSold: currentTpPercent };
     },
+
+    /**
+     * Calculates the total metrics for a trade with multiple take-profit targets.
+     * It considers the profit from TPs and the loss from the remaining part of the position hitting the stop-loss.
+     * @param targets - An array of take-profit targets (price and percentage).
+     * @param baseMetrics - The previously calculated base metrics.
+     * @param values - The original input values of the trade.
+     * @param tradeType - The type of trade ('long' or 'short').
+     * @returns An object with the aggregated total metrics for the entire trade.
+     */
     calculateTotalMetrics(targets: Array<{ price: Decimal; percent: Decimal; }>, baseMetrics: BaseMetrics, values: TradeValues, tradeType: string): TotalMetrics {
         const { positionSize, entryFee, riskAmount, requiredMargin } = baseMetrics;
         let totalNetProfit = new Decimal(0);
@@ -134,6 +170,12 @@ export const calculator = {
         const totalROC = requiredMargin.gt(0) ? totalNetProfit.div(requiredMargin).times(100) : new Decimal(0);
         return { totalNetProfit, totalRR, totalFees, riskAmount, totalROC };
     },
+
+    /**
+     * Calculates comprehensive performance statistics from journal data.
+     * @param journalData - An array of completed trade journal entries.
+     * @returns An object with various performance metrics (e.g., win rate, profit factor, drawdown), or null if there are no valid trades.
+     */
     calculatePerformanceStats(journalData: JournalEntry[]) {
         // Filter for closed trades that have a realized P/L value. Old trades without it are ignored.
         const validTrades = journalData.filter(t =>
@@ -246,6 +288,12 @@ export const calculator = {
 
         return { totalTrades, winRate, profitFactor, expectancy, avgRMultiple, avgWin, avgLossOnly, winLossRatio, largestProfit, largestLoss, maxDrawdown, recoveryFactor, currentStreakText, longestWinningStreak, longestLosingStreak, totalProfitLong, totalLossLong, totalProfitShort, totalLossShort };
     },
+
+    /**
+     * Aggregates trading performance by trading symbol.
+     * @param journalData - An array of completed trade journal entries.
+     * @returns An object that maps each symbol to its performance metrics (total trades, wins, total P/L).
+     */
     calculateSymbolPerformance(journalData: JournalEntry[]) {
         const closedTrades = journalData.filter(t => t.status === 'Won' || t.status === 'Lost');
         const symbolPerformance: { [key: string]: { totalTrades: number; wonTrades: number; totalProfitLoss: Decimal; totalPlannedProfitLoss: Decimal; } } = {};

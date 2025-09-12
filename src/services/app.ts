@@ -10,11 +10,14 @@ import { resultsStore, initialResultsState } from '../stores/resultsStore';
 import { presetStore, updatePresetStore } from '../stores/presetStore';
 import { journalStore } from '../stores/journalStore';
 import { uiStore } from '../stores/uiStore';
-import type { JournalEntry, TradeValues, IndividualTpResult, BaseMetrics } from '../stores/types';
+import type { JournalEntry, TradeValues, IndividualTpResult, BaseMetrics, AppState } from '../stores/types';
 import { Decimal } from 'decimal.js';
 import { browser } from '$app/environment';
 import { trackCustomEvent } from './trackingService';
 import { onboardingService } from './onboardingService';
+
+// Type alias for Take Profit Target from AppState for cleaner usage
+type TakeProfitTarget = AppState['targets'][number];
 
 interface CSVTradeEntry {
     'ID': string;
@@ -48,11 +51,19 @@ interface CSVTradeEntry {
     [key: string]: string | undefined;
 }
 
+/**
+ * The `app` object serves as the central orchestrator for the application logic.
+ * It connects UI actions, state management (stores), and backend services (like the calculator).
+ * It is designed as a singleton and is used throughout the application.
+ */
 export const app = {
     calculator: calculator,
     uiManager: uiManager,
 
-
+    /**
+     * Initializes the application in the browser.
+     * Loads user settings and presets from Local Storage and performs an initial calculation.
+     */
     init: () => {
         if (browser) {
             app.loadSettings();
@@ -61,11 +72,21 @@ export const app = {
         }
     },
 
+    /**
+     * Main function for calculations.
+     * It gathers and validates all inputs, calls the `calculator` service,
+     * and updates the `resultsStore` and `tradeStore` with the new data.
+     * It also handles errors and incomplete inputs.
+     */
     calculateAndDisplay: () => {
         uiStore.hideError();
         const currentTradeState = get(tradeStore);
         const newResults = { ...initialResultsState };
 
+        /**
+         * Internal helper function to gather and validate all inputs relevant for the calculation.
+         * @returns An object containing the validation status and the collected data.
+         */
         const getAndValidateInputs = (): { status: string; message?: string; fields?: string[]; data?: TradeValues } => {
             const values: TradeValues = {
                 accountSize: parseDecimal(currentTradeState.accountSize),
@@ -125,27 +146,27 @@ export const app = {
             }
 
             if (currentTradeState.tradeType === CONSTANTS.TRADE_TYPE_LONG && values.entryPrice.lte(values.stopLossPrice)) {
-                return { status: CONSTANTS.STATUS_INVALID, message: "Long: Stop-Loss muss unter dem Kaufpreis liegen.", fields: ['stopLossPrice', 'entryPrice'] };
+                return { status: CONSTANTS.STATUS_INVALID, message: "Long: Stop-Loss must be below Entry Price.", fields: ['stopLossPrice', 'entryPrice'] };
             }
             if (currentTradeState.tradeType === CONSTANTS.TRADE_TYPE_SHORT && values.entryPrice.gte(values.stopLossPrice)) {
-                return { status: CONSTANTS.STATUS_INVALID, message: "Short: Stop-Loss muss über dem Verkaufspreis liegen.", fields: ['stopLossPrice', 'entryPrice'] };
+                return { status: CONSTANTS.STATUS_INVALID, message: "Short: Stop-Loss must be above Entry Price.", fields: ['stopLossPrice', 'entryPrice'] };
             }
 
             for (const tp of values.targets) {
                 if (tp.price.gt(0)) {
                     if (currentTradeState.tradeType === CONSTANTS.TRADE_TYPE_LONG) {
-                        if (tp.price.lte(values.stopLossPrice)) return { status: CONSTANTS.STATUS_INVALID, message: `Long: Take-Profit Ziel ${tp.price.toFixed(4)} muss über dem Stop-Loss liegen.`, fields: ['targets'] };
-                        if (tp.price.lte(values.entryPrice)) return { status: CONSTANTS.STATUS_INVALID, message: `Long: Take-Profit Ziel ${tp.price.toFixed(4)} muss über dem Einstiegspreis liegen.`, fields: ['targets'] };
+                        if (tp.price.lte(values.stopLossPrice)) return { status: CONSTANTS.STATUS_INVALID, message: `Long: Take-Profit Target ${tp.price.toFixed(4)} must be above Stop-Loss.`, fields: ['targets'] };
+                        if (tp.price.lte(values.entryPrice)) return { status: CONSTANTS.STATUS_INVALID, message: `Long: Take-Profit Target ${tp.price.toFixed(4)} must be above Entry Price.`, fields: ['targets'] };
                     } else {
-                        if (tp.price.gte(values.stopLossPrice)) return { status: CONSTANTS.STATUS_INVALID, message: `Short: Take-Profit Ziel ${tp.price.toFixed(4)} muss unter dem Stop-Loss liegen.`, fields: ['targets'] };
-                        if (tp.price.gte(values.entryPrice)) return { status: CONSTANTS.STATUS_INVALID, message: `Short: Take-Profit Ziel ${tp.price.toFixed(4)} muss unter dem Einstiegspreis liegen.`, fields: ['targets'] };
+                        if (tp.price.gte(values.stopLossPrice)) return { status: CONSTANTS.STATUS_INVALID, message: `Short: Take-Profit Target ${tp.price.toFixed(4)} must be below Stop-Loss.`, fields: ['targets'] };
+                        if (tp.price.gte(values.entryPrice)) return { status: CONSTANTS.STATUS_INVALID, message: `Short: Take-Profit Target ${tp.price.toFixed(4)} must be below Entry Price.`, fields: ['targets'] };
                     }
                 }
             }
 
             values.totalPercentSold = values.targets.reduce((sum: Decimal, t) => sum.plus(t.percent), new Decimal(0));
             if (values.totalPercentSold.gt(100)) {
-                return { status: CONSTANTS.STATUS_INVALID, message: `Die Summe der Verkaufsprozente (${values.totalPercentSold.toFixed(0)}%) darf 100% nicht überschreiten.`, fields: [] };
+                return { status: CONSTANTS.STATUS_INVALID, message: `The sum of TP percentages (${values.totalPercentSold.toFixed(0)}%) cannot exceed 100%.`, fields: [] };
             }
 
             return { status: CONSTANTS.STATUS_VALID, data: values };
@@ -190,7 +211,7 @@ export const app = {
         } else if (currentTradeState.isPositionSizeLocked && currentTradeState.lockedPositionSize && currentTradeState.lockedPositionSize.gt(0)) {
             const riskPerUnit = values.entryPrice.minus(values.stopLossPrice).abs();
             if (riskPerUnit.lte(0)) {
-                uiStore.showError("Stop-Loss muss einen gültigen Abstand zum Einstiegspreis haben.");
+                uiStore.showError("Stop-Loss must have a valid distance from Entry Price.");
                 app.clearResults();
                 return;
             }
@@ -260,6 +281,10 @@ export const app = {
         app.saveSettings();
     },
 
+    /**
+     * Resets the calculation results in the UI.
+     * @param showGuidance - If true, a prompt to enter data is shown.
+     */
     clearResults: (showGuidance = false) => {
         resultsStore.set(initialResultsState);
         if (showGuidance) {
@@ -269,6 +294,10 @@ export const app = {
         }
     },
 
+    /**
+     * Retrieves the journal data from Local Storage.
+     * @returns An array of `JournalEntry` objects.
+     */
     getJournal: (): JournalEntry[] => {
         if (!browser) return [];
         try {
@@ -292,21 +321,30 @@ export const app = {
             });
         } catch {
             console.warn("Could not load journal from localStorage.");
-            uiStore.showError("Journal konnte nicht geladen werden.");
+            uiStore.showError("Could not load journal.");
             return [];
         }
     },
+
+    /**
+     * Saves the entire journal to Local Storage.
+     * @param d - The array of `JournalEntry` objects to save.
+     */
     saveJournal: (d: JournalEntry[]) => {
         if (!browser) return;
         try {
             localStorage.setItem(CONSTANTS.LOCAL_STORAGE_JOURNAL_KEY, JSON.stringify(d));
         } catch {
-            uiStore.showError("Fehler beim Speichern des Journals. Der lokale Speicher ist möglicherweise voll oder blockiert.");
+            uiStore.showError("Error saving journal. Local storage may be full or blocked.");
         }
     },
+
+    /**
+     * Adds the currently calculated trade to the journal.
+     */
     addTrade: () => {
         const currentAppState = get(tradeStore);
-        if (!currentAppState.currentTradeData || !currentAppState.currentTradeData.positionSize || currentAppState.currentTradeData.positionSize.lte(0)) { uiStore.showError("Kann keinen ungültigen Trade speichern."); return; }
+        if (!currentAppState.currentTradeData || !currentAppState.currentTradeData.positionSize || currentAppState.currentTradeData.positionSize.lte(0)) { uiStore.showError("Cannot save an invalid trade."); return; }
         const journalData = app.getJournal();
         const newTrade: JournalEntry = {
             ...currentAppState.currentTradeData,
@@ -321,6 +359,12 @@ export const app = {
         onboardingService.trackFirstJournalSave();
         uiStore.showFeedback('save');
     },
+
+    /**
+     * Updates the status of a specific trade in the journal.
+     * @param id - The ID of the trade to update.
+     * @param newStatus - The new status ('Won', 'Lost', 'Open', etc.).
+     */
     updateTradeStatus: (id: number, newStatus: string) => {
         const journalData = app.getJournal();
         const tradeIndex = journalData.findIndex(t => t.id == id);
@@ -342,6 +386,12 @@ export const app = {
             trackCustomEvent('Journal', 'UpdateStatus', newStatus);
         }
     },
+
+    /**
+     * Updates the realized Profit/Loss (P/L) for a trade.
+     * @param id - The ID of the trade to update.
+     * @param pnl - The new P/L value as a string, or null.
+     */
     updateRealizedPnl: (id: number, pnl: string | null) => {
         const journalData = app.getJournal();
         const tradeIndex = journalData.findIndex(t => t.id == id);
@@ -355,30 +405,43 @@ export const app = {
             app.saveJournal(journalData);
             journalStore.set([...journalData]);
             trackCustomEvent('Journal', 'UpdatePnl');
-        } catch (error) {
+        } catch (_error) {
             uiStore.showError("Invalid number entered for P/L.");
             // Revert the store to the original state to undo the visual change in the input
             journalStore.set([...journalData]);
         }
     },
+
+    /**
+     * Deletes a trade from the journal.
+     * @param id - The ID of the trade to delete.
+     */
     deleteTrade: (id: number) => {
         const d = app.getJournal().filter(t => t.id != id);
         app.saveJournal(d);
         journalStore.set(d);
     },
+
+    /**
+     * Clears all entries from the journal after user confirmation.
+     */
     async clearJournal() {
         const journal = app.getJournal();
         if (journal.length === 0) {
-            uiStore.showError("Das Journal ist bereits leer.");
+            uiStore.showError("The journal is already empty.");
             return;
         }
-        if (await modalManager.show("Journal leeren", "Möchten Sie wirklich das gesamte Journal unwiderruflich löschen?", "confirm")) {
+        if (await modalManager.show("Clear Journal", "Are you sure you want to permanently delete the entire journal?", "confirm")) {
             app.saveJournal([]);
             journalStore.set([]);
             uiStore.showFeedback('save', 2000);
         }
     },
 
+    /**
+     * Gathers the current input settings into an object.
+     * @returns An object containing the current input settings.
+     */
     getInputsAsObject: () => {
         const currentAppState = get(tradeStore);
         return {
@@ -393,6 +456,10 @@ export const app = {
             targets: currentAppState.targets,
         };
     },
+
+    /**
+     * Saves the current input settings to Local Storage.
+     */
     saveSettings: () => {
         if (!browser) return;
         try {
@@ -401,6 +468,10 @@ export const app = {
             console.warn("Could not save settings to localStorage.", e);
         }
     },
+
+    /**
+     * Loads and applies user settings from Local Storage.
+     */
     loadSettings: () => {
         if (!browser) return;
         try {
@@ -421,7 +492,7 @@ export const app = {
                     atrMultiplier: parseDecimal(settings.atrMultiplier || CONSTANTS.DEFAULT_ATR_MULTIPLIER),
                     useAtrSl: settings.useAtrSl || false,
                     tradeType: settings.tradeType || CONSTANTS.TRADE_TYPE_LONG,
-                    targets: (settings.targets || []).map((t: any) => ({
+                    targets: (settings.targets || []).map((t: TakeProfitTarget) => ({
                         price: parseDecimal(t.price),
                         percent: parseDecimal(t.percent),
                         isLocked: t.isLocked
@@ -434,36 +505,49 @@ export const app = {
             console.warn("Could not load settings from localStorage.");
         }
     },
+
+    /**
+     * Saves the current inputs as a named preset.
+     */
     savePreset: async () => {
         if (!browser) return;
-        const presetName = await modalManager.show("Preset speichern", "Geben Sie einen Namen für Ihr Preset ein:", "prompt");
+        const presetName = await modalManager.show("Save Preset", "Enter a name for your preset:", "prompt");
         if (typeof presetName === 'string' && presetName) {
             try {
                 const presets = JSON.parse(localStorage.getItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY) || '{}');
-                if (presets[presetName] && !(await modalManager.show("Überschreiben?", `Preset "${presetName}" existiert bereits. Möchten Sie es überschreiben?`, "confirm"))) return;
+                if (presets[presetName] && !(await modalManager.show("Overwrite?", `Preset "${presetName}" already exists. Do you want to overwrite it?`, "confirm"))) return;
                 presets[presetName] = app.getInputsAsObject();
                 localStorage.setItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY, JSON.stringify(presets));
                 uiStore.showFeedback('save');
                 app.populatePresetLoader();
                 updatePresetStore(state => ({ ...state, selectedPreset: presetName }));
             } catch {
-                uiStore.showError("Preset konnte nicht gespeichert werden. Der lokale Speicher ist möglicherweise voll oder blockiert.");
+                uiStore.showError("Could not save preset. Local storage may be full or blocked.");
             }
         }
     },
+
+    /**
+     * Deletes the currently selected preset.
+     */
     deletePreset: async () => {
         if (!browser) return;
         const presetName = get(presetStore).selectedPreset;
         if (!presetName) return;
-        if (!(await modalManager.show("Preset löschen", `Preset "${presetName}" wirklich löschen?`, "confirm"))) return;
+        if (!(await modalManager.show("Delete Preset", `Really delete preset "${presetName}"?`, "confirm"))) return;
         try {
             const presets = JSON.parse(localStorage.getItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY) || '{}');
             delete presets[presetName];
             localStorage.setItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY, JSON.stringify(presets));
             app.populatePresetLoader();
             updatePresetStore(state => ({ ...state, selectedPreset: '' }));
-        } catch { uiStore.showError("Preset konnte nicht gelöscht werden."); }
+        } catch { uiStore.showError("Could not delete preset."); }
     },
+
+    /**
+     * Loads a named preset and applies its settings.
+     * @param presetName - The name of the preset to load.
+     */
     loadPreset: (presetName: string) => {
         if (!browser) return;
         if (!presetName) return;
@@ -484,7 +568,7 @@ export const app = {
                     atrMultiplier: parseDecimal(preset.atrMultiplier || CONSTANTS.DEFAULT_ATR_MULTIPLIER),
                     useAtrSl: preset.useAtrSl || false,
                     tradeType: preset.tradeType || CONSTANTS.TRADE_TYPE_LONG,
-                    targets: (preset.targets || []).map((t: any) => ({
+                    targets: (preset.targets || []).map((t: TakeProfitTarget) => ({
                         price: parseDecimal(t.price),
                         percent: parseDecimal(t.percent),
                         isLocked: t.isLocked
@@ -495,10 +579,14 @@ export const app = {
                 return;
             }
         } catch (error) {
-            console.error("Fehler beim Laden des Presets:", error);
-            uiStore.showError("Preset konnte nicht geladen werden.");
+            console.error("Error loading preset:", error);
+            uiStore.showError("Could not load preset.");
         }
     },
+
+    /**
+     * Loads the list of available presets into the `presetStore`.
+     */
     populatePresetLoader: () => {
         if (!browser) return;
         try {
@@ -510,10 +598,14 @@ export const app = {
             updatePresetStore(state => ({ ...state, availablePresets: [] }));
         }
     },
+
+    /**
+     * Exports the current journal data to a CSV file.
+     */
     exportToCSV: () => {
         if (!browser) return;
         const journalData = get(journalStore);
-        if (journalData.length === 0) { uiStore.showError("Journal ist leer."); return; }
+        if (journalData.length === 0) { uiStore.showError("Journal is empty."); return; }
         trackCustomEvent('Journal', 'Export', 'CSV', journalData.length);
         const headers = ['ID', 'Datum', 'Uhrzeit', 'Symbol', 'Typ', 'Status', 'Konto Guthaben', 'Risiko %', 'Hebel', 'Gebuehren %', 'Einstieg', 'Stop Loss', 'Gewichtetes R/R', 'Gesamt Netto-Gewinn', 'Risiko pro Trade (Waehrung)', 'Gesamte Gebuehren', 'Notizen', ...Array.from({length: 5}, (_, i) => [`TP${i+1} Preis`, `TP${i+1} %`]).flat()];
         const rows = journalData.map(trade => {
@@ -532,6 +624,11 @@ export const app = {
         link.click();
         document.body.removeChild(link);
     },
+
+    /**
+     * Imports journal data from a CSV file.
+     * @param file - The CSV file to import.
+     */
     importFromCSV: (file: File) => {
         if (!browser) return;
         const reader = new FileReader();
@@ -539,7 +636,7 @@ export const app = {
             const text = e.target?.result as string;
             const lines = text.split('\n').filter(line => line.trim() !== '');
             if (lines.length < 2) {
-                uiStore.showError("CSV ist leer oder hat nur eine Kopfzeile.");
+                uiStore.showError("CSV is empty or has only a header line.");
                 return;
             }
 
@@ -548,7 +645,7 @@ export const app = {
             const missingHeaders = requiredHeaders.filter(h => !headers.includes(h));
 
             if (missingHeaders.length > 0) {
-                uiStore.showError(`CSV-Datei fehlen benötigte Spalten: ${missingHeaders.join(', ')}`);
+                uiStore.showError(`CSV file is missing required columns: ${missingHeaders.join(', ')}`);
                 return;
             }
 
@@ -595,7 +692,7 @@ export const app = {
                         realizedPnl: null
                     } as JournalEntry;
                 } catch (err: unknown) {
-                    console.warn("Fehler beim Verarbeiten einer Zeile:", entry, err);
+                    console.warn("Error processing a row:", entry, err);
                     return null;
                 }
             }).filter((entry): entry is JournalEntry => entry !== null);
@@ -605,23 +702,26 @@ export const app = {
                 const combined = [...currentJournal, ...entries];
                 const unique = Array.from(new Map(combined.map(trade => [trade.id, trade])).values());
 
-                if (await modalManager.show("Import bestätigen", `Sie sind dabei, ${entries.length} Trades zu importieren. Bestehende Trades mit derselben ID werden überschrieben. Fortfahren?`, "confirm")) {
+                if (await modalManager.show("Confirm Import", `You are about to import ${entries.length} trades. Existing trades with the same ID will be overwritten. Continue?`, "confirm")) {
                     journalStore.set(unique);
                     trackCustomEvent('Journal', 'Import', 'CSV', entries.length);
                     uiStore.showFeedback('save', 2000);
                 }
             } else {
-                uiStore.showError("Keine gültigen Einträge in der CSV-Datei gefunden.");
+                uiStore.showError("No valid entries found in the CSV file.");
             }
         };
         reader.readAsText(file);
     },
 
+    /**
+     * Fetches the current price for a symbol from the Binance API and updates the entry price.
+     */
     handleFetchPrice: async () => {
         const currentTradeState = get(tradeStore);
         const symbol = currentTradeState.symbol.toUpperCase().replace('/', '');
         if (!symbol) {
-            uiStore.showError("Bitte geben Sie ein Symbol ein.");
+            uiStore.showError("Please enter a symbol.");
             return;
         }
         uiStore.update(state => ({ ...state, isPriceFetching: true }));
@@ -638,6 +738,10 @@ export const app = {
         }
     },
 
+    /**
+     * Sets the mode for ATR-based Stop-Loss calculation.
+     * @param mode - The mode ('manual' or 'auto').
+     */
     setAtrMode: (mode: 'manual' | 'auto') => {
         updateTradeStore(state => ({
             ...state,
@@ -647,6 +751,10 @@ export const app = {
         app.calculateAndDisplay();
     },
 
+    /**
+     * Sets the timeframe for ATR calculation.
+     * @param timeframe - The timeframe (e.g., '1d', '4h').
+     */
     setAtrTimeframe: (timeframe: string) => {
         updateTradeStore(state => ({
             ...state,
@@ -657,11 +765,14 @@ export const app = {
         }
     },
 
+    /**
+     * Fetches the ATR value from the Binance API and updates the `tradeStore`.
+     */
     fetchAtr: async () => {
         const currentTradeState = get(tradeStore);
         const symbol = currentTradeState.symbol.toUpperCase().replace('/', '');
         if (!symbol) {
-            uiStore.showError("Bitte geben Sie ein Symbol ein.");
+            uiStore.showError("Please enter a symbol.");
             return;
         }
         uiStore.update(state => ({ ...state, isPriceFetching: true }));
@@ -669,7 +780,7 @@ export const app = {
             const klines = await apiService.fetchKlines(symbol, currentTradeState.atrTimeframe);
             const atr = calculator.calculateATR(klines);
             if (atr.lte(0)) {
-                throw new Error("ATR konnte nicht berechnet werden. Prüfen Sie das Symbol oder den Zeitrahmen.");
+                throw new Error("Could not calculate ATR. Check the symbol or timeframe.");
             }
             updateTradeStore(state => ({ ...state, atrValue: atr.toDP(4) }));
             app.calculateAndDisplay();
@@ -682,12 +793,20 @@ export const app = {
         }
     },
 
+    /**
+     * Selects a symbol suggestion, updates the store, and fetches the price.
+     * @param symbol - The selected trading symbol.
+     */
     selectSymbolSuggestion: (symbol: string) => {
         updateTradeStore(s => ({ ...s, symbol: symbol }));
         uiStore.update(s => ({ ...s, showSymbolSuggestions: false, symbolSuggestions: [] }));
         app.handleFetchPrice();
     },
 
+    /**
+     * Updates the list of symbol suggestions based on user input.
+     * @param query - The current input in the symbol field.
+     */
     updateSymbolSuggestions: (query: string) => {
         const upperQuery = query.toUpperCase().replace('/', '');
         let filtered: string[] = [];
@@ -696,13 +815,19 @@ export const app = {
         }
         uiStore.update(s => ({ ...s, symbolSuggestions: filtered, showSymbolSuggestions: filtered.length > 0 }));
     },
+
+    /**
+     * Toggles the lock for the position size.
+     * When enabled, the position size is maintained while other parameters are changed.
+     * @param forceState - Optional. A boolean to set the state directly.
+     */
     togglePositionSizeLock: (forceState?: boolean) => {
         const currentTradeState = get(tradeStore);
         const currentResultsState = get(resultsStore);
         const shouldBeLocked = forceState !== undefined ? forceState : !currentTradeState.isPositionSizeLocked;
 
         if (shouldBeLocked && (!currentResultsState.positionSize || parseDecimal(currentResultsState.positionSize).lte(0))) {
-            uiStore.showError("Positionsgröße kann nicht gesperrt werden, solange sie ungültig ist.");
+            uiStore.showError("Position size cannot be locked while it is invalid.");
             return;
         }
 
@@ -716,12 +841,17 @@ export const app = {
         app.calculateAndDisplay();
     },
 
+    /**
+     * Toggles the lock for the risk amount.
+     * When enabled, the risk amount in the account currency is maintained.
+     * @param forceState - Optional. A boolean to set the state directly.
+     */
     toggleRiskAmountLock: (forceState?: boolean) => {
         const currentTradeState = get(tradeStore);
         const shouldBeLocked = forceState !== undefined ? forceState : !currentTradeState.isRiskAmountLocked;
 
         if (shouldBeLocked && parseDecimal(currentTradeState.riskAmount).lte(0)) {
-            uiStore.showError("Risikobetrag kann nicht gesperrt werden, solange er ungültig ist.");
+            uiStore.showError("Risk amount cannot be locked while it is invalid.");
             return;
         }
 
@@ -735,12 +865,21 @@ export const app = {
         app.calculateAndDisplay();
     },
 
+    /**
+     * Adds a new (empty) row for a Take-Profit target.
+     */
     addTakeProfitRow: (price: number | null = null, percent: number | null = null, isLocked = false) => {
         updateTradeStore(state => ({
             ...state,
             targets: [...state.targets, { price: price !== null ? new Decimal(price) : null, percent: percent !== null ? new Decimal(percent) : null, isLocked }]
         }));
     },
+
+    /**
+     * Automatically adjusts the percentages of unlocked Take-Profit targets
+     * so that the total sum (including locked targets) equals 100%.
+     * @param changedIndex - The index of the target that was last changed.
+     */
     adjustTpPercentages: (changedIndex: number | null) => {
         const currentAppState = get(tradeStore);
         const originalTargets = currentAppState.targets;
@@ -753,36 +892,36 @@ export const app = {
         const ONE_HUNDRED = new Decimal(100);
         const ZERO = new Decimal(0);
 
-        const decTargets = targets.map((t: any) => ({
+        const decTargets = targets.map((t: TakeProfitTarget) => ({
             price: t.price,
             percent: parseDecimal(t.percent),
             isLocked: t.isLocked,
         }));
 
         const lockedSum = decTargets
-            .filter((t: any) => t.isLocked)
-            .reduce((sum: Decimal, t: any) => sum.plus(t.percent), ZERO);
+            .filter((t: TakeProfitTarget) => t.isLocked)
+            .reduce((sum: Decimal, t: {percent: Decimal}) => sum.plus(t.percent), ZERO);
 
         if (lockedSum.gt(ONE_HUNDRED)) return;
 
-        const unlockedTargets = decTargets.filter((t: any) => !t.isLocked);
+        const unlockedTargets = decTargets.filter((t: TakeProfitTarget) => !t.isLocked);
         if (unlockedTargets.length === 0) return;
 
         const unlockedTargetSum = ONE_HUNDRED.minus(lockedSum);
-        const unlockedCurrentSum = unlockedTargets.reduce((sum: Decimal, t: any) => sum.plus(t.percent), ZERO);
+        const unlockedCurrentSum = unlockedTargets.reduce((sum: Decimal, t: {percent: Decimal}) => sum.plus(t.percent), ZERO);
 
-        if (unlockedCurrentSum.equals(unlockedTargetSum) && unlockedTargets.every((t: any) => t.percent.isInteger())) {
+        if (unlockedCurrentSum.equals(unlockedTargetSum) && unlockedTargets.every((t: {percent: Decimal}) => t.percent.isInteger())) {
             return;
         }
 
         if (unlockedCurrentSum.isZero()) {
             if (unlockedTargetSum.gt(0)) {
                 const share = unlockedTargetSum.div(unlockedTargets.length);
-                unlockedTargets.forEach((t: any) => t.percent = share);
+                unlockedTargets.forEach((t: {percent: Decimal}) => t.percent = share);
             }
         } else {
             const scalingFactor = unlockedTargetSum.div(unlockedCurrentSum);
-            unlockedTargets.forEach((t: any) => t.percent = t.percent.times(scalingFactor));
+            unlockedTargets.forEach((t: {percent: Decimal}) => t.percent = t.percent.times(scalingFactor));
         }
 
         let roundedSum = ZERO;
@@ -797,7 +936,7 @@ export const app = {
             lastTarget.percent = unlockedTargetSum.minus(roundedSum).toDecimalPlaces(0, Decimal.ROUND_HALF_UP);
         }
 
-        const finalTargets = decTargets.map((t: any) => ({
+        const finalTargets = decTargets.map((t: TakeProfitTarget) => ({
             price: t.price,
             percent: t.percent, // Keep as Decimal
             isLocked: t.isLocked

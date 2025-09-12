@@ -1,4 +1,14 @@
 <script lang="ts">
+    /**
+     * @component LanguageSwitcher
+     *
+     * A simple UI component that allows the user to switch between
+     * supported languages (German and English).
+     *
+     * It uses the `svelte-i18n` store to get the current locale and
+     * calls the `setLocale` function on click to change the language.
+     * The currently active language is highlighted with a border.
+     */
     import { locale, setLocale, _ } from '../../locales/i18n';
 </script>
 

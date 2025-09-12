@@ -1,4 +1,15 @@
 <script lang="ts">
+    /**
+     * @component TakeProfitTargets
+     *
+     * This component manages and displays a list of Take-Profit (TP) targets.
+     * It dynamically renders a `TakeProfitRow` for each target.
+     *
+     * @props {Array<{ price: Decimal | null; percent: Decimal | null; isLocked: boolean }>} targets - The array of TP target objects.
+     * @props {IndividualTpResult[]} [calculatedTpDetails=[]] - The array of calculated details for each TP, used to display results in the rows.
+     *
+     * @event remove - Forwards the 'remove' event from a `TakeProfitRow`, providing the index of the row to be removed.
+     */
     import { icons } from '../../lib/constants';
     import TakeProfitRow from '../shared/TakeProfitRow.svelte';
     import Tooltip from '../shared/Tooltip.svelte';

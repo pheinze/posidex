@@ -1,4 +1,17 @@
 <script lang="ts">
+    /**
+     * @component GeneralInputs
+     *
+     * This component provides the UI for setting general trade parameters,
+     * including the trade type (Long/Short), leverage, and fees.
+     *
+     * It is tightly coupled with the `tradeStore`, directly updating the store
+     * when the user changes an input value.
+     *
+     * @props {string} tradeType - The current trade type ('long' or 'short').
+     * @props {Decimal | null} leverage - The current leverage value.
+     * @props {Decimal | null} fees - The current trading fees percentage.
+     */
     import { CONSTANTS } from '../../lib/constants';
     import { updateTradeStore } from '../../stores/tradeStore';
     import { numberInput } from '../../utils/inputUtils';

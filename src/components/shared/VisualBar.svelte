@@ -1,4 +1,20 @@
 <script lang="ts">
+    /**
+     * @component VisualBar
+     *
+     * This component displays a visual representation of the risk/reward for a trade setup.
+     * It shows the gain and loss zones as colored bars and places markers for the
+     * entry price, stop-loss, and each take-profit target.
+     *
+     * It receives all necessary trade data as props and uses the `updateVisualBar`
+     * service function to calculate the positions for rendering.
+     *
+     * @props {Decimal | null} entryPrice - The entry price of the trade.
+     * @props {Decimal | null} stopLossPrice - The stop-loss price of the trade.
+     * @props {string} tradeType - The type of trade ('long' or 'short').
+     * @props {Array<{ price: Decimal | null; percent: Decimal | null; isLocked: boolean }>} targets - The user-defined take-profit targets.
+     * @props {IndividualTpResult[]} calculatedTpDetails - The detailed calculation results for each TP.
+     */
     import { updateVisualBar } from '../../services/uiManager';
     import type { VisualBarData } from '../../services/uiManager';
     import { _ } from '../../locales/i18n';

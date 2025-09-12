@@ -5,6 +5,10 @@ import { resultsStore, initialResultsState } from './resultsStore';
 import { uiStore } from './uiStore';
 import { Decimal } from 'decimal.js';
 
+/**
+ * Defines the initial state for the trade and input parameters.
+ * This object is used to initialize and reset the `tradeStore`.
+ */
 export const initialTradeState: Pick<AppState,
     'tradeType' |
     'accountSize' |
@@ -57,14 +61,24 @@ export const initialTradeState: Pick<AppState,
     currentTradeData: null,
 };
 
+/**
+ * A Svelte `writable` store that manages the state of the current trade inputs and parameters.
+ */
 export const tradeStore = writable(initialTradeState);
 
-// Helper function to update parts of the store
+/**
+ * Updates the `tradeStore` using an updater function.
+ * Provides a type-safe way to modify parts of the store's state.
+ * @param updater - A function that receives the current state and returns the new state.
+ */
 export const updateTradeStore = (updater: (state: typeof initialTradeState) => typeof initialTradeState) => {
     tradeStore.update(updater);
 };
 
-// Helper function to toggle ATR inputs visibility
+/**
+ * Toggles the visibility and mode of ATR-related input fields.
+ * @param useAtrSl - A boolean indicating whether the ATR Stop-Loss feature is enabled.
+ */
 export const toggleAtrInputs = (useAtrSl: boolean) => {
     updateTradeStore(state => ({
         ...state,
@@ -73,7 +87,10 @@ export const toggleAtrInputs = (useAtrSl: boolean) => {
     }));
 };
 
-// Helper function to reset all inputs
+/**
+ * Resets all input fields and calculation results to their initial values.
+ * Affects `tradeStore` and `resultsStore`.
+ */
 export const resetAllInputs = () => {
     tradeStore.set(initialTradeState);
     resultsStore.set(initialResultsState);

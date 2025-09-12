@@ -4,18 +4,30 @@ import { CONSTANTS } from '../lib/constants';
 const BACKUP_VERSION = 1;
 const APP_NAME = 'R-Calculator';
 
-// The structure for the data payload in the backup
+/**
+ * Defines the structure for the data payload within the backup file.
+ * Data is stored as raw strings from localStorage.
+ */
 interface BackupData {
-  settings: string | null; // Stored as a raw string from localStorage
-  presets: string | null;  // Stored as a raw string from localStorage
-  journal: string | null;  // Stored as a raw string from localStorage
+  /** A JSON string of the user's settings. */
+  settings: string | null;
+  /** A JSON string of the user's saved presets. */
+  presets: string | null;
+  /** A JSON string of the user's journal entries. */
+  journal: string | null;
 }
 
-// The overall structure of the backup file
+/**
+ * Defines the overall structure of the backup JSON file.
+ */
 interface BackupFile {
+  /** The version of the backup format. */
   backupVersion: number;
+  /** The ISO 8601 timestamp of when the backup was created. */
   timestamp: string;
+  /** The name of the application that created the backup. */
   appName: string;
+  /** The container for the actual user data. */
   data: BackupData;
 }
 
@@ -30,7 +42,8 @@ function getDataFromLocalStorage(key: string): string | null {
 }
 
 /**
- * Creates a JSON backup file of the user's data and triggers a download.
+ * Creates a JSON backup file of all user data (settings, presets, journal)
+ * and triggers a download in the user's browser.
  */
 export function createBackup() {
   if (!browser) return;
@@ -61,10 +74,11 @@ export function createBackup() {
 }
 
 /**
- * Restores user data from a JSON backup file content.
- * This function writes the data to localStorage and then triggers a page reload.
- * @param jsonContent The string content of the uploaded JSON file.
- * @returns An object indicating success or failure with a message.
+ * Restores user data from the content of a JSON backup file.
+ * This function validates the backup and writes the data to localStorage.
+ * A page reload is required after a successful restore to apply the new data.
+ * @param jsonContent The string content of the uploaded JSON backup file.
+ * @returns An object indicating success or failure, along with a user-friendly message.
  */
 export function restoreFromBackup(jsonContent: string): { success: boolean; message: string } {
   if (!browser) {

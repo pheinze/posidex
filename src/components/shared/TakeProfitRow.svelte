@@ -1,4 +1,20 @@
 <script lang="ts">
+    /**
+     * @component TakeProfitRow
+     *
+     * This component represents a single row for a Take-Profit (TP) target.
+     * It includes inputs for the target price and the percentage of the position
+     * to sell at that price. It also displays calculated details for the target,
+     * such as the net profit and risk/reward ratio.
+     *
+     * @props {number} index - The index of this TP row.
+     * @props {Decimal | null} price - The price of the TP target.
+     * @props {Decimal | null} percent - The percentage of the position to sell.
+     * @props {boolean} isLocked - Whether the percentage input is locked from auto-adjustment.
+     * @props {IndividualTpResult | undefined} [tpDetail=undefined] - The calculated details for this TP target.
+     *
+     * @event remove - Dispatched when the user clicks the remove button. The event detail is the `index` of the row to be removed.
+     */
     import { icons } from '../../lib/constants';
     import { createEventDispatcher } from 'svelte';
     import { numberInput } from '../../utils/inputUtils';

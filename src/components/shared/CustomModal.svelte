@@ -1,4 +1,16 @@
 <script lang="ts">
+    /**
+     * @component CustomModal
+     * This component provides a global, promise-based modal dialog system.
+     * It should not be instantiated directly. Instead, it's placed once in the main layout
+     * and controlled entirely by the `modalManager` service.
+     *
+     * It subscribes to the `modalManager` store and displays itself whenever the
+     * store's `isOpen` property is true. The content, title, and buttons are all
+     * determined by the state managed within the `modalManager`.
+     *
+     * @see /src/services/modalManager.ts
+     */
     import { modalManager, type ModalState } from '../../services/modalManager';
     import { fade } from 'svelte/transition';
     import { _ } from '../../locales/i18n';

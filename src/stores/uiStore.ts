@@ -2,17 +2,31 @@ import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
 import { CONSTANTS } from '../lib/constants';
 
+/**
+ * Defines the structure for the state of the user interface (UI).
+ */
 interface UiState {
+    /** The currently active color theme (e.g., 'dark', 'light'). */
     currentTheme: string;
+    /** Controls the visibility of the journal modal. */
     showJournalModal: boolean;
+    /** Controls the visibility of the changelog modal. */
     showChangelogModal: boolean;
+    /** Controls the visibility of the guide modal. */
     showGuideModal: boolean;
+    /** Shows a brief confirmation after copying content. */
     showCopyFeedback: boolean;
+    /** Shows a brief confirmation after saving. */
     showSaveFeedback: boolean;
+    /** The error message to be displayed. */
     errorMessage: string;
+    /** Controls the visibility of the error banner. */
     showErrorMessage: boolean;
+    /** Indicates if a price is currently being fetched from the API. */
     isPriceFetching: boolean;
+    /** A list of symbol suggestions for the input. */
     symbolSuggestions: string[];
+    /** Controls the visibility of the symbol suggestions. */
     showSymbolSuggestions: boolean;
 }
 
@@ -30,6 +44,12 @@ const initialUiState: UiState = {
     showSymbolSuggestions: false,
 };
 
+/**
+ * Creates a custom Svelte store for managing UI state.
+ * This pattern allows encapsulating custom logic (e.g., `setTheme`) alongside
+ * the standard store methods (`subscribe`, `update`, `set`).
+ * @returns An object with store methods and custom actions.
+ */
 function createUiStore() {
     const { subscribe, update, set } = writable<UiState>(initialUiState);
 
@@ -37,6 +57,11 @@ function createUiStore() {
         subscribe,
         update,
         set,
+        /**
+         * Sets the color theme for the application.
+         * Updates the body tag, and saves the setting to Local Storage and cookies.
+         * @param themeName - The name of the theme to activate.
+         */
         setTheme: (themeName: string) => {
             update(state => ({ ...state, currentTheme: themeName }));
             if (browser) {
@@ -57,17 +82,31 @@ function createUiStore() {
                 }
             }
         },
+        /** Toggles the visibility of the journal modal. */
         toggleJournalModal: (show: boolean) => update(state => ({ ...state, showJournalModal: show })),
+        /** Toggles the visibility of the changelog modal. */
         toggleChangelogModal: (show: boolean) => update(state => ({ ...state, showChangelogModal: show })),
+        /** Toggles the visibility of the guide modal. */
         toggleGuideModal: (show: boolean) => update(state => ({ ...state, showGuideModal: show })),
+        /**
+         * Shows a brief feedback banner (e.g., for "Copied" or "Saved").
+         * @param type - The type of feedback ('copy' or 'save').
+         * @param duration - The display duration in milliseconds.
+         */
         showFeedback: (type: 'copy' | 'save', duration = 2000) => {
             const key = type === 'copy' ? 'showCopyFeedback' : 'showSaveFeedback';
             update(state => ({ ...state, [key]: true }));
             setTimeout(() => update(state => ({ ...state, [key]: false })), duration);
         },
+        /** Displays an error message. */
         showError: (message: string) => update(state => ({ ...state, errorMessage: message, showErrorMessage: true })),
+        /** Hides the current error message. */
         hideError: () => update(state => ({ ...state, errorMessage: '', showErrorMessage: false })),
     };
 }
 
+/**
+ * The Svelte store for managing the global UI state.
+ * Contains logic for controlling modals, themes, feedback, and error messages.
+ */
 export const uiStore = createUiStore();

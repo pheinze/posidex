@@ -1,4 +1,15 @@
 <script lang="ts">
+    /**
+     * @component JournalStats
+     *
+     * This component displays a grid of key performance indicators (KPIs)
+     * derived from the user's trading journal data.
+     *
+     * It takes the full journal data as a prop and uses the `calculator` service
+     * to compute the performance statistics, which are then displayed.
+     *
+     * @props {JournalEntry[]} journalData - An array of all journal entries.
+     */
     import { calculator } from '../../lib/calculator';
     import type { JournalEntry } from '../../stores/types';
     import { _ } from '../../locales/i18n';

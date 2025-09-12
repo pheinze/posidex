@@ -1,4 +1,19 @@
 <script lang="ts">
+    /**
+     * @component PortfolioInputs
+     *
+     * This component provides the UI for portfolio-related inputs, including
+     * account size, risk percentage, and the calculated/overridden risk amount.
+     * It also handles the logic for locking the risk amount.
+     *
+     * @props {Decimal | null} accountSize - The total size of the trading account.
+     * @props {Decimal | null} riskPercentage - The percentage of the account to risk per trade.
+     * @props {Decimal | null} riskAmount - The calculated or user-locked risk amount in currency.
+     * @props {boolean} isRiskAmountLocked - Whether the risk amount is locked by the user.
+     * @props {boolean} isPositionSizeLocked - Whether the position size is locked (disables risk inputs).
+     *
+     * @event toggleRiskAmountLock - Dispatched when the user clicks the lock icon next to the risk amount field.
+     */
     import { numberInput } from '../../utils/inputUtils';
     import { _ } from '../../locales/i18n';
     import { onboardingService } from '../../services/onboardingService';

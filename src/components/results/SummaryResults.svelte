@@ -1,4 +1,23 @@
 <script lang="ts">
+    /**
+     * @component SummaryResults
+     *
+     * This component displays the main calculated results of a trade setup,
+     * such as Position Size, Max Net Loss, and Required Margin.
+     * It also provides actions like copying the position size and toggling its lock state.
+     *
+     * @props {boolean} isPositionSizeLocked - Indicates if the position size is currently locked.
+     * @props {boolean} showCopyFeedback - Controls the visibility of the "Copied!" feedback message.
+     * @props {string} positionSize - The calculated position size.
+     * @props {string} netLoss - The potential net loss if the stop-loss is hit.
+     * @props {string} requiredMargin - The margin required to open the position.
+     * @props {string} entryFee - The estimated fee for entering the trade.
+     * @props {string} estimatedLiquidationPrice - The estimated price at which the position would be liquidated.
+     * @props {string} breakEvenPrice - The price at which the trade breaks even, including fees.
+     *
+     * @event copy - Dispatched when the user clicks the copy button.
+     * @event toggleLock - Dispatched when the user clicks the lock icon for the position size.
+     */
     import { createEventDispatcher } from 'svelte';
     import { icons } from '../../lib/constants';
     import Tooltip from '../shared/Tooltip.svelte';

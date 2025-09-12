@@ -1,3 +1,22 @@
+<!--
+  @component
+  CachyIcon
+
+  This component renders the main application logo as an inline SVG.
+  It's designed to be flexible and reusable.
+
+  @example
+  // You can control the size and color from a parent element.
+  // The SVG will inherit the 'color' property for its fill
+  // and can be sized using standard width/height CSS properties
+  // on a container or the component itself.
+  //
+  // <div style="width: 50px; color: blue;">
+  //   <CachyIcon />
+  // </div>
+  //
+  // You can also pass a 'class' attribute to apply custom CSS.
+-->
 <svg
    version="1.1"
    viewBox="0 0 557.69562 558.19806"

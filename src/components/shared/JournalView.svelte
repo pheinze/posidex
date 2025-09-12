@@ -1,4 +1,21 @@
 <script lang="ts">
+    /**
+     * @component JournalView
+     *
+     * This component renders the entire trade journal interface, including stats,
+     * filtering controls, and the list of trades. It is displayed inside a modal,
+     * controlled by the `uiStore`.
+     *
+     * It features a responsive design, showing a detailed table on desktop and
+     * a card-based layout on mobile.
+     *
+     * Key functionalities include:
+     * - Subscribing to `journalStore` and `tradeStore` to display and filter trades.
+     * - Allowing in-place editing of a trade's status and realized P/L.
+     * - Handling CSV import/export functionality.
+     * - Displaying performance statistics via the `JournalStats` component.
+     * - All business logic is delegated to the `app` service.
+     */
     import Decimal from 'decimal.js';
     import { tradeStore } from '../../stores/tradeStore';
     import { journalStore } from '../../stores/journalStore';
