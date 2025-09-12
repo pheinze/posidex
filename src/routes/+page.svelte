@@ -133,6 +133,7 @@
                         tradeStore.update(s => ({ ...s, ...settings }));
                         journalStore.set(journal);
                         presetStore.update(s => ({...s, availablePresets: Object.keys(presets)}));
+                        toggleAtrInputs(settings.useAtrSl);
                         uiStore.showFeedback('save');
                     } else {
                         uiStore.showError(result.message);
