@@ -11,11 +11,11 @@
     const dispatch = createEventDispatcher();
 
     export let symbol: string;
-    export let entryPrice: number | null;
+    export let entryPrice: string | null;
     export let useAtrSl: boolean;
-    export let atrValue: number | null;
-    export let atrMultiplier: number | null;
-    export let stopLossPrice: number | null;
+    export let atrValue: string | null;
+    export let atrMultiplier: string | null;
+    export let stopLossPrice: string | null;
     export let atrMode: 'manual' | 'auto';
     export let atrTimeframe: string;
 
@@ -61,30 +61,28 @@
         }
     }
 
-    const format = (val: number | null) => (val === null || val === undefined) ? '' : String(val);
-
     function handleEntryPriceInput(e: Event) {
         const target = e.target as HTMLInputElement;
         const value = target.value;
-        updateTradeStore(s => ({ ...s, entryPrice: value === '' ? null : parseFloat(value) }));
+        updateTradeStore(s => ({ ...s, entryPrice: value === '' ? null : value }));
     }
 
     function handleAtrValueInput(e: Event) {
         const target = e.target as HTMLInputElement;
         const value = target.value;
-        updateTradeStore(s => ({ ...s, atrValue: value === '' ? null : parseFloat(value) }));
+        updateTradeStore(s => ({ ...s, atrValue: value === '' ? null : value }));
     }
 
     function handleAtrMultiplierInput(e: Event) {
         const target = e.target as HTMLInputElement;
         const value = target.value;
-        updateTradeStore(s => ({ ...s, atrMultiplier: value === '' ? null : parseFloat(value) }));
+        updateTradeStore(s => ({ ...s, atrMultiplier: value === '' ? null : value }));
     }
 
     function handleStopLossPriceInput(e: Event) {
         const target = e.target as HTMLInputElement;
         const value = target.value;
-        updateTradeStore(s => ({ ...s, stopLossPrice: value === '' ? null : parseFloat(value) }));
+        updateTradeStore(s => ({ ...s, stopLossPrice: value === '' ? null : value }));
     }
 </script>
 
@@ -127,7 +125,7 @@
             </div>
         {/if}
     </div>
-    <input id="entry-price-input" type="text" use:numberInput={{ maxDecimalPlaces: 4, minValue: 0 }} value={format(entryPrice)} on:input={handleEntryPriceInput} class="input-field w-full px-4 py-2 rounded-md mb-4" placeholder="{$_('dashboard.tradeSetupInputs.entryPricePlaceholder')}" on:input={onboardingService.trackFirstInput}>
+    <input id="entry-price-input" type="text" use:numberInput={{ maxDecimalPlaces: 4, minValue: 0 }} value={entryPrice ?? ''} on:input={handleEntryPriceInput} class="input-field w-full px-4 py-2 rounded-md mb-4" placeholder="{$_('dashboard.tradeSetupInputs.entryPricePlaceholder')}" on:input={onboardingService.trackFirstInput}>
 
     <div class="p-2 rounded-lg mb-4" style="background-color: var(--bg-tertiary);">
         <div class="flex items-center mb-2 {useAtrSl ? 'justify-between' : 'justify-end'}">
@@ -155,13 +153,13 @@
         </div>
         {#if !useAtrSl}
             <div>
-                <input id="stop-loss-price-input" type="text" use:numberInput={{ maxDecimalPlaces: 4, minValue: 0 }} value={format(stopLossPrice)} on:input={handleStopLossPriceInput} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.tradeSetupInputs.manualStopLossPlaceholder')}">
+                <input id="stop-loss-price-input" type="text" use:numberInput={{ maxDecimalPlaces: 4, minValue: 0 }} value={stopLossPrice ?? ''} on:input={handleStopLossPriceInput} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.tradeSetupInputs.manualStopLossPlaceholder')}">
             </div>
         {:else}
             {#if atrMode === 'manual'}
                 <div class="grid grid-cols-2 gap-2 mt-2">
-                    <input id="atr-value-input" type="text" use:numberInput={{ maxDecimalPlaces: 4, minValue: 0 }} value={format(atrValue)} on:input={handleAtrValueInput} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.tradeSetupInputs.atrValuePlaceholder')}">
-                    <input id="atr-multiplier-input" type="text" use:numberInput={{ maxDecimalPlaces: 4, minValue: 0 }} value={format(atrMultiplier)} on:input={handleAtrMultiplierInput} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.tradeSetupInputs.multiplierPlaceholder')}">
+                    <input id="atr-value-input" type="text" use:numberInput={{ maxDecimalPlaces: 4, minValue: 0 }} value={atrValue ?? ''} on:input={handleAtrValueInput} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.tradeSetupInputs.atrValuePlaceholder')}">
+                    <input id="atr-multiplier-input" type="text" use:numberInput={{ maxDecimalPlaces: 4, minValue: 0 }} value={atrMultiplier ?? ''} on:input={handleAtrMultiplierInput} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.tradeSetupInputs.multiplierPlaceholder')}">
                 </div>
             {:else}
                 <div class="grid grid-cols-3 gap-2 mt-2 items-end">
@@ -182,11 +180,11 @@
                                 {@html icons.fetch}
                             </button>
                         </div>
-                        <input id="atr-value-input-auto" type="text" use:numberInput={{ maxDecimalPlaces: 4, minValue: 0 }} value={format(atrValue)} on:input={handleAtrValueInput} class="input-field w-full px-4 py-2 rounded-md" placeholder="ATR">
+                        <input id="atr-value-input-auto" type="text" use:numberInput={{ maxDecimalPlaces: 4, minValue: 0 }} value={atrValue ?? ''} on:input={handleAtrValueInput} class="input-field w-full px-4 py-2 rounded-md" placeholder="ATR">
                     </div>
                     <div>
                         <label for="atr-multiplier-input-auto" class="input-label !mb-1 text-xs">{$_('dashboard.tradeSetupInputs.atrMultiplierLabel')}</label>
-                        <input id="atr-multiplier-input-auto" type="text" use:numberInput={{ maxDecimalPlaces: 4, minValue: 0 }} value={format(atrMultiplier)} on:input={handleAtrMultiplierInput} class="input-field w-full px-4 py-2 rounded-md" placeholder="1.5">
+                        <input id="atr-multiplier-input-auto" type="text" use:numberInput={{ maxDecimalPlaces: 4, minValue: 0 }} value={atrMultiplier ?? ''} on:input={handleAtrMultiplierInput} class="input-field w-full px-4 py-2 rounded-md" placeholder="1.5">
                     </div>
                 </div>
             {/if}

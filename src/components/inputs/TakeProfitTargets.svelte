@@ -9,7 +9,7 @@
 
     const dispatch = createEventDispatcher();
 
-    export let targets: Array<{ price: number | null; percent: number | null; isLocked: boolean }>;
+    export let targets: Array<{ price: string | null; percent: string | null; isLocked: boolean }>;
     export let calculatedTpDetails: IndividualTpResult[] = [];
 
     function addTakeProfitRow() {

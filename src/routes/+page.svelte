@@ -94,7 +94,7 @@ import { trackCustomEvent } from '../services/trackingService';
         uiStore.showError(new Error(e.detail));
     }
 
-    function handleTargetsChange(event: CustomEvent<Array<{ price: number | null; percent: number | null; isLocked: boolean }>>) {
+    function handleTargetsChange(event: CustomEvent<Array<{ price: string | null; percent: string | null; isLocked: boolean }>>) {
         updateTradeStore(s => ({ ...s, targets: event.detail }));
     }
 
@@ -329,10 +329,10 @@ import { trackCustomEvent } from '../services/trackingService';
             {/each}
         </div>
         <VisualBar 
-            entryPrice={$tradeStore.entryPrice}
-            stopLossPrice={$tradeStore.stopLossPrice}
+            entryPrice={Number($tradeStore.entryPrice)}
+            stopLossPrice={Number($tradeStore.stopLossPrice)}
             tradeType={$tradeStore.tradeType}
-            targets={$tradeStore.targets}
+            targets={$tradeStore.targets.map(t => ({...t, price: Number(t.price), percent: Number(t.percent)}))}
             calculatedTpDetails={$resultsStore.calculatedTpDetails}
         />
         <footer class="md:col-span-2">

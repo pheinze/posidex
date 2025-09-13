@@ -6,25 +6,23 @@
     import { trackClick } from '../../lib/actions';
 
     export let tradeType: string;
-    export let leverage: number | null;
-    export let fees: number | null;
+    export let leverage: string | null;
+    export let fees: string | null;
 
     function setTradeType(type: string) {
         updateTradeStore(s => ({ ...s, tradeType: type }));
     }
 
-    const format = (val: number | null) => (val === null || val === undefined) ? '' : String(val);
-
     function handleLeverageInput(e: Event) {
         const target = e.target as HTMLInputElement;
         const value = target.value;
-        updateTradeStore(s => ({ ...s, leverage: value === '' ? null : parseFloat(value) }));
+        updateTradeStore(s => ({ ...s, leverage: value === '' ? null : value }));
     }
 
     function handleFeesInput(e: Event) {
         const target = e.target as HTMLInputElement;
         const value = target.value;
-        updateTradeStore(s => ({ ...s, fees: value === '' ? null : parseFloat(value) }));
+        updateTradeStore(s => ({ ...s, fees: value === '' ? null : value }));
     }
 </script>
 
@@ -54,7 +52,7 @@
                 id="leverage-input"
                 type="text"
                 use:numberInput={{ noDecimals: true, maxValue: 125, minValue: 1 }}
-                value={format(leverage)}
+                value={leverage ?? ''}
                 on:input={handleLeverageInput}
                 class="input-field w-full h-full px-4 py-2 rounded-md"
                 placeholder="{$_('dashboard.generalInputs.leveragePlaceholder')}"
@@ -63,7 +61,7 @@
                 id="fees-input"
                 type="text"
                 use:numberInput={{ maxDecimalPlaces: 4, minValue: 0 }}
-                value={format(fees)}
+                value={fees ?? ''}
                 on:input={handleFeesInput}
                 class="input-field w-full px-4 py-2 rounded-md"
                 placeholder="{$_('dashboard.generalInputs.feesPlaceholder')}"

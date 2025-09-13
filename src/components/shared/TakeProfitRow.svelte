@@ -12,8 +12,8 @@
     const dispatch = createEventDispatcher();
 
     export let index: number;
-    export let price: number | null;
-    export let percent: number | null;
+    export let price: string | null;
+    export let percent: string | null;
     export let isLocked: boolean;
     export let tpDetail: IndividualTpResult | undefined = undefined;
 
@@ -31,12 +31,10 @@
         dispatch('remove', index);
     }
 
-    const format = (val: number | null) => (val === null || val === undefined) ? '' : String(val);
-
     function handlePriceInput(e: Event) {
         const target = e.target as HTMLInputElement;
         const value = target.value;
-        const newPrice = value === '' ? null : parseFloat(value);
+        const newPrice = value === '' ? null : value;
 
         const currentTargets = get(tradeStore).targets;
         if (currentTargets[index]) {
@@ -48,7 +46,7 @@
     function handlePercentInput(e: Event) {
         const target = e.target as HTMLInputElement;
         const value = target.value;
-        const newPercent = value === '' ? null : parseFloat(value);
+        const newPercent = value === '' ? null : value;
 
         const currentTargets = get(tradeStore).targets;
         if (currentTargets[index]) {
@@ -74,7 +72,7 @@
             <input
                 type="text"
                 use:numberInput={{ maxDecimalPlaces: 4, minValue: 0 }}
-                value={format(price)}
+                value={price ?? ''}
                 on:input={handlePriceInput}
                 class="tp-price input-field w-full px-4 py-2 rounded-md"
                 placeholder="{$_('dashboard.takeProfitRow.pricePlaceholder')}"
@@ -83,7 +81,7 @@
             <input
                 type="text"
                 use:numberInput={{ noDecimals: true, isPercentage: true, minValue: 0, maxValue: 100 }}
-                value={format(percent)}
+                value={percent ?? ''}
                 on:input={handlePercentInput}
                 class="tp-percent input-field w-full px-4 py-2 rounded-md"
                 class:locked-input={isLocked}

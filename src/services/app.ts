@@ -71,12 +71,12 @@ export const app = {
                 accountSize: parseDecimal(currentTradeState.accountSize),
                 riskPercentage: parseDecimal(currentTradeState.riskPercentage),
                 entryPrice: parseDecimal(currentTradeState.entryPrice),
-                leverage: parseDecimal(currentTradeState.leverage || parseFloat(CONSTANTS.DEFAULT_LEVERAGE)),
-                fees: parseDecimal(currentTradeState.fees || parseFloat(CONSTANTS.DEFAULT_FEES)),
+                leverage: parseDecimal(currentTradeState.leverage),
+                fees: parseDecimal(currentTradeState.fees),
                 symbol: currentTradeState.symbol || '',
                 useAtrSl: currentTradeState.useAtrSl,
                 atrValue: parseDecimal(currentTradeState.atrValue),
-                atrMultiplier: parseDecimal(currentTradeState.atrMultiplier || parseFloat(CONSTANTS.DEFAULT_ATR_MULTIPLIER)),
+                atrMultiplier: parseDecimal(currentTradeState.atrMultiplier),
                 stopLossPrice: parseDecimal(currentTradeState.stopLossPrice),
                 targets: currentTradeState.targets.map(t => ({ price: parseDecimal(t.price), percent: parseDecimal(t.percent), isLocked: t.isLocked })),
                 totalPercentSold: new Decimal(0)
@@ -182,37 +182,37 @@ export const app = {
             const riskAmount = parseDecimal(currentTradeState.riskAmount);
             if (riskAmount.gt(0) && values.accountSize.gt(0)) {
                 const newRiskPercentage = riskAmount.div(values.accountSize).times(100);
-                if (!parseDecimal(currentTradeState.riskPercentage).toDP(8).equals(newRiskPercentage.toDP(8))) {
-                    updateTradeStore(state => ({ ...state, riskPercentage: newRiskPercentage.toNumber() }));
+                if (currentTradeState.riskPercentage !== newRiskPercentage.toString()) {
+                    updateTradeStore(state => ({ ...state, riskPercentage: newRiskPercentage.toString() }));
                 }
                 values.riskPercentage = newRiskPercentage;
             }
             baseMetrics = calculator.calculateBaseMetrics(values, currentTradeState.tradeType);
 
-        } else if (currentTradeState.isPositionSizeLocked && currentTradeState.lockedPositionSize && currentTradeState.lockedPositionSize.gt(0)) {
+        } else if (currentTradeState.isPositionSizeLocked && currentTradeState.lockedPositionSize && parseDecimal(currentTradeState.lockedPositionSize).gt(0)) {
             const riskPerUnit = values.entryPrice.minus(values.stopLossPrice).abs();
             if (riskPerUnit.lte(0)) {
                 uiStore.showError(new Error("Stop-Loss muss einen gültigen Abstand zum Einstiegspreis haben."));
                 app.clearResults();
                 return;
             }
-            const riskAmount = riskPerUnit.times(currentTradeState.lockedPositionSize);
+            const riskAmount = riskPerUnit.times(parseDecimal(currentTradeState.lockedPositionSize));
             const newRiskPercentage = values.accountSize.isZero() ? new Decimal(0) : riskAmount.div(values.accountSize).times(100);
 
-            if (!parseDecimal(currentTradeState.riskPercentage).toDP(8).equals(newRiskPercentage.toDP(8)) || !parseDecimal(currentTradeState.riskAmount).toDP(8).equals(riskAmount.toDP(8))) {
-                updateTradeStore(state => ({ ...state, riskPercentage: newRiskPercentage.toNumber(), riskAmount: riskAmount.toNumber() }));
+            if (currentTradeState.riskPercentage !== newRiskPercentage.toString() || currentTradeState.riskAmount !== riskAmount.toString()) {
+                updateTradeStore(state => ({ ...state, riskPercentage: newRiskPercentage.toString(), riskAmount: riskAmount.toString() }));
             }
             values.riskPercentage = newRiskPercentage;
 
             baseMetrics = calculator.calculateBaseMetrics(values, currentTradeState.tradeType);
-            if (baseMetrics) baseMetrics.positionSize = currentTradeState.lockedPositionSize;
+            if (baseMetrics) baseMetrics.positionSize = parseDecimal(currentTradeState.lockedPositionSize);
 
         } else {
             baseMetrics = calculator.calculateBaseMetrics(values, currentTradeState.tradeType);
             if (baseMetrics) {
                 const finalMetrics = baseMetrics;
-                if (!parseDecimal(currentTradeState.riskAmount).toDP(8).equals(finalMetrics.riskAmount.toDP(8))) {
-                    updateTradeStore(state => ({ ...state, riskAmount: finalMetrics.riskAmount.toNumber() }));
+                if (currentTradeState.riskAmount !== finalMetrics.riskAmount.toString()) {
+                    updateTradeStore(state => ({ ...state, riskAmount: finalMetrics.riskAmount.toString() }));
                 }
             }
         }
@@ -263,7 +263,7 @@ export const app = {
         updateTradeStore(state => ({
             ...state,
             currentTradeData: { ...values, ...baseMetrics, ...totalMetrics, tradeType: currentTradeState.tradeType, status: 'Open', calculatedTpDetails },
-            stopLossPrice: values.stopLossPrice.toNumber()
+            stopLossPrice: values.stopLossPrice.toString()
         }));
         app.saveSettings();
     },
@@ -384,17 +384,17 @@ export const app = {
                     ...state,
                     accountSize: settings.accountSize || null,
                     riskPercentage: settings.riskPercentage || null,
-                    leverage: settings.leverage || parseFloat(CONSTANTS.DEFAULT_LEVERAGE),
-                    fees: settings.fees || parseFloat(CONSTANTS.DEFAULT_FEES),
+                    leverage: settings.leverage || CONSTANTS.DEFAULT_LEVERAGE,
+                    fees: settings.fees || CONSTANTS.DEFAULT_FEES,
                     symbol: settings.symbol || '',
                     atrValue: settings.atrValue || null,
-                    atrMultiplier: settings.atrMultiplier || parseFloat(CONSTANTS.DEFAULT_ATR_MULTIPLIER),
+                    atrMultiplier: settings.atrMultiplier || CONSTANTS.DEFAULT_ATR_MULTIPLIER,
                     useAtrSl: settings.useAtrSl || false,
                     tradeType: settings.tradeType || CONSTANTS.TRADE_TYPE_LONG,
                     targets: settings.targets || [
-                        { price: null, percent: 50, isLocked: false },
-                        { price: null, percent: 25, isLocked: false },
-                        { price: null, percent: 25, isLocked: false }
+                        { price: null, percent: '50', isLocked: false },
+                        { price: null, percent: '25', isLocked: false },
+                        { price: null, percent: '25', isLocked: false }
                     ],
                 }));
                 toggleAtrInputs(settings.useAtrSl || false);
@@ -452,17 +452,17 @@ export const app = {
                     ...state,
                     accountSize: preset.accountSize || null,
                     riskPercentage: preset.riskPercentage || null,
-                    leverage: preset.leverage || parseFloat(CONSTANTS.DEFAULT_LEVERAGE),
-                    fees: preset.fees || parseFloat(CONSTANTS.DEFAULT_FEES),
+                    leverage: preset.leverage || CONSTANTS.DEFAULT_LEVERAGE,
+                    fees: preset.fees || CONSTANTS.DEFAULT_FEES,
                     symbol: preset.symbol || '',
                     atrValue: preset.atrValue || null,
-                    atrMultiplier: preset.atrMultiplier || parseFloat(CONSTANTS.DEFAULT_ATR_MULTIPLIER),
+                    atrMultiplier: preset.atrMultiplier || CONSTANTS.DEFAULT_ATR_MULTIPLIER,
                     useAtrSl: preset.useAtrSl || false,
                     tradeType: preset.tradeType || CONSTANTS.TRADE_TYPE_LONG,
                     targets: preset.targets || [
-                        { price: null, percent: 50, isLocked: false },
-                        { price: null, percent: 25, isLocked: false },
-                        { price: null, percent: 25, isLocked: false }
+                        { price: null, percent: '50', isLocked: false },
+                        { price: null, percent: '25', isLocked: false },
+                        { price: null, percent: '25', isLocked: false }
                     ],
                 }));
                 updatePresetStore(state => ({ ...state, selectedPreset: presetName }));
@@ -603,7 +603,7 @@ export const app = {
         uiStore.update(state => ({ ...state, isPriceFetching: true }));
         try {
             const price = await apiService.fetchBinancePrice(symbol);
-            updateTradeStore(state => ({ ...state, entryPrice: price.toDP(4).toNumber() }));
+            updateTradeStore(state => ({ ...state, entryPrice: price.toDP(4).toString() }));
             uiStore.showFeedback('copy', 700);
             app.calculateAndDisplay();
         } catch (error) {
@@ -647,7 +647,7 @@ export const app = {
             if (atr.lte(0)) {
                 throw new Error("ATR konnte nicht berechnet werden. Prüfen Sie das Symbol oder den Zeitrahmen.");
             }
-            updateTradeStore(state => ({ ...state, atrValue: atr.toDP(4).toNumber() }));
+            updateTradeStore(state => ({ ...state, atrValue: atr.toDP(4).toString() }));
             app.calculateAndDisplay();
             uiStore.showFeedback('copy', 700);
         } catch (error) {
@@ -685,7 +685,7 @@ export const app = {
         updateTradeStore(state => ({
             ...state,
             isPositionSizeLocked: shouldBeLocked,
-            lockedPositionSize: shouldBeLocked ? parseDecimal(currentResultsState.positionSize) : null,
+            lockedPositionSize: shouldBeLocked ? currentResultsState.positionSize : null,
             isRiskAmountLocked: false,
         }));
 
@@ -711,7 +711,7 @@ export const app = {
         app.calculateAndDisplay();
     },
 
-    addTakeProfitRow: (price: number | null = null, percent: number | null = null, isLocked = false) => {
+    addTakeProfitRow: (price: string | null = null, percent: string | null = null, isLocked = false) => {
         updateTradeStore(state => ({
             ...state,
             targets: [...state.targets, { price, percent, isLocked }]
@@ -814,6 +814,6 @@ export const app = {
             }
         }
 
-        updateTradeStore(state => ({ ...state, targets: decTargets.map(t => ({ price: t.price.toNumber(), percent: t.percent.toNumber(), isLocked: t.isLocked })) }));
+        updateTradeStore(state => ({ ...state, targets: decTargets.map(t => ({ price: t.price.isZero() ? null : t.price.toString(), percent: t.percent.toString(), isLocked: t.isLocked })) }));
     },
 };
