@@ -28,6 +28,8 @@ import { trackCustomEvent } from '../services/trackingService';
     import JournalView from '../components/shared/JournalView.svelte';
     import CachyIcon from '../components/shared/CachyIcon.svelte';
     import ModalFrame from '../components/shared/ModalFrame.svelte';
+    import SettingsButton from '../components/settings/SettingsButton.svelte';
+    import SettingsModal from '../components/settings/SettingsModal.svelte';
 
     let fileInput: HTMLInputElement;
     let changelogContent = '';
@@ -357,13 +359,18 @@ import { trackCustomEvent } from '../services/trackingService';
     </section>
 </main>
 
-<footer class="w-full max-w-4xl mx-auto text-center py-4 text-sm text-gray-500">
-    Version 0.92b1 - <button class="text-link" on:click={() => uiStore.toggleGuideModal(true)} use:trackClick={{ category: 'Navigation', action: 'Click', name: 'ShowGuide' }}>{$_('app.guideButton')}</button> | <button class="text-link" on:click={() => uiStore.toggleChangelogModal(true)} use:trackClick={{ category: 'Navigation', action: 'Click', name: 'ShowChangelog' }}>Changelog</button>
+<footer class="w-full max-w-4xl mx-auto text-center py-4 text-sm text-gray-500 flex justify-center items-center gap-4">
+    <span>Version 0.92b1</span>
+    <button class="text-link" on:click={() => uiStore.toggleGuideModal(true)} use:trackClick={{ category: 'Navigation', action: 'Click', name: 'ShowGuide' }}>{$_('app.guideButton')}</button>
+    <button class="text-link" on:click={() => uiStore.toggleChangelogModal(true)} use:trackClick={{ category: 'Navigation', action: 'Click', name: 'ShowChangelog' }}>Changelog</button>
+    <SettingsButton />
 </footer>
 
 <JournalView />
 
 <CustomModal />
+
+<SettingsModal />
 
 <ModalFrame
     isOpen={$uiStore.showChangelogModal}

@@ -93,9 +93,6 @@
 <div>
     <h2 class="section-header">{$_('dashboard.tradeSetupInputs.header')}</h2>
     <div class="flex gap-4 mb-4">
-        <div class="flex-grow">
-            <input id="entry-price-input" type="text" use:numberInput={{ maxDecimalPlaces: 4 }} value={format(entryPrice)} on:input={handleEntryPriceInput} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.tradeSetupInputs.entryPricePlaceholder')}" on:input={onboardingService.trackFirstInput}>
-        </div>
         <div class="relative flex-grow symbol-input-container">
             <input
                 id="symbol-input"
@@ -130,6 +127,9 @@
                     {/each}
                 </div>
             {/if}
+        </div>
+        <div class="flex-grow">
+            <input id="entry-price-input" type="text" use:numberInput={{ maxDecimalPlaces: 4 }} value={format(entryPrice)} on:input={handleEntryPriceInput} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.tradeSetupInputs.entryPricePlaceholder')}" on:input={onboardingService.trackFirstInput}>
         </div>
     </div>
 
