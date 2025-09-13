@@ -175,6 +175,8 @@
   },
   "settings": {
     "title": "Einstellungen",
-    "theme": "Theme"
+    "theme": "Theme",
+    "language": "Sprache",
+    "backup": "Sicherung"
   }
 }
