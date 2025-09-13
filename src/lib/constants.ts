@@ -14,9 +14,9 @@ export const CONSTANTS = {
     DEFAULT_ATR_MULTIPLIER: '1.5'
 };
 
-export const themes = ['dark', 'VIP', 'matrix', 'dracula', 'dracula-soft', 'solarized-light', 'solarized-dark', 'nord', 'gruvbox-dark', 'monokai', 'tokyo-night', 'everforest-dark', 'catppuccin', 'one-dark-pro', 'obsidian', 'steel', 'meteorite', 'light'];
+export const themes = ['dark', 'VIP', 'matrix', 'dracula', 'dracula-soft', 'solarized-light', 'solarized-dark', 'nord', 'gruvbox-dark', 'monokai', 'tokyo-night', 'everforest-dark', 'catppuccin', 'one-dark-pro', 'obsidian', 'ayu-dark', 'cobalt2', 'night-owl', 'shades-of-purple', 'steel', 'meteorite', 'light'];
 export const themeIcons = {
-    dark: '🌙', light: '☀️', meteorite: '☄️', steel: '🛡️', VIP: '🦆', matrix: '💻', dracula: '🧛', 'solarized-light': '📜', nord: '🏔️', 'gruvbox-dark': '📦', monokai: '🐒', 'tokyo-night': '🗼', 'everforest-dark': '🌲', 'solarized-dark': '🌘', catppuccin: '🐈', 'one-dark-pro': '⚛️', obsidian: '💎', 'dracula-soft': '🧛🏻‍♀️'
+    dark: '🌙', light: '☀️', meteorite: '☄️', steel: '🛡️', VIP: '🦆', matrix: '💻', dracula: '🧛', 'solarized-light': '📜', nord: '🏔️', 'gruvbox-dark': '📦', monokai: '🐒', 'tokyo-night': '🗼', 'everforest-dark': '🌲', 'solarized-dark': '🌘', catppuccin: '🐈', 'one-dark-pro': '⚛️', obsidian: '💎', 'dracula-soft': '🧛🏻‍♀️', 'ayu-dark': '🦉', cobalt2: '🔵', 'night-owl': '🦉', 'shades-of-purple': '💜'
 };
 
 export const icons = {

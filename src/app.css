@@ -963,6 +963,204 @@
     --overlay-color: var(--black-overlay);
 }
 
+/* =================================================================
+   Ayu Dark Theme
+   ================================================================= */
+.theme-ayu-dark {
+    /* --- Palette --- */
+    --ayu-bg: #0f1419;
+    --ayu-fg: #bfbdb6;
+    --ayu-bg-alt: #131721;
+    --ayu-border: #3b5364;
+    --ayu-tag: #39bae6;
+    --ayu-func: #ffb454;
+    --ayu-entity: #59c2ff;
+    --ayu-string: #aad94c;
+    --ayu-keyword: #ff8f40;
+    --ayu-comment: #5c6370;
+    --ayu-constant: #d2a6ff;
+    --ayu-error: #d95757;
+    --ayu-added: #7fd962;
+    --black-transparent: rgba(0, 0, 0, 0.3);
+    --black-overlay: rgba(0, 0, 0, 0.7);
+
+    /* --- Mapping --- */
+    --bg-primary: var(--ayu-bg);
+    --bg-secondary: var(--ayu-bg-alt);
+    --bg-tertiary: var(--ayu-border);
+    --text-primary: var(--ayu-fg);
+    --text-secondary: var(--ayu-comment);
+    --border-color: var(--ayu-border);
+    --accent-color: var(--ayu-entity);
+    --accent-color-hover: #82d1ff;
+    --success-color: var(--ayu-added);
+    --danger-color: var(--ayu-error);
+    --warning-color: var(--ayu-func);
+    --shadow-tooltip: 0 30px 90px -20px var(--black-transparent);
+    --btn-default-bg: var(--ayu-border);
+    --btn-default-hover-bg: #4c6a80;
+    --btn-default-text: var(--ayu-fg);
+    --btn-danger-bg: var(--ayu-error);
+    --btn-danger-hover-bg: #e07878;
+    --btn-danger-text: var(--ayu-bg);
+    --btn-accent-bg: var(--ayu-entity);
+    --btn-accent-hover-bg: #82d1ff;
+    --btn-accent-text: var(--ayu-bg);
+    --btn-success-bg: var(--ayu-added);
+    --btn-success-hover-bg: #99e07f;
+    --btn-success-text: var(--ayu-bg);
+    --toggle-bg-off: var(--ayu-border);
+    --toggle-bg-on: var(--ayu-entity);
+    --toggle-circle-bg: var(--ayu-fg);
+    --overlay-color: var(--black-overlay);
+}
+
+/* =================================================================
+   Cobalt2 Theme
+   ================================================================= */
+.theme-cobalt2 {
+    /* --- Palette --- */
+    --cobalt-bg: #193549;
+    --cobalt-bg-alt: #1f4662;
+    --cobalt-fg: #ffffff;
+    --cobalt-comment: #0088ff;
+    --cobalt-yellow: #ffc600;
+    --cobalt-orange: #ff9d00;
+    --cobalt-green: #3ad900;
+    --cobalt-blue: #80ffbb;
+    --cobalt-pink: #ff628c;
+    --cobalt-red: #ff1e00;
+    --black-transparent: rgba(0, 0, 0, 0.3);
+    --black-overlay: rgba(0, 0, 0, 0.7);
+
+    /* --- Mapping --- */
+    --bg-primary: var(--cobalt-bg);
+    --bg-secondary: #15232d;
+    --bg-tertiary: var(--cobalt-bg-alt);
+    --text-primary: var(--cobalt-fg);
+    --text-secondary: var(--cobalt-comment);
+    --border-color: var(--cobalt-bg-alt);
+    --accent-color: var(--cobalt-yellow);
+    --accent-color-hover: #ffe066;
+    --success-color: var(--cobalt-green);
+    --danger-color: var(--cobalt-red);
+    --warning-color: var(--cobalt-orange);
+    --shadow-tooltip: 0 30px 90px -20px var(--black-transparent);
+    --btn-default-bg: var(--cobalt-bg-alt);
+    --btn-default-hover-bg: #35434d;
+    --btn-default-text: var(--cobalt-fg);
+    --btn-danger-bg: var(--cobalt-red);
+    --btn-danger-hover-bg: #ff5533;
+    --btn-danger-text: var(--cobalt-fg);
+    --btn-accent-bg: var(--cobalt-yellow);
+    --btn-accent-hover-bg: #ffe066;
+    --btn-accent-text: var(--cobalt-bg);
+    --btn-success-bg: var(--cobalt-green);
+    --btn-success-hover-bg: #61e633;
+    --btn-success-text: var(--cobalt-bg);
+    --toggle-bg-off: var(--cobalt-bg-alt);
+    --toggle-bg-on: var(--cobalt-yellow);
+    --toggle-circle-bg: var(--cobalt-fg);
+    --overlay-color: var(--black-overlay);
+}
+
+/* =================================================================
+   Night Owl Theme
+   ================================================================= */
+.theme-night-owl {
+    /* --- Palette --- */
+    --owl-bg: #011627;
+    --owl-fg: #d6deeb;
+    --owl-comment: #637777;
+    --owl-red: #ff6363;
+    --owl-orange: #f78c6c;
+    --owl-purple: #c792ea;
+    --owl-blue: #82aaff;
+    --owl-yellow: #ecc48d;
+    --owl-green: #addb67;
+    --owl-cyan: #7fdbca;
+    --black-transparent: rgba(0, 0, 0, 0.3);
+    --black-overlay: rgba(0, 0, 0, 0.7);
+
+    /* --- Mapping --- */
+    --bg-primary: var(--owl-bg);
+    --bg-secondary: #011a2f;
+    --bg-tertiary: #1d3b53;
+    --text-primary: var(--owl-fg);
+    --text-secondary: var(--owl-comment);
+    --border-color: #1d3b53;
+    --accent-color: var(--owl-purple);
+    --accent-color-hover: #d2a5f0;
+    --success-color: var(--owl-green);
+    --danger-color: var(--owl-red);
+    --warning-color: var(--owl-yellow);
+    --shadow-tooltip: 0 30px 90px -20px var(--black-transparent);
+    --btn-default-bg: #1d3b53;
+    --btn-default-hover-bg: #5f7e97;
+    --btn-default-text: var(--owl-fg);
+    --btn-danger-bg: var(--owl-red);
+    --btn-danger-hover-bg: #ff8c8c;
+    --btn-danger-text: var(--owl-bg);
+    --btn-accent-bg: var(--owl-purple);
+    --btn-accent-hover-bg: #d2a5f0;
+    --btn-accent-text: var(--owl-bg);
+    --btn-success-bg: var(--owl-green);
+    --btn-success-hover-bg: #c1e685;
+    --btn-success-text: var(--owl-bg);
+    --toggle-bg-off: #1d3b53;
+    --toggle-bg-on: var(--owl-purple);
+    --toggle-circle-bg: var(--owl-fg);
+    --overlay-color: var(--black-overlay);
+}
+
+/* =================================================================
+   Shades of Purple Theme
+   ================================================================= */
+.theme-shades-of-purple {
+    /* --- Palette --- */
+    --sop-bg: #2d2b55;
+    --sop-bg-alt: #4d4b83;
+    --sop-fg: #ffffff;
+    --sop-comment: #b362ff;
+    --sop-cyan: #9effff;
+    --sop-green: #a5ff90;
+    --sop-orange: #ffca86;
+    --sop-pink: #ff92df;
+    --sop-red: #ff757f;
+    --black-transparent: rgba(0, 0, 0, 0.3);
+    --black-overlay: rgba(0, 0, 0, 0.7);
+
+    /* --- Mapping --- */
+    --bg-primary: var(--sop-bg);
+    --bg-secondary: #222044;
+    --bg-tertiary: var(--sop-bg-alt);
+    --text-primary: var(--sop-fg);
+    --text-secondary: var(--sop-comment);
+    --border-color: var(--sop-bg-alt);
+    --accent-color: var(--sop-pink);
+    --accent-color-hover: #ffadf1;
+    --success-color: var(--sop-green);
+    --danger-color: var(--sop-red);
+    --warning-color: var(--sop-orange);
+    --shadow-tooltip: 0 30px 90px -20px var(--black-transparent);
+    --btn-default-bg: var(--sop-bg-alt);
+    --btn-default-hover-bg: #63609c;
+    --btn-default-text: var(--sop-fg);
+    --btn-danger-bg: var(--sop-red);
+    --btn-danger-hover-bg: #ff949c;
+    --btn-danger-text: var(--sop-bg);
+    --btn-accent-bg: var(--sop-pink);
+    --btn-accent-hover-bg: #ffadf1;
+    --btn-accent-text: var(--sop-bg);
+    --btn-success-bg: var(--sop-green);
+    --btn-success-hover-bg: #baffab;
+    --btn-success-text: var(--sop-bg);
+    --toggle-bg-off: var(--sop-bg-alt);
+    --toggle-bg-on: var(--sop-pink);
+    --toggle-circle-bg: var(--sop-fg);
+    --overlay-color: var(--black-overlay);
+}
+
 
 /* =================================================================
    Base & Component Styles
