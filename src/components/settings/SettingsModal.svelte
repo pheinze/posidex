@@ -70,6 +70,14 @@
   extraClasses="modal-size-sm"
 >
   <div class="space-y-6">
+    <!-- Language Switcher -->
+    <div class="flex justify-between items-center">
+      <span class="text-sm font-medium text-text-primary">{$_('settings.language')}</span>
+      <div class="w-1/2 flex justify-end">
+        <LanguageSwitcher />
+      </div>
+    </div>
+
     <!-- Theme Selector -->
     <div class="flex justify-between items-center">
       <label for="theme-select" class="text-sm font-medium text-text-primary">{$_('settings.theme')}</label>
@@ -85,14 +93,6 @@
             <option value={theme}>{theme.charAt(0).toUpperCase() + theme.slice(1).replace('-', ' ')}</option>
           {/each}
         </select>
-      </div>
-    </div>
-
-    <!-- Language Switcher -->
-    <div class="flex justify-between items-center">
-      <span class="text-sm font-medium text-text-primary">{$_('settings.language')}</span>
-      <div class="w-1/2 flex justify-end">
-        <LanguageSwitcher />
       </div>
     </div>
 
