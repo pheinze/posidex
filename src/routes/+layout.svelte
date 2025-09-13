@@ -14,6 +14,7 @@
 	import ModalFrame from '../components/shared/ModalFrame.svelte';
 	import { _, locale } from '../locales/i18n';
 	import { loadInstruction } from '../services/markdownLoader';
+    import Header from '../components/layout/Header.svelte';
 
 	let { children, data } = $props();
 
@@ -53,6 +54,8 @@
 <svelte:head>
 	<link rel="icon" href={favicon} />
 </svelte:head>
+
+<Header />
 
 <div class="px-4">
 	{@render children?.()}
