@@ -619,3 +619,59 @@ input[type="checkbox"]:checked + .atr-toggle-track::after { transform: translate
 ::-webkit-scrollbar-thumb:hover {
     background-color: var(--accent-color);
 }
+
+/* Unified Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0,0,0,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 0s, opacity 0.3s linear;
+}
+.modal-overlay.visible {
+    visibility: visible;
+    opacity: 1;
+}
+.modal-content {
+    background-color: var(--bg-secondary);
+    padding: 2rem;
+    border-radius: 1rem;
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative; /* Added for close button positioning */
+}
+
+/* Unified Modal Header and Close Button */
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.modal-title {
+    font-size: 1.5rem; /* 24px */
+    font-weight: 700;
+}
+
+.modal-close-btn {
+    font-size: 2rem; /* 32px */
+    line-height: 1;
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    transition: color 0.2s;
+}
+.modal-close-btn:hover {
+    color: var(--text-primary);
+}

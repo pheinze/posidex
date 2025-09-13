@@ -371,16 +371,15 @@ import { trackCustomEvent } from '../services/trackingService';
     id="changelog-modal"
     class="modal-overlay"
     class:visible={$uiStore.showChangelogModal}
-    class:opacity-100={$uiStore.showChangelogModal}
     on:click={(e) => { if (e.target === e.currentTarget) uiStore.toggleChangelogModal(false) }}
     on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { if (e.target === e.currentTarget) uiStore.toggleChangelogModal(false) } }}
     role="button"
     tabindex="0"
 >
-    <div class="modal-content w-full h-full max-w-6xl">
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-2xl font-bold">{$_('app.changelogTitle')}</h2>
-            <button id="close-changelog-btn" class="text-3xl" aria-label="{$_('app.closeChangelogAriaLabel')}" on:click={() => uiStore.toggleChangelogModal(false)} use:trackClick={{ category: 'Navigation', action: 'Click', name: 'CloseChangelog' }}>&times;</button>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">{$_('app.changelogTitle')}</h2>
+            <button id="close-changelog-btn" class="modal-close-btn" aria-label="{$_('app.closeChangelogAriaLabel')}" on:click={() => uiStore.toggleChangelogModal(false)} use:trackClick={{ category: 'Navigation', action: 'Click', name: 'CloseChangelog' }}>&times;</button>
         </div>
         <div id="changelog-content" class="prose dark:prose-invert max-h-[calc(100vh-10rem)] overflow-y-auto">
             {@html changelogContent}
@@ -392,16 +391,15 @@ import { trackCustomEvent } from '../services/trackingService';
     id="guide-modal"
     class="modal-overlay"
     class:visible={$uiStore.showGuideModal}
-    class:opacity-100={$uiStore.showGuideModal}
     on:click={(e) => { if (e.target === e.currentTarget) uiStore.toggleGuideModal(false) }}
     on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { if (e.target === e.currentTarget) uiStore.toggleGuideModal(false) } }}
     role="button"
     tabindex="0"
 >
-    <div class="modal-content w-full h-full max-w-6xl">
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-2xl font-bold">{$_('app.guideTitle')}</h2>
-            <button id="close-guide-btn" class="text-3xl" aria-label="{$_('app.closeGuideAriaLabel')}" on:click={() => uiStore.toggleGuideModal(false)} use:trackClick={{ category: 'Navigation', action: 'Click', name: 'CloseGuide' }}>&times;</button>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">{$_('app.guideTitle')}</h2>
+            <button id="close-guide-btn" class="modal-close-btn" aria-label="{$_('app.closeGuideAriaLabel')}" on:click={() => uiStore.toggleGuideModal(false)} use:trackClick={{ category: 'Navigation', action: 'Click', name: 'CloseGuide' }}>&times;</button>
         </div>
         <div id="guide-content" class="prose dark:prose-invert max-h-[calc(100vh-10rem)] overflow-y-auto">
             {@html guideContent}
