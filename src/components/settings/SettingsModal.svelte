@@ -78,6 +78,19 @@
       </div>
     </div>
 
+    <!-- Backup / Restore -->
+    <div class="flex justify-between items-center">
+      <span class="text-sm font-medium text-text-primary">{$_('settings.backup')}</span>
+      <div class="flex items-center gap-2 w-1/2 justify-end">
+          <button id="backup-btn-modal" class="btn-icon" title={$_('app.backupButtonTitle')} aria-label={$_('app.backupButtonAriaLabel')} on:click={handleBackupClick}>
+              {@html icons.export}
+          </button>
+          <button id="restore-btn-modal" class="btn-icon" title={$_('app.restoreButtonTitle')} aria-label={$_('app.restoreButtonAriaLabel')} on:click={handleRestoreClick}>
+              {@html icons.import}
+          </button>
+      </div>
+    </div>
+
     <!-- Theme Selector -->
     <div class="flex justify-between items-center">
       <label for="theme-select" class="text-sm font-medium text-text-primary">{$_('settings.theme')}</label>
@@ -93,19 +106,6 @@
             <option value={theme}>{theme.charAt(0).toUpperCase() + theme.slice(1).replace('-', ' ')}</option>
           {/each}
         </select>
-      </div>
-    </div>
-
-    <!-- Backup / Restore -->
-    <div class="flex justify-between items-center">
-      <span class="text-sm font-medium text-text-primary">{$_('settings.backup')}</span>
-      <div class="flex items-center gap-2 w-1/2 justify-end">
-          <button id="backup-btn-modal" class="btn-icon" title={$_('app.backupButtonTitle')} aria-label={$_('app.backupButtonAriaLabel')} on:click={handleBackupClick}>
-              {@html icons.export}
-          </button>
-          <button id="restore-btn-modal" class="btn-icon" title={$_('app.restoreButtonTitle')} aria-label={$_('app.restoreButtonAriaLabel')} on:click={handleRestoreClick}>
-              {@html icons.import}
-          </button>
       </div>
     </div>
   </div>
