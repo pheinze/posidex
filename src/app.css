@@ -1216,6 +1216,222 @@
 
 
 /* =================================================================
+   Ayu Light Theme
+   ================================================================= */
+.theme-ayu-light {
+    /* --- Palette --- */
+    --ayu-light-bg: #f8f9fa;
+    --ayu-light-bg-alt: #f3f4f5;
+    --ayu-light-fg: #5c6166;
+    --ayu-light-fg-alt: #8a9199;
+    --ayu-light-border: #e6e6e6;
+    --ayu-light-accent: #ffaa33;
+    --ayu-light-accent-light: #ffb757;
+    --ayu-light-green: #6cbf43;
+    --ayu-light-green-light: #84d259;
+    --ayu-light-red: #e65050;
+    --ayu-light-red-light: #f06969;
+    --ayu-light-orange: #fa8d3e;
+    --ayu-light-blue: #399ee6;
+    --ayu-light-border-hover: #d9d9d9;
+    --white-overlay: rgba(255, 255, 255, 0.7);
+
+    /* --- Mapping --- */
+    --bg-primary: var(--ayu-light-bg);
+    --bg-secondary: var(--ayu-light-bg-alt);
+    --bg-tertiary: var(--ayu-light-border);
+    --text-primary: var(--ayu-light-fg);
+    --text-secondary: var(--ayu-light-fg-alt);
+    --border-color: var(--ayu-light-border);
+    --accent-color: var(--ayu-light-accent);
+    --accent-color-hover: var(--ayu-light-accent-light);
+    --success-color: var(--ayu-light-green);
+    --danger-color: var(--ayu-light-red);
+    --warning-color: var(--ayu-light-orange);
+    --btn-default-bg: var(--ayu-light-border);
+    --btn-default-hover-bg: var(--ayu-light-border-hover);
+    --btn-default-text: var(--ayu-light-fg);
+    --btn-danger-bg: var(--ayu-light-red);
+    --btn-danger-hover-bg: var(--ayu-light-red-light);
+    --btn-danger-text: var(--ayu-light-bg);
+    --btn-accent-bg: var(--ayu-light-accent);
+    --btn-accent-hover-bg: var(--ayu-light-accent-light);
+    --btn-accent-text: var(--ayu-light-bg);
+    --btn-success-bg: var(--ayu-light-green);
+    --btn-success-hover-bg: var(--ayu-light-green-light);
+    --btn-success-text: var(--ayu-light-bg);
+    --toggle-bg-off: var(--ayu-light-border);
+    --toggle-bg-on: var(--ayu-light-accent);
+    --toggle-circle-bg: var(--ayu-light-bg);
+    --overlay-color: var(--white-overlay);
+}
+
+/* =================================================================
+   Ayu Mirage Theme
+   ================================================================= */
+.theme-ayu-mirage {
+    /* --- Palette --- */
+    --ayu-mirage-bg: #1f2430;
+    --ayu-mirage-bg-alt: #242936;
+    --ayu-mirage-border: #2a3040;
+    --ayu-mirage-fg: #cccac2;
+    --ayu-mirage-fg-alt: #707a8c;
+    --ayu-mirage-accent: #ffcc66;
+    --ayu-mirage-accent-light: #ffd480;
+    --ayu-mirage-green: #87d96c;
+    --ayu-mirage-green-light: #99e07f;
+    --ayu-mirage-red: #ff6666;
+    --ayu-mirage-red-light: #ff8080;
+    --ayu-mirage-orange: #ffad66;
+    --ayu-mirage-blue: #73d0ff;
+    --ayu-mirage-border-hover: #3e4554;
+    --black-overlay: rgba(0, 0, 0, 0.7);
+
+    /* --- Mapping --- */
+    --bg-primary: var(--ayu-mirage-bg);
+    --bg-secondary: var(--ayu-mirage-bg-alt);
+    --bg-tertiary: var(--ayu-mirage-border);
+    --text-primary: var(--ayu-mirage-fg);
+    --text-secondary: var(--ayu-mirage-fg-alt);
+    --border-color: var(--ayu-mirage-border);
+    --accent-color: var(--ayu-mirage-accent);
+    --accent-color-hover: var(--ayu-mirage-accent-light);
+    --success-color: var(--ayu-mirage-green);
+    --danger-color: var(--ayu-mirage-red);
+    --warning-color: var(--ayu-mirage-orange);
+    --btn-default-bg: var(--ayu-mirage-border);
+    --btn-default-hover-bg: var(--ayu-mirage-border-hover);
+    --btn-default-text: var(--ayu-mirage-fg);
+    --btn-danger-bg: var(--ayu-mirage-red);
+    --btn-danger-hover-bg: var(--ayu-mirage-red-light);
+    --btn-danger-text: var(--ayu-mirage-bg);
+    --btn-accent-bg: var(--ayu-mirage-accent);
+    --btn-accent-hover-bg: var(--ayu-mirage-accent-light);
+    --btn-accent-text: var(--ayu-mirage-bg);
+    --btn-success-bg: var(--ayu-mirage-green);
+    --btn-success-hover-bg: var(--ayu-mirage-green-light);
+    --btn-success-text: var(--ayu-mirage-bg);
+    --toggle-bg-off: var(--ayu-mirage-border);
+    --toggle-bg-on: var(--ayu-mirage-accent);
+    --toggle-circle-bg: var(--ayu-mirage-fg);
+    --overlay-color: var(--black-overlay);
+}
+
+/* =================================================================
+   GitHub Dark Theme
+   ================================================================= */
+.theme-github-dark {
+    /* --- Palette --- */
+    --gh-dark-bg: #0d1117;
+    --gh-dark-bg-alt: #161b22;
+    --gh-dark-border: #30363d;
+    --gh-dark-fg: #c9d1d9;
+    --gh-dark-fg-alt: #8b949e;
+    --gh-dark-blue: #58a6ff;
+    --gh-dark-blue-light: #79c0ff;
+    --gh-dark-green: #3fb950;
+    --gh-dark-green-light: #56d364;
+    --gh-dark-red: #f85149;
+    --gh-dark-red-light: #ff7b72;
+    --gh-dark-orange: #f0883e;
+    --gh-dark-purple: #bc8cff;
+    --gh-dark-white: #ffffff;
+    --gh-dark-btn-bg: #21262d;
+    --gh-dark-btn-hover-bg: #30363d;
+    --gh-dark-btn-danger-bg: #da3633;
+    --gh-dark-btn-danger-hover-bg: #f85149;
+    --gh-dark-btn-accent-bg: #238636;
+    --gh-dark-btn-accent-hover-bg: #2ea043;
+    --black-overlay: rgba(0, 0, 0, 0.7);
+
+    /* --- Mapping --- */
+    --bg-primary: var(--gh-dark-bg);
+    --bg-secondary: var(--gh-dark-bg-alt);
+    --bg-tertiary: var(--gh-dark-border);
+    --text-primary: var(--gh-dark-fg);
+    --text-secondary: var(--gh-dark-fg-alt);
+    --border-color: var(--gh-dark-border);
+    --accent-color: var(--gh-dark-blue);
+    --accent-color-hover: var(--gh-dark-blue-light);
+    --success-color: var(--gh-dark-green);
+    --danger-color: var(--gh-dark-red);
+    --warning-color: var(--gh-dark-orange);
+    --btn-default-bg: var(--gh-dark-btn-bg);
+    --btn-default-hover-bg: var(--gh-dark-btn-hover-bg);
+    --btn-default-text: var(--gh-dark-fg);
+    --btn-danger-bg: var(--gh-dark-btn-danger-bg);
+    --btn-danger-hover-bg: var(--gh-dark-btn-danger-hover-bg);
+    --btn-danger-text: var(--gh-dark-white);
+    --btn-accent-bg: var(--gh-dark-btn-accent-bg);
+    --btn-accent-hover-bg: var(--gh-dark-btn-accent-hover-bg);
+    --btn-accent-text: var(--gh-dark-white);
+    --btn-success-bg: var(--gh-dark-green);
+    --btn-success-hover-bg: var(--gh-dark-green-light);
+    --btn-success-text: var(--gh-dark-bg);
+    --toggle-bg-off: var(--gh-dark-border);
+    --toggle-bg-on: var(--gh-dark-blue);
+    --toggle-circle-bg: var(--gh-dark-fg);
+    --overlay-color: var(--black-overlay);
+}
+
+/* =================================================================
+   GitHub Light Theme
+   ================================================================= */
+.theme-github-light {
+    /* --- Palette --- */
+    --gh-light-bg: #ffffff;
+    --gh-light-bg-alt: #f6f8fa;
+    --gh-light-border: #d0d7de;
+    --gh-light-fg: #24292f;
+    --gh-light-fg-alt: #57606a;
+    --gh-light-blue: #0969da;
+    --gh-light-blue-light: #2c85e9;
+    --gh-light-green: #1f883d;
+    --gh-light-green-light: #26a14a;
+    --gh-light-red: #cf222e;
+    --gh-light-red-light: #e5535d;
+    --gh-light-orange: #9a6700;
+    --gh-light-purple: #8250df;
+    --gh-light-white: #ffffff;
+    --gh-light-btn-bg: #f6f8fa;
+    --gh-light-btn-hover-bg: #f0f2f5;
+    --gh-light-btn-danger-bg: #d73a49;
+    --gh-light-btn-danger-hover-bg: #cf222e;
+    --gh-light-btn-accent-bg: #2da44e;
+    --gh-light-btn-accent-hover-bg: #2c974b;
+    --white-overlay: rgba(255, 255, 255, 0.7);
+
+    /* --- Mapping --- */
+    --bg-primary: var(--gh-light-bg);
+    --bg-secondary: var(--gh-light-bg-alt);
+    --bg-tertiary: var(--gh-light-btn-hover-bg);
+    --text-primary: var(--gh-light-fg);
+    --text-secondary: var(--gh-light-fg-alt);
+    --border-color: var(--gh-light-border);
+    --accent-color: var(--gh-light-blue);
+    --accent-color-hover: var(--gh-light-blue-light);
+    --success-color: var(--gh-light-green);
+    --danger-color: var(--gh-light-red);
+    --warning-color: var(--gh-light-orange);
+    --btn-default-bg: var(--gh-light-btn-bg);
+    --btn-default-hover-bg: var(--gh-light-btn-hover-bg);
+    --btn-default-text: var(--gh-light-fg);
+    --btn-danger-bg: var(--gh-light-btn-danger-bg);
+    --btn-danger-hover-bg: var(--gh-light-btn-danger-hover-bg);
+    --btn-danger-text: var(--gh-light-white);
+    --btn-accent-bg: var(--gh-light-btn-accent-bg);
+    --btn-accent-hover-bg: var(--gh-light-btn-accent-hover-bg);
+    --btn-accent-text: var(--gh-light-white);
+    --btn-success-bg: var(--gh-light-green);
+    --btn-success-hover-bg: var(--gh-light-green-light);
+    --btn-success-text: var(--gh-light-white);
+    --toggle-bg-off: var(--gh-light-border);
+    --toggle-bg-on: var(--gh-light-blue);
+    --toggle-circle-bg: var(--gh-light-bg);
+    --overlay-color: var(--white-overlay);
+}
+
+/* =================================================================
    Base & Component Styles
    ================================================================= */
 body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); transition: background 0.3s, color 0.3s; position: relative; }
