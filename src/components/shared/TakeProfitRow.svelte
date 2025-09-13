@@ -21,7 +21,7 @@
         const newLockState = !isLocked;
         const currentTargets = get(tradeStore).targets;
         if (currentTargets[index]) {
-            currentTargets[index].isLocked = newLockState;
+            currentTargets[index]!.isLocked = newLockState;
             updateTradeStore(s => ({ ...s, targets: currentTargets }));
             app.adjustTpPercentages(index);
         }
@@ -34,25 +34,25 @@
     const format = (val: number | null) => (val === null || val === undefined) ? '' : String(val);
 
     function handlePriceInput(e: Event) {
-        const target = e.target as HTMLInputElement;
-        const value = target.value;
+        const targetEl = e.target as HTMLInputElement;
+        const value = targetEl.value;
         const newPrice = value === '' ? null : parseFloat(value);
 
         const currentTargets = get(tradeStore).targets;
         if (currentTargets[index]) {
-            currentTargets[index].price = newPrice;
+            currentTargets[index]!.price = newPrice;
             updateTradeStore(s => ({...s, targets: currentTargets}));
         }
     }
 
     function handlePercentInput(e: Event) {
-        const target = e.target as HTMLInputElement;
-        const value = target.value;
+        const targetEl = e.target as HTMLInputElement;
+        const value = targetEl.value;
         const newPercent = value === '' ? null : parseFloat(value);
 
         const currentTargets = get(tradeStore).targets;
         if (currentTargets[index]) {
-            currentTargets[index].percent = newPercent;
+            currentTargets[index]!.percent = newPercent;
             updateTradeStore(s => ({...s, targets: currentTargets}));
             app.adjustTpPercentages(index);
         }

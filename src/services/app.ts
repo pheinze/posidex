@@ -95,7 +95,10 @@ export const app = {
                 requiredFieldMap.stopLossPrice = values.stopLossPrice;
             }
 
-            const emptyFields = Object.keys(requiredFieldMap).filter(field => requiredFieldMap[field as keyof typeof requiredFieldMap].isZero());
+            const emptyFields = Object.keys(requiredFieldMap).filter(field => {
+                const value = requiredFieldMap[field as keyof typeof requiredFieldMap];
+                return value ? value.isZero() : true;
+            });
 
             if (emptyFields.length > 0) {
                 return { status: CONSTANTS.STATUS_INCOMPLETE };
@@ -315,9 +318,9 @@ export const app = {
     },
     updateTradeStatus: (id: number, newStatus: string) => {
         const journalData = app.getJournal();
-        const tradeIndex = journalData.findIndex(t => t.id == id);
-        if (tradeIndex !== -1) {
-            journalData[tradeIndex].status = newStatus;
+        const trade = journalData.find(t => t.id == id);
+        if (trade) {
+            trade.status = newStatus;
             app.saveJournal(journalData);
             journalStore.set(journalData);
             trackCustomEvent('Journal', 'UpdateStatus', newStatus);
@@ -481,7 +484,13 @@ export const app = {
         const rows = journalData.map(trade => {
             const date = new Date(trade.date);
             const notes = trade.notes ? `"${trade.notes.replace(/"/g, '""').replace(/\n/g, ' ')}"` : '';
-            const tpData = Array.from({length: 5}, (_, i) => [ (trade.targets[i]?.price || new Decimal(0)).toFixed(4), (trade.targets[i]?.percent || new Decimal(0)).toFixed(2) ]).flat();
+            const tpData = Array.from({ length: 5 }, (_, i) => {
+                const target = trade.targets[i];
+                return [
+                    (target?.price || new Decimal(0)).toFixed(4),
+                    (target?.percent || new Decimal(0)).toFixed(2)
+                ];
+            }).flat();
             return [ trade.id, date.toLocaleDateString('de-DE'), date.toLocaleTimeString('de-DE'), trade.symbol, trade.tradeType, trade.status,
                 (trade.accountSize || new Decimal(0)).toFixed(2), (trade.riskPercentage || new Decimal(0)).toFixed(2), (trade.leverage || new Decimal(0)).toFixed(2), (trade.fees || new Decimal(0)).toFixed(2), (trade.entryPrice || new Decimal(0)).toFixed(4), (trade.stopLossPrice || new Decimal(0)).toFixed(4),
                 (trade.totalRR || new Decimal(0)).toFixed(2), (trade.totalNetProfit || new Decimal(0)).toFixed(2), (trade.riskAmount || new Decimal(0)).toFixed(2), (trade.totalFees || new Decimal(0)).toFixed(2), (trade.maxPotentialProfit || new Decimal(0)).toFixed(2), notes, ...tpData ].join(',');
@@ -505,7 +514,13 @@ export const app = {
                 return;
             }
 
-            const headers = lines[0].split(',').map(h => h.trim());
+            const headerLine = lines[0];
+            if (!headerLine) {
+                uiStore.showError("CSV ist leer oder hat nur eine Kopfzeile.");
+                return;
+            }
+
+            const headers = headerLine.split(',').map(h => h.trim());
             const requiredHeaders = ['ID', 'Datum', 'Uhrzeit', 'Symbol', 'Typ', 'Status', 'Einstieg', 'Stop Loss'];
             const missingHeaders = requiredHeaders.filter(h => !headers.includes(h));
 
@@ -517,7 +532,8 @@ export const app = {
             const entries = lines.slice(1).map(line => {
                 const values = line.split(',');
                 const entry: CSVTradeEntry = headers.reduce((obj: Partial<CSVTradeEntry>, header, index) => {
-                    obj[header as keyof CSVTradeEntry] = values[index] ? values[index].trim() : '';
+                    const value = values[index];
+                    obj[header as keyof CSVTradeEntry] = value ? value.trim() : '';
                     return obj;
                 }, {}) as CSVTradeEntry;
 
@@ -705,7 +721,7 @@ export const app = {
     },
     adjustTpPercentages: (changedIndex: number | null) => {
         const currentAppState = get(tradeStore);
-        if (changedIndex !== null && currentAppState.targets[changedIndex].isLocked) {
+        if (changedIndex !== null && currentAppState.targets[changedIndex]?.isLocked) {
             return;
         }
 
@@ -730,14 +746,18 @@ export const app = {
         const otherUnlocked = decTargets.filter(t => !t.isLocked && t.originalIndex !== changedIndex);
 
         if (otherUnlocked.length === 0) {
-            if (changedIndex !== null) {
-                decTargets[changedIndex].percent = decTargets[changedIndex].percent.plus(diff);
+            const changedTarget = decTargets[changedIndex ?? -1];
+            if (changedTarget) {
+                changedTarget.percent = changedTarget.percent.plus(diff);
             }
         }
         else if (diff.gt(ZERO)) {
             const share = diff.div(otherUnlocked.length);
             otherUnlocked.forEach(t => {
-                decTargets[t.originalIndex].percent = decTargets[t.originalIndex].percent.plus(share);
+                const targetToUpdate = decTargets[t.originalIndex];
+                if (targetToUpdate) {
+                    targetToUpdate.percent = targetToUpdate.percent.plus(share);
+                }
             });
         }
         else {
@@ -745,9 +765,12 @@ export const app = {
             for (let i = otherUnlocked.length - 1; i >= 0; i--) {
                 if (deficit.isZero()) break;
                 const target = otherUnlocked[i];
-                const originalTarget = decTargets[target.originalIndex];
-                const reduction = Decimal.min(deficit, originalTarget.percent);
+                if (!target) continue;
 
+                const originalTarget = decTargets[target.originalIndex];
+                if (!originalTarget) continue;
+
+                const reduction = Decimal.min(deficit, originalTarget.percent);
                 originalTarget.percent = originalTarget.percent.minus(reduction);
                 deficit = deficit.minus(reduction);
             }

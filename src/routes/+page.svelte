@@ -107,7 +107,10 @@ import { trackCustomEvent } from '../services/trackingService';
     function handleThemeSwitch() {
         const currentIndex = themes.indexOf($uiStore.currentTheme);
         const nextIndex = (currentIndex + 1) % themes.length;
-        uiStore.setTheme(themes[nextIndex]);
+        const nextTheme = themes[nextIndex];
+        if (nextTheme) {
+            uiStore.setTheme(nextTheme);
+        }
     }
 
     // Diese reaktive Variable formatiert den Theme-Namen benutzerfreundlich.

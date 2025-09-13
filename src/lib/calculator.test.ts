@@ -183,14 +183,14 @@ describe('calculator', () => {
     const symbolStats = calculator.calculateSymbolPerformance(journalData);
 
     expect(symbolStats['BTCUSDT']).not.toBeUndefined();
-    expect(symbolStats['BTCUSDT'].totalTrades).toBe(2);
-    expect(symbolStats['BTCUSDT'].wonTrades).toBe(2);
-    expect(symbolStats['BTCUSDT'].totalProfitLoss.toFixed(2)).toBe('80.00');
+    expect(symbolStats['BTCUSDT']?.totalTrades).toBe(2);
+    expect(symbolStats['BTCUSDT']?.wonTrades).toBe(2);
+    expect(symbolStats['BTCUSDT']?.totalProfitLoss.toFixed(2)).toBe('80.00');
 
     expect(symbolStats['ETHUSDT']).not.toBeUndefined();
-    expect(symbolStats['ETHUSDT'].totalTrades).toBe(2);
-    expect(symbolStats['ETHUSDT'].wonTrades).toBe(1);
-    expect(symbolStats['ETHUSDT'].totalProfitLoss.toFixed(2)).toBe('10.00'); // 20 (won) - 10 (lost) = 10
+    expect(symbolStats['ETHUSDT']?.totalTrades).toBe(2);
+    expect(symbolStats['ETHUSDT']?.wonTrades).toBe(1);
+    expect(symbolStats['ETHUSDT']?.totalProfitLoss.toFixed(2)).toBe('10.00'); // 20 (won) - 10 (lost) = 10
   });
 
 });

@@ -5,6 +5,9 @@
 /.svelte-kit
 /build
 
+# Test reports
+/playwright-report/
+
 # Log files
 npm-debug.log*
 yarn-debug.log*

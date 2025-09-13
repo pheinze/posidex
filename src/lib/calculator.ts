@@ -43,12 +43,14 @@ export const calculator = {
             const kline = relevantKlines[i];
             const prevKline = relevantKlines[i - 1];
 
-            const highLow = kline.high.minus(kline.low);
-            const highPrevClose = kline.high.minus(prevKline.close).abs();
-            const lowPrevClose = kline.low.minus(prevKline.close).abs();
+            if (kline && prevKline) {
+                const highLow = kline.high.minus(kline.low);
+                const highPrevClose = kline.high.minus(prevKline.close).abs();
+                const lowPrevClose = kline.low.minus(prevKline.close).abs();
 
-            const trueRange = Decimal.max(highLow, highPrevClose, lowPrevClose);
-            trueRanges.push(trueRange);
+                const trueRange = Decimal.max(highLow, highPrevClose, lowPrevClose);
+                trueRanges.push(trueRange);
+            }
         }
 
         if (trueRanges.length === 0) {
@@ -173,13 +175,20 @@ export const calculator = {
             }
         });
         if (sortedClosedTrades.length > 0) {
-            const lastIsWin = sortedClosedTrades[sortedClosedTrades.length - 1].status === 'Won';
-            let streak = 0;
-            for (let i = sortedClosedTrades.length - 1; i >= 0; i--) {
-                if ((lastIsWin && sortedClosedTrades[i].status === 'Won') || (!lastIsWin && sortedClosedTrades[i].status === 'Lost')) streak++;
-                else break;
+            const lastTrade = sortedClosedTrades[sortedClosedTrades.length - 1];
+            if (lastTrade) {
+                const lastIsWin = lastTrade.status === 'Won';
+                let streak = 0;
+                for (let i = sortedClosedTrades.length - 1; i >= 0; i--) {
+                    const currentTrade = sortedClosedTrades[i];
+                    if (currentTrade && ((lastIsWin && currentTrade.status === 'Won') || (!lastIsWin && currentTrade.status === 'Lost'))) {
+                        streak++;
+                    } else {
+                        break;
+                    }
+                }
+                currentStreakText = `${lastIsWin ? 'W' : 'L'}${streak}`;
             }
-            currentStreakText = `${lastIsWin ? 'W' : 'L'}${streak}`;
         }
 
         return { totalTrades, winRate, profitFactor, expectancy, avgRMultiple, avgRR, avgWin, avgLossOnly, winLossRatio, largestProfit, largestLoss, maxDrawdown, recoveryFactor, currentStreakText, longestWinningStreak, longestLosingStreak, totalProfitLong, totalLossLong, totalProfitShort, totalLossShort };
@@ -192,12 +201,15 @@ export const calculator = {
             if (!symbolPerformance[trade.symbol]) {
                 symbolPerformance[trade.symbol] = { totalTrades: 0, wonTrades: 0, totalProfitLoss: new Decimal(0) };
             }
-            symbolPerformance[trade.symbol].totalTrades++;
-            if (trade.status === 'Won') {
-                symbolPerformance[trade.symbol].wonTrades++;
-                symbolPerformance[trade.symbol].totalProfitLoss = symbolPerformance[trade.symbol].totalProfitLoss.plus(new Decimal(trade.totalNetProfit || 0));
-            } else {
-                symbolPerformance[trade.symbol].totalProfitLoss = symbolPerformance[trade.symbol].totalProfitLoss.minus(new Decimal(trade.riskAmount || 0));
+            const perf = symbolPerformance[trade.symbol];
+            if (perf) {
+                perf.totalTrades++;
+                if (trade.status === 'Won') {
+                    perf.wonTrades++;
+                    perf.totalProfitLoss = perf.totalProfitLoss.plus(new Decimal(trade.totalNetProfit || 0));
+                } else {
+                    perf.totalProfitLoss = perf.totalProfitLoss.minus(new Decimal(trade.riskAmount || 0));
+                }
             }
         });
         return symbolPerformance;
