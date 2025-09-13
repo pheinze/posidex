@@ -14,6 +14,8 @@
 
 <div
   class="tooltip-container"
+  role="button"
+  tabindex="0"
   on:mouseenter={show}
   on:mouseleave={hide}
   on:focusin={show}
