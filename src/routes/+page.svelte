@@ -27,6 +27,7 @@ import { trackCustomEvent } from '../services/trackingService';
     import Tooltip from '../components/shared/Tooltip.svelte';
     import JournalView from '../components/shared/JournalView.svelte';
     import CachyIcon from '../components/shared/CachyIcon.svelte';
+    import ModalFrame from '../components/shared/ModalFrame.svelte';
 
     let fileInput: HTMLInputElement;
     let changelogContent = '';
@@ -364,42 +365,24 @@ import { trackCustomEvent } from '../services/trackingService';
 
 <CustomModal />
 
-<div
-    id="changelog-modal"
-    class="modal-overlay"
-    class:visible={$uiStore.showChangelogModal}
-    on:click={(e) => { if (e.target === e.currentTarget) uiStore.toggleChangelogModal(false) }}
-    on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { if (e.target === e.currentTarget) uiStore.toggleChangelogModal(false) } }}
-    role="button"
-    tabindex="0"
+<ModalFrame
+    isOpen={$uiStore.showChangelogModal}
+    title={$_('app.changelogTitle')}
+    on:close={() => uiStore.toggleChangelogModal(false)}
+    extraClasses="max-w-6xl"
 >
-    <div class="modal-content modal-content-xl">
-        <div class="modal-header">
-            <h2 class="modal-title">{$_('app.changelogTitle')}</h2>
-            <button id="close-changelog-btn" class="modal-close-btn" aria-label="{$_('app.closeChangelogAriaLabel')}" on:click={() => uiStore.toggleChangelogModal(false)} use:trackClick={{ category: 'Navigation', action: 'Click', name: 'CloseChangelog' }}>&times;</button>
-        </div>
-        <div id="changelog-content" class="prose dark:prose-invert">
-            {@html changelogContent}
-        </div>
+    <div id="changelog-content" class="prose dark:prose-invert">
+        {@html changelogContent}
     </div>
-</div>
+</ModalFrame>
 
-<div
-    id="guide-modal"
-    class="modal-overlay"
-    class:visible={$uiStore.showGuideModal}
-    on:click={(e) => { if (e.target === e.currentTarget) uiStore.toggleGuideModal(false) }}
-    on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { if (e.target === e.currentTarget) uiStore.toggleGuideModal(false) } }}
-    role="button"
-    tabindex="0"
+<ModalFrame
+    isOpen={$uiStore.showGuideModal}
+    title={$_('app.guideTitle')}
+    on:close={() => uiStore.toggleGuideModal(false)}
+    extraClasses="max-w-6xl"
 >
-    <div class="modal-content modal-content-xl">
-        <div class="modal-header">
-            <h2 class="modal-title">{$_('app.guideTitle')}</h2>
-            <button id="close-guide-btn" class="modal-close-btn" aria-label="{$_('app.closeGuideAriaLabel')}" on:click={() => uiStore.toggleGuideModal(false)} use:trackClick={{ category: 'Navigation', action: 'Click', name: 'CloseGuide' }}>&times;</button>
-        </div>
-        <div id="guide-content" class="prose dark:prose-invert">
-            {@html guideContent}
-        </div>
+    <div id="guide-content" class="prose dark:prose-invert">
+        {@html guideContent}
     </div>
-</div>
+</ModalFrame>

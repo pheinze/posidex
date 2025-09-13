@@ -6,6 +6,7 @@
     import { _, locale } from '../../locales/i18n';
     import { icons, CONSTANTS } from '../../lib/constants';
     import { browser } from '$app/environment';
+    import ModalFrame from './ModalFrame.svelte';
 
     $: filteredTrades = $journalStore.filter(trade =>
         trade.symbol.toLowerCase().includes($tradeStore.journalSearchQuery.toLowerCase()) &&
@@ -22,25 +23,17 @@
     }
 </script>
 
-<div
-    id="journal-modal"
-    class="modal-overlay"
-    class:visible={$uiStore.showJournalModal}
-    on:click={(e) => { if (e.target === e.currentTarget) uiStore.toggleJournalModal(false) }}
-    on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { if (e.target === e.currentTarget) uiStore.toggleJournalModal(false) } }}
-    role="button"
-    tabindex="0"
+<ModalFrame
+    isOpen={$uiStore.showJournalModal}
+    title={$_('journal.title')}
+    on:close={() => uiStore.toggleJournalModal(false)}
+    extraClasses="max-w-6xl"
 >
-    <div class="modal-content modal-content-xl">
-        <div class="modal-header">
-            <h2 class="modal-title">{$_('journal.title')}</h2>
-            <button id="close-journal-btn" class="modal-close-btn" aria-label="{$_('journal.closeJournalAriaLabel')}" on:click={() => uiStore.toggleJournalModal(false)}>&times;</button>
-        </div>
-        <div id="journal-stats" class="journal-stats"></div>
-         <div class="flex gap-4 my-4"><input type="text" id="journal-search" class="input-field w-full px-3 py-2 rounded-md" placeholder="{$_('journal.searchSymbolPlaceholder')}" bind:value={$tradeStore.journalSearchQuery}><select id="journal-filter" class="input-field px-3 py-2 rounded-md" bind:value={$tradeStore.journalFilterStatus}><option value="all">{$_('journal.filterAll')}</option><option value="Open">{$_('journal.filterOpen')}</option><option value="Won">{$_('journal.filterWon')}</option><option value="Lost">{$_('journal.filterLost')}</option></select></div>
-        <div class="max-h-[calc(100vh-20rem)] overflow-auto">
-            <!-- Desktop Table -->
-            <div class="hidden md:block">
+    <div id="journal-stats" class="journal-stats"></div>
+    <div class="flex gap-4 my-4"><input type="text" id="journal-search" class="input-field w-full px-3 py-2 rounded-md" placeholder="{$_('journal.searchSymbolPlaceholder')}" bind:value={$tradeStore.journalSearchQuery}><select id="journal-filter" class="input-field px-3 py-2 rounded-md" bind:value={$tradeStore.journalFilterStatus}><option value="all">{$_('journal.filterAll')}</option><option value="Open">{$_('journal.filterOpen')}</option><option value="Won">{$_('journal.filterWon')}</option><option value="Lost">{$_('journal.filterLost')}</option></select></div>
+    <div class="max-h-[calc(100vh-20rem)] overflow-auto">
+        <!-- Desktop Table -->
+        <div class="hidden md:block">
                 <table class="journal-table w-full">
                     <thead><tr><th>{$_('journal.date')}</th><th>{$_('journal.symbol')}</th><th>{$_('journal.type')}</th><th>{$_('journal.entry')}</th><th>{$_('journal.sl')}</th><th>P/L</th><th>{$_('journal.rr')}</th><th>{$_('journal.status')}</th><th>{$_('journal.notes')}</th><th>{$_('journal.action')}</th></tr></thead>
                     <tbody>
@@ -134,5 +127,4 @@
             <button id="clear-journal-btn" class="font-bold py-2 px-4 rounded-lg flex items-center gap-2 bg-[var(--btn-danger-bg)] hover:bg-[var(--btn-danger-hover-bg)] text-[var(--btn-danger-text)]" title="{$_('journal.clearJournalTitle')}" on:click={() => { if (browser) app.clearJournal() }}>{@html icons.delete}<span class="hidden sm:inline">{$_('journal.clearAll')}</span></button>
              <button id="show-journal-readme-btn" class="font-bold p-2.5 rounded-lg bg-[var(--btn-default-bg)] hover:bg-[var(--btn-default-hover-bg)] text-[var(--btn-default-text)]" title="{$_('journal.showJournalInstructionsTitle')}" aria-label="{$_('journal.showJournalInstructionsAriaLabel')}" on:click={() => app.uiManager.showReadme('journal')}>{@html icons.book}</button>
         </div>
-    </div>
-</div>
+</ModalFrame>
