@@ -363,6 +363,7 @@ import { trackCustomEvent } from '../services/trackingService';
     <span>Version 0.92b1</span>
     <button class="text-link" on:click={() => uiStore.toggleGuideModal(true)} use:trackClick={{ category: 'Navigation', action: 'Click', name: 'ShowGuide' }}>{$_('app.guideButton')}</button>
     <button class="text-link" on:click={() => uiStore.toggleChangelogModal(true)} use:trackClick={{ category: 'Navigation', action: 'Click', name: 'ShowChangelog' }}>Changelog</button>
+    <a href="/journal" class="text-link" use:trackClick={{ category: 'Navigation', action: 'Click', name: 'ViewJournalPage' }}>Journal Page</a>
     <SettingsButton />
 </footer>
 
