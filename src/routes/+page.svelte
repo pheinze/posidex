@@ -81,12 +81,10 @@ import { trackCustomEvent } from '../services/trackingService';
 
             // Only trigger if all necessary inputs are defined (not null/undefined from initial load)
             // and not during initial setup where values might be empty
-            if ($tradeStore.accountSize !== undefined && $tradeStore.riskPercentage !== undefined &&
-                $tradeStore.entryPrice !== undefined && $tradeStore.leverage !== undefined &&
-                $tradeStore.fees !== undefined && $tradeStore.symbol !== undefined &&
-                $tradeStore.atrValue !== undefined && $tradeStore.atrMultiplier !== undefined &&
-                $tradeStore.useAtrSl !== undefined && $tradeStore.tradeType !== undefined &&
-                $tradeStore.targets !== undefined) {
+            if ($tradeStore.accountSize != null && $tradeStore.riskPercentage != null &&
+                $tradeStore.entryPrice != null && $tradeStore.leverage != null &&
+                $tradeStore.fees != null &&
+                $tradeStore.atrValue != null && $tradeStore.atrMultiplier != null) {
 
                 app.calculateAndDisplay();
             }
