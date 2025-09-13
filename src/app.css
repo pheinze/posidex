@@ -1111,7 +1111,7 @@ input[type="checkbox"]:checked + .atr-toggle-track::after { transform: translate
     border-radius: 0.5rem;
     font-size: 0.8rem;
     white-space: nowrap;
-    z-index: 110;
+    z-index: 60;
     pointer-events: none;
     box-shadow: var(--shadow-tooltip);
 }
