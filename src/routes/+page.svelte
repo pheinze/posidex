@@ -107,9 +107,16 @@ import { trackCustomEvent } from '../services/trackingService';
         app.adjustTpPercentages(null); // Pass null to signify a removal
     }
 
-    function handleThemeSwitch() {
+    function handleThemeSwitch(direction: 'forward' | 'backward' = 'forward') {
         const currentIndex = themes.indexOf($uiStore.currentTheme);
-        const nextIndex = (currentIndex + 1) % themes.length;
+        let nextIndex;
+
+        if (direction === 'forward') {
+            nextIndex = (currentIndex + 1) % themes.length;
+        } else {
+            nextIndex = (currentIndex - 1 + themes.length) % themes.length;
+        }
+
         uiStore.setTheme(themes[nextIndex]);
     }
 
@@ -233,7 +240,8 @@ import { trackCustomEvent } from '../services/trackingService';
                     id="theme-switcher"
                     class="text-sm bg-[var(--btn-default-bg)] hover:bg-[var(--btn-default-hover-bg)] text-[var(--btn-default-text)] font-bold py-2 px-2.5 rounded-lg"
                     aria-label="{$_('dashboard.themeSwitcherAriaLabel')}"
-                    on:click={handleThemeSwitch}
+                    on:click={() => handleThemeSwitch('forward')}
+                    on:contextmenu|preventDefault={() => handleThemeSwitch('backward')}
                     title={themeTitle}
                     use:trackClick={{ category: 'Settings', action: 'Click', name: 'SwitchTheme' }}
                 >{@html themeIcons[$uiStore.currentTheme as keyof typeof themeIcons]}</button>
