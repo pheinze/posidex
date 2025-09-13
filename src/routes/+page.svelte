@@ -14,6 +14,7 @@
     import { modalManager } from '../services/modalManager';
     import { onMount } from 'svelte';
     import { _, locale } from '../locales/i18n'; // Import locale
+    import { browser } from '$app/environment';
     import { get } from 'svelte/store'; // Import get
     import { loadInstruction } from '../services/markdownLoader';
     import { formatDynamicDecimal } from '../utils/utils';
@@ -60,33 +61,35 @@ import { trackCustomEvent } from '../services/trackingService';
 
     // Reactive statement to trigger app.calculateAndDisplay() when relevant inputs change
     $: {
-        // Trigger calculation when any of these inputs change
-        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-        $tradeStore.accountSize,
-        $tradeStore.riskPercentage,
-        $tradeStore.entryPrice,
-        $tradeStore.stopLossPrice,
-        $tradeStore.leverage,
-        $tradeStore.fees,
-        $tradeStore.symbol,
-        $tradeStore.atrValue,
-        $tradeStore.atrMultiplier,
-        $tradeStore.useAtrSl,
-        $tradeStore.atrMode,
-        $tradeStore.atrTimeframe,
-        $tradeStore.tradeType,
-        $tradeStore.targets;
+        if (browser) {
+            // Trigger calculation when any of these inputs change
+            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+            $tradeStore.accountSize,
+            $tradeStore.riskPercentage,
+            $tradeStore.entryPrice,
+            $tradeStore.stopLossPrice,
+            $tradeStore.leverage,
+            $tradeStore.fees,
+            $tradeStore.symbol,
+            $tradeStore.atrValue,
+            $tradeStore.atrMultiplier,
+            $tradeStore.useAtrSl,
+            $tradeStore.atrMode,
+            $tradeStore.atrTimeframe,
+            $tradeStore.tradeType,
+            $tradeStore.targets;
 
-        // Only trigger if all necessary inputs are defined (not null/undefined from initial load)
-        // and not during initial setup where values might be empty
-        if ($tradeStore.accountSize !== undefined && $tradeStore.riskPercentage !== undefined &&
-            $tradeStore.entryPrice !== undefined && $tradeStore.leverage !== undefined &&
-            $tradeStore.fees !== undefined && $tradeStore.symbol !== undefined &&
-            $tradeStore.atrValue !== undefined && $tradeStore.atrMultiplier !== undefined &&
-            $tradeStore.useAtrSl !== undefined && $tradeStore.tradeType !== undefined &&
-            $tradeStore.targets !== undefined) {
-            
-            app.calculateAndDisplay();
+            // Only trigger if all necessary inputs are defined (not null/undefined from initial load)
+            // and not during initial setup where values might be empty
+            if ($tradeStore.accountSize !== undefined && $tradeStore.riskPercentage !== undefined &&
+                $tradeStore.entryPrice !== undefined && $tradeStore.leverage !== undefined &&
+                $tradeStore.fees !== undefined && $tradeStore.symbol !== undefined &&
+                $tradeStore.atrValue !== undefined && $tradeStore.atrMultiplier !== undefined &&
+                $tradeStore.useAtrSl !== undefined && $tradeStore.tradeType !== undefined &&
+                $tradeStore.targets !== undefined) {
+
+                app.calculateAndDisplay();
+            }
         }
     }
 
