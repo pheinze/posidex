@@ -208,7 +208,7 @@ import { trackCustomEvent } from '../services/trackingService';
 
 <input type="file" class="hidden" bind:this={fileInput} on:change={handleFileSelected} accept=".json,application/json" />
 
-<main class="my-8 w-full max-w-4xl mx-auto calculator-wrapper rounded-2xl shadow-2xl p-6 sm:p-8">
+<main class="my-8 w-full max-w-4xl mx-auto calculator-wrapper rounded-2xl shadow-2xl p-6 sm:p-8 fade-in">
 
     <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
         <div class="flex justify-between items-center w-full md:w-auto">
