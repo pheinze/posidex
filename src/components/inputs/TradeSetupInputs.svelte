@@ -92,42 +92,46 @@
 
 <div>
     <h2 class="section-header">{$_('dashboard.tradeSetupInputs.header')}</h2>
-    <div class="relative mb-4 symbol-input-container">
-        <input
-            id="symbol-input"
-            type="text"
-            bind:value={symbol}
-            on:input={() => { handleSymbolInput(); onboardingService.trackFirstInput(); }}
-            class="input-field w-full px-4 py-2 rounded-md pr-10"
-            placeholder="{$_('dashboard.tradeSetupInputs.symbolPlaceholder')}"
-            autocomplete="off"
-        >
-        <button
-            type="button"
-            class="price-fetch-btn absolute top-1/2 right-2 -translate-y-1/2 {isPriceFetching ? 'animate-spin' : ''}"
-            title="{$_('dashboard.tradeSetupInputs.fetchPriceTitle')}"
-            aria-label="{$_('dashboard.tradeSetupInputs.fetchPriceAriaLabel')}"
-            on:click={handleFetchPriceClick}
-        >
-            {@html icons.fetch}
-        </button>
-        {#if showSymbolSuggestions}
-            <div class="absolute top-full left-0 w-full rounded-md shadow-lg mt-1 overflow-hidden border border-[var(--border-color)] z-20 bg-[var(--bg-secondary)]">
-                {#each symbolSuggestions as s}
-                    <div
-                        class="suggestion-item p-2 cursor-pointer hover:bg-[var(--accent-color)] hover:text-white"
-                        on:click={() => selectSuggestion(s)}
-                        on:keydown={(e) => handleKeyDownSuggestion(e, s)}
-                        role="button"
-                        tabindex="0"
-                    >
-                        {s}
-                    </div>
-                {/each}
-            </div>
-        {/if}
+    <div class="flex gap-4 mb-4">
+        <div class="flex-grow">
+            <input id="entry-price-input" type="text" use:numberInput={{ maxDecimalPlaces: 4 }} value={format(entryPrice)} on:input={handleEntryPriceInput} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.tradeSetupInputs.entryPricePlaceholder')}" on:input={onboardingService.trackFirstInput}>
+        </div>
+        <div class="relative flex-grow symbol-input-container">
+            <input
+                id="symbol-input"
+                type="text"
+                bind:value={symbol}
+                on:input={() => { handleSymbolInput(); onboardingService.trackFirstInput(); }}
+                class="input-field w-full px-4 py-2 rounded-md pr-10"
+                placeholder="{$_('dashboard.tradeSetupInputs.symbolPlaceholder')}"
+                autocomplete="off"
+            >
+            <button
+                type="button"
+                class="price-fetch-btn absolute top-1/2 right-2 -translate-y-1/2 {isPriceFetching ? 'animate-spin' : ''}"
+                title="{$_('dashboard.tradeSetupInputs.fetchPriceTitle')}"
+                aria-label="{$_('dashboard.tradeSetupInputs.fetchPriceAriaLabel')}"
+                on:click={handleFetchPriceClick}
+            >
+                {@html icons.fetch}
+            </button>
+            {#if showSymbolSuggestions}
+                <div class="absolute top-full left-0 w-full rounded-md shadow-lg mt-1 overflow-hidden border border-[var(--border-color)] z-20 bg-[var(--bg-secondary)]">
+                    {#each symbolSuggestions as s}
+                        <div
+                            class="suggestion-item p-2 cursor-pointer hover:bg-[var(--accent-color)] hover:text-white"
+                            on:click={() => selectSuggestion(s)}
+                            on:keydown={(e) => handleKeyDownSuggestion(e, s)}
+                            role="button"
+                            tabindex="0"
+                        >
+                            {s}
+                        </div>
+                    {/each}
+                </div>
+            {/if}
+        </div>
     </div>
-    <input id="entry-price-input" type="text" use:numberInput={{ maxDecimalPlaces: 4 }} value={format(entryPrice)} on:input={handleEntryPriceInput} class="input-field w-full px-4 py-2 rounded-md mb-4" placeholder="{$_('dashboard.tradeSetupInputs.entryPricePlaceholder')}" on:input={onboardingService.trackFirstInput}>
 
     <div class="p-2 rounded-lg mb-4" style="background-color: var(--bg-tertiary);">
         <div class="flex items-center mb-2 {useAtrSl ? 'justify-between' : 'justify-end'}">
