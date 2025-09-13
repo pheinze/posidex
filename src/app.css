@@ -522,6 +522,7 @@
     --gruv-aqua-bright: #8ec07c;
     --gruv-orange: #d65d0e;
     --gruv-orange-bright: #fe8019;
+    --black-transparent: rgba(0, 0, 0, 0.3);
     --black-overlay: rgba(0, 0, 0, 0.7);
 
     /* --- Mapping --- */
@@ -536,6 +537,7 @@
     --success-color: var(--gruv-green-bright);
     --danger-color: var(--gruv-red-bright);
     --warning-color: var(--gruv-yellow-bright);
+    --shadow-tooltip: 0 30px 90px -20px var(--black-transparent);
     --btn-default-bg: var(--gruv-dark4);
     --btn-default-hover-bg: var(--gruv-dark2);
     --btn-default-text: var(--gruv-light1);
@@ -571,6 +573,7 @@
     --mono-orange: #fd971f;
     --mono-purple: #ae81ff;
     --mono-red: #f44747;
+    --black-transparent: rgba(0, 0, 0, 0.3);
     --black-overlay: rgba(0, 0, 0, 0.7);
 
     /* --- Mapping --- */
@@ -585,6 +588,7 @@
     --success-color: var(--mono-green);
     --danger-color: var(--mono-red);
     --warning-color: var(--mono-yellow);
+    --shadow-tooltip: 0 30px 90px -20px var(--black-transparent);
     --btn-default-bg: var(--mono-bg-light);
     --btn-default-hover-bg: #575b61; /* Lighter gray */
     --btn-default-text: var(--mono-fg);
@@ -621,6 +625,7 @@
     --tokyo-red: #f7768e;
     --tokyo-purple: #bb9af7;
     --tokyo-yellow: #e0af68;
+    --black-transparent: rgba(0, 0, 0, 0.3);
     --black-overlay: rgba(0, 0, 0, 0.7);
 
     /* --- Mapping --- */
@@ -635,6 +640,7 @@
     --success-color: var(--tokyo-green);
     --danger-color: var(--tokyo-red);
     --warning-color: var(--tokyo-yellow);
+    --shadow-tooltip: 0 30px 90px -20px var(--black-transparent);
     --btn-default-bg: var(--tokyo-comment);
     --btn-default-hover-bg: #6b739e; /* Lighter comment */
     --btn-default-text: var(--tokyo-fg);
@@ -670,6 +676,7 @@
     --ever-aqua: #83c092;
     --ever-blue: #7fbbb3;
     --ever-purple: #d699b6;
+    --black-transparent: rgba(0, 0, 0, 0.3);
     --black-overlay: rgba(0, 0, 0, 0.7);
 
     /* --- Mapping --- */
@@ -684,6 +691,7 @@
     --success-color: var(--ever-green);
     --danger-color: var(--ever-red);
     --warning-color: var(--ever-yellow);
+    --shadow-tooltip: 0 30px 90px -20px var(--black-transparent);
     --btn-default-bg: var(--ever-gray);
     --btn-default-hover-bg: #9da9a0; /* grey2 from palette */
     --btn-default-text: var(--ever-bg);
@@ -721,6 +729,7 @@
     --blue: #268bd2;
     --cyan: #2aa198;
     --green: #859900;
+    --black-transparent: rgba(0, 0, 0, 0.3);
     --black-overlay: rgba(0, 0, 0, 0.7);
 
     /* --- Mapping --- */
@@ -735,6 +744,7 @@
     --success-color: var(--green);
     --danger-color: var(--red);
     --warning-color: var(--yellow);
+    --shadow-tooltip: 0 30px 90px -20px var(--black-transparent);
     --btn-default-bg: var(--base01);
     --btn-default-hover-bg: var(--base00);
     --btn-default-text: var(--base0);
@@ -774,6 +784,7 @@
     --cat-pink: #f5c2e7;
     --cat-teal: #94e2d5;
     --cat-lavender: #b4befe;
+    --black-transparent: rgba(0, 0, 0, 0.3);
     --black-overlay: rgba(0, 0, 0, 0.7);
 
     /* --- Mapping --- */
@@ -788,6 +799,7 @@
     --success-color: var(--cat-green);
     --danger-color: var(--cat-red);
     --warning-color: var(--cat-yellow);
+    --shadow-tooltip: 0 30px 90px -20px var(--black-transparent);
     --btn-default-bg: var(--cat-surface1);
     --btn-default-hover-bg: var(--cat-surface2);
     --btn-default-text: var(--cat-text);
@@ -821,6 +833,7 @@
     --one-blue: #61afef;
     --one-purple: #c678dd;
     --one-cyan: #56b6c2;
+    --black-transparent: rgba(0, 0, 0, 0.3);
     --black-overlay: rgba(0, 0, 0, 0.7);
 
     /* --- Mapping --- */
@@ -835,6 +848,7 @@
     --success-color: var(--one-green);
     --danger-color: var(--one-red);
     --warning-color: var(--one-yellow);
+    --shadow-tooltip: 0 30px 90px -20px var(--black-transparent);
     --btn-default-bg: var(--one-comment);
     --btn-default-hover-bg: #6e7886; /* Lighter comment */
     --btn-default-text: var(--one-fg);
