@@ -87,9 +87,8 @@ import { trackCustomEvent } from '../services/trackingService';
                 $tradeStore.entryPrice != null &&
                 $tradeStore.leverage != null &&
                 $tradeStore.fees != null &&
-                ($tradeStore.useAtrSl ? $tradeStore.atrValue != null && $tradeStore.atrMultiplier != null : $tradeStore.stopLossPrice != null)
+                ($tradeStore.useAtrSl ? ($tradeStore.atrValue != null && $tradeStore.atrMultiplier != null) : $tradeStore.stopLossPrice != null)
             ) {
-
                 app.calculateAndDisplay();
             }
         }
