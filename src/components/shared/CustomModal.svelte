@@ -27,7 +27,7 @@
         role="button"
         tabindex="0"
     >
-        <div class="modal-content">
+        <div class="modal-content modal-content-sm">
             <div class="modal-header">
                 <h3 class="modal-title">{modalState.title}</h3>
                 <button

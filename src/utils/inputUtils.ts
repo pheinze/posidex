@@ -15,8 +15,7 @@ export function numberInput(node: HTMLInputElement, options: NumberInputOptions)
 
     const getDecimalPlaces = (value: string): number => {
         if (value.includes('.')) {
-            const parts = value.split('.');
-            return parts[1]?.length || 0;
+            return value.split('.')[1].length;
         }
         return 0;
     };

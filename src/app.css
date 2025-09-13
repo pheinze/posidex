@@ -644,10 +644,16 @@ input[type="checkbox"]:checked + .atr-toggle-track::after { transform: translate
     background-color: var(--bg-secondary);
     padding: 2rem;
     border-radius: 1rem;
-    max-width: 90vw;
-    max-height: 90vh;
     overflow-y: auto;
-    position: relative; /* Added for close button positioning */
+    position: relative;
+    max-height: 90vh;
+    width: 90vw;
+}
+.modal-content-sm {
+    @apply max-w-lg;
+}
+.modal-content-xl {
+    @apply max-w-6xl;
 }
 
 /* Unified Modal Header and Close Button */
@@ -659,12 +665,12 @@ input[type="checkbox"]:checked + .atr-toggle-track::after { transform: translate
 }
 
 .modal-title {
-    font-size: 1.5rem; /* 24px */
+    font-size: 1.5rem;
     font-weight: 700;
 }
 
 .modal-close-btn {
-    font-size: 2rem; /* 32px */
+    font-size: 2rem;
     line-height: 1;
     cursor: pointer;
     background: none;

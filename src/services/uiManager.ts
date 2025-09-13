@@ -73,10 +73,7 @@ export function updateVisualBar(
     markers.push({ pos: entryPos, label: 'Einstieg', isEntry: true });
 
     calculatedTpDetails.forEach(tpDetail => {
-        const target = targets[tpDetail.index];
-        if (!target) return;
-
-        const tpPrice = parseDecimal(target.price);
+        const tpPrice = parseDecimal(targets[tpDetail.index].price);
         const tpPos = tpPrice.minus(lowestPrice).dividedBy(totalRange).times(100);
         markers.push({
             pos: tpPos,

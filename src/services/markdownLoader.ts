@@ -25,9 +25,9 @@ export async function loadInstruction(name: 'dashboard' | 'journal' | 'changelog
         const htmlContent = await marked(markdownContent);
 
         // Extract title from the first line (assuming it's an H1)
-        const firstLine = markdownContent.split('\n')[0] || '';
+        const firstLine = markdownContent.split('\n')[0];
         const titleMatch = firstLine.match(/^#\s*(.*)/);
-        const title = titleMatch?.[1] || '';
+        const title = titleMatch ? titleMatch[1] : '';
 
         return { html: htmlContent, title: title };
 

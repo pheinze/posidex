@@ -107,10 +107,7 @@ import { trackCustomEvent } from '../services/trackingService';
     function handleThemeSwitch() {
         const currentIndex = themes.indexOf($uiStore.currentTheme);
         const nextIndex = (currentIndex + 1) % themes.length;
-        const nextTheme = themes[nextIndex];
-        if (nextTheme) {
-            uiStore.setTheme(nextTheme);
-        }
+        uiStore.setTheme(themes[nextIndex]);
     }
 
     // Diese reaktive Variable formatiert den Theme-Namen benutzerfreundlich.
@@ -376,12 +373,12 @@ import { trackCustomEvent } from '../services/trackingService';
     role="button"
     tabindex="0"
 >
-    <div class="modal-content">
+    <div class="modal-content modal-content-xl">
         <div class="modal-header">
             <h2 class="modal-title">{$_('app.changelogTitle')}</h2>
             <button id="close-changelog-btn" class="modal-close-btn" aria-label="{$_('app.closeChangelogAriaLabel')}" on:click={() => uiStore.toggleChangelogModal(false)} use:trackClick={{ category: 'Navigation', action: 'Click', name: 'CloseChangelog' }}>&times;</button>
         </div>
-        <div id="changelog-content" class="prose dark:prose-invert max-h-[calc(100vh-10rem)] overflow-y-auto">
+        <div id="changelog-content" class="prose dark:prose-invert">
             {@html changelogContent}
         </div>
     </div>
@@ -396,12 +393,12 @@ import { trackCustomEvent } from '../services/trackingService';
     role="button"
     tabindex="0"
 >
-    <div class="modal-content">
+    <div class="modal-content modal-content-xl">
         <div class="modal-header">
             <h2 class="modal-title">{$_('app.guideTitle')}</h2>
             <button id="close-guide-btn" class="modal-close-btn" aria-label="{$_('app.closeGuideAriaLabel')}" on:click={() => uiStore.toggleGuideModal(false)} use:trackClick={{ category: 'Navigation', action: 'Click', name: 'CloseGuide' }}>&times;</button>
         </div>
-        <div id="guide-content" class="prose dark:prose-invert max-h-[calc(100vh-10rem)] overflow-y-auto">
+        <div id="guide-content" class="prose dark:prose-invert">
             {@html guideContent}
         </div>
     </div>
