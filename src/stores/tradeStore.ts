@@ -76,5 +76,5 @@ export const toggleAtrInputs = (useAtrSl: boolean) => {
 export const resetAllInputs = () => {
     tradeStore.set(initialTradeState);
     resultsStore.set(initialResultsState);
-    uiStore.showError('dashboard.promptForData');
+    uiStore.showError(new Error('dashboard.promptForData'));
 };

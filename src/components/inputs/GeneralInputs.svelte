@@ -62,7 +62,7 @@
             <input
                 id="fees-input"
                 type="text"
-                use:numberInput={{ maxDecimalPlaces: 4 }}
+                use:numberInput={{ maxDecimalPlaces: 4, minValue: 0 }}
                 value={format(fees)}
                 on:input={handleFeesInput}
                 class="input-field w-full px-4 py-2 rounded-md"

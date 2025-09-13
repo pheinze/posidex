@@ -91,7 +91,7 @@ import { trackCustomEvent } from '../services/trackingService';
     }
 
     function handleTradeSetupError(e: CustomEvent<string>) {
-        uiStore.showError(e.detail);
+        uiStore.showError(new Error(e.detail));
     }
 
     function handleTargetsChange(event: CustomEvent<Array<{ price: number | null; percent: number | null; isLocked: boolean }>>) {
@@ -186,7 +186,7 @@ import { trackCustomEvent } from '../services/trackingService';
                             window.location.reload();
                         }, 1000);
                     } else {
-                        uiStore.showError(result.message);
+                        uiStore.showError(new Error(result.message));
                     }
                 }
                 // Reset file input so the same file can be selected again
@@ -194,7 +194,7 @@ import { trackCustomEvent } from '../services/trackingService';
             });
         };
         reader.onerror = () => {
-            uiStore.showError('app.fileReadError');
+            uiStore.showError(new Error('app.fileReadError'));
         };
         reader.readAsText(file);
 

@@ -1,5 +1,6 @@
 import { _, register, init, getLocaleFromNavigator, locale as svelteLocale } from 'svelte-i18n';
 import { writable } from 'svelte/store';
+import { browser } from '$app/environment';
 
 import * as en from './locales/en.json';
 import * as de from './locales/de.json';
@@ -16,7 +17,7 @@ function getSafeLocale(getter: () => string | undefined | null): string | undefi
   }
 }
 
-const storedLocale = typeof localStorage !== 'undefined' ? localStorage.getItem('locale') : null;
+const storedLocale = browser ? localStorage.getItem('locale') : null;
 
 let initialLocaleValue: string;
 
@@ -43,7 +44,7 @@ export const locale = writable<string | null>(initialLocaleValue);
 locale.subscribe((value) => {
   if (value) {
     svelteLocale.set(value);
-    if (typeof localStorage !== 'undefined') {
+    if (browser) {
       localStorage.setItem('locale', value);
     }
   }

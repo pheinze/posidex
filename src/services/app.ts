@@ -165,7 +165,7 @@ export const app = {
 
         if (validationResult.status === CONSTANTS.STATUS_INVALID) {
             trackCustomEvent('Calculation', 'Error', validationResult.message);
-            uiStore.showError(validationResult.message || "");
+            uiStore.showError(new Error(validationResult.message || ""));
             app.clearResults();
             return;
         }
@@ -190,7 +190,7 @@ export const app = {
         } else if (currentTradeState.isPositionSizeLocked && currentTradeState.lockedPositionSize && currentTradeState.lockedPositionSize.gt(0)) {
             const riskPerUnit = values.entryPrice.minus(values.stopLossPrice).abs();
             if (riskPerUnit.lte(0)) {
-                uiStore.showError("Stop-Loss muss einen gültigen Abstand zum Einstiegspreis haben.");
+                uiStore.showError(new Error("Stop-Loss muss einen gültigen Abstand zum Einstiegspreis haben."));
                 app.clearResults();
                 return;
             }
@@ -228,7 +228,7 @@ export const app = {
         values.targets.forEach((tp, index) => {
             if (tp.price.gt(0) && tp.percent.gt(0)) {
                 const details = calculator.calculateIndividualTp(tp.price, tp.percent, baseMetrics, values, index);
-                if ((currentTradeState.tradeType === 'long' && tp.price.gt(values.entryPrice)) || (currentTradeState.tradeType === 'short' && tp.price.lt(values.entryPrice))) {
+                if ((currentTradeState.tradeType === CONSTANTS.TRADE_TYPE_LONG && tp.price.gt(values.entryPrice)) || (currentTradeState.tradeType === CONSTANTS.TRADE_TYPE_SHORT && tp.price.lt(values.entryPrice))) {
                    calculatedTpDetails.push(details);
                 }
             }
@@ -265,7 +265,7 @@ export const app = {
     clearResults: (showGuidance = false) => {
         resultsStore.set(initialResultsState);
         if (showGuidance) {
-            uiStore.showError('dashboard.promptForData');
+            uiStore.showError(new Error('dashboard.promptForData'));
         } else {
             uiStore.hideError();
         }
@@ -289,9 +289,9 @@ export const app = {
                 }
                 return newTrade as JournalEntry;
             });
-        } catch {
-            console.warn("Could not load journal from localStorage.");
-            uiStore.showError("Journal konnte nicht geladen werden.");
+        } catch (e) {
+            console.warn("Could not load journal from localStorage.", e);
+            uiStore.showError(new Error("Journal konnte nicht geladen werden."));
             return [];
         }
     },
@@ -299,13 +299,14 @@ export const app = {
         if (!browser) return;
         try {
             localStorage.setItem(CONSTANTS.LOCAL_STORAGE_JOURNAL_KEY, JSON.stringify(d));
-        } catch {
-            uiStore.showError("Fehler beim Speichern des Journals. Der lokale Speicher ist möglicherweise voll oder blockiert.");
+        } catch (e) {
+            console.error("Fehler beim Speichern des Journals:", e);
+            uiStore.showError(new Error("Fehler beim Speichern des Journals. Der lokale Speicher ist möglicherweise voll oder blockiert."));
         }
     },
     addTrade: () => {
         const currentAppState = get(tradeStore);
-        if (!currentAppState.currentTradeData || !currentAppState.currentTradeData.positionSize || currentAppState.currentTradeData.positionSize.lte(0)) { uiStore.showError("Kann keinen ungültigen Trade speichern."); return; }
+        if (!currentAppState.currentTradeData || !currentAppState.currentTradeData.positionSize || currentAppState.currentTradeData.positionSize.lte(0)) { uiStore.showError(new Error("Kann keinen ungültigen Trade speichern.")); return; }
         const journalData = app.getJournal();
         journalData.push({ ...currentAppState.currentTradeData, notes: currentAppState.tradeNotes, id: Date.now(), date: new Date().toISOString() } as JournalEntry);
         app.saveJournal(journalData);
@@ -331,7 +332,7 @@ export const app = {
     async clearJournal() {
         const journal = app.getJournal();
         if (journal.length === 0) {
-            uiStore.showError("Das Journal ist bereits leer.");
+            uiStore.showError(new Error("Das Journal ist bereits leer."));
             return;
         }
         if (await modalManager.show("Journal leeren", "Möchten Sie wirklich das gesamte Journal unwiderruflich löschen?", "confirm")) {
@@ -361,6 +362,7 @@ export const app = {
             localStorage.setItem(CONSTANTS.LOCAL_STORAGE_SETTINGS_KEY, JSON.stringify(app.getInputsAsObject()));
         } catch (e) {
             console.warn("Could not save settings to localStorage.", e);
+            uiStore.showError(new Error("Einstellungen konnten nicht gespeichert werden."));
         }
     },
     loadSettings: () => {
@@ -392,8 +394,9 @@ export const app = {
                 toggleAtrInputs(settings.useAtrSl || false);
                 return;
             }
-        } catch {
-            console.warn("Could not load settings from localStorage.");
+        } catch (e) {
+            console.warn("Could not load settings from localStorage.", e);
+            uiStore.showError(new Error("Einstellungen konnten nicht geladen werden."));
         }
     },
     savePreset: async () => {
@@ -408,8 +411,9 @@ export const app = {
                 uiStore.showFeedback('save');
                 app.populatePresetLoader();
                 updatePresetStore(state => ({ ...state, selectedPreset: presetName }));
-            } catch {
-                uiStore.showError("Preset konnte nicht gespeichert werden. Der lokale Speicher ist möglicherweise voll oder blockiert.");
+            } catch (e) {
+                console.error("Fehler beim Speichern des Presets:", e);
+                uiStore.showError(new Error("Preset konnte nicht gespeichert werden. Der lokale Speicher ist möglicherweise voll oder blockiert."));
             }
         }
     },
@@ -424,7 +428,10 @@ export const app = {
             localStorage.setItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY, JSON.stringify(presets));
             app.populatePresetLoader();
             updatePresetStore(state => ({ ...state, selectedPreset: '' }));
-        } catch { uiStore.showError("Preset konnte nicht gelöscht werden."); }
+        } catch (e) {
+            console.error("Fehler beim Löschen des Presets:", e);
+            uiStore.showError(new Error("Preset konnte nicht gelöscht werden."));
+        }
     },
     loadPreset: (presetName: string) => {
         if (!browser) return;
@@ -458,7 +465,7 @@ export const app = {
             }
         } catch (error) {
             console.error("Fehler beim Laden des Presets:", error);
-            uiStore.showError("Preset konnte nicht geladen werden.");
+            uiStore.showError(new Error("Preset konnte nicht geladen werden."));
         }
     },
     populatePresetLoader: () => {
@@ -467,15 +474,16 @@ export const app = {
             const presets = JSON.parse(localStorage.getItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY) || '{}');
             const presetNames = Object.keys(presets);
             updatePresetStore(state => ({ ...state, availablePresets: presetNames }));
-        } catch {
-            console.warn("Could not populate presets from localStorage.");
+        } catch (e) {
+            console.warn("Could not populate presets from localStorage.", e);
+            uiStore.showError(new Error("Presets konnten nicht geladen werden."));
             updatePresetStore(state => ({ ...state, availablePresets: [] }));
         }
     },
     exportToCSV: () => {
         if (!browser) return;
         const journalData = get(journalStore);
-        if (journalData.length === 0) { uiStore.showError("Journal ist leer."); return; }
+        if (journalData.length === 0) { uiStore.showError(new Error("Journal ist leer.")); return; }
         trackCustomEvent('Journal', 'Export', 'CSV', journalData.length);
         const headers = ['ID', 'Datum', 'Uhrzeit', 'Symbol', 'Typ', 'Status', 'Konto Guthaben', 'Risiko %', 'Hebel', 'Gebuehren %', 'Einstieg', 'Stop Loss', 'Gewichtetes R/R', 'Gesamt Netto-Gewinn', 'Risiko pro Trade (Waehrung)', 'Gesamte Gebuehren', 'Max. potenzieller Gewinn', 'Notizen', ...Array.from({length: 5}, (_, i) => [`TP${i+1} Preis`, `TP${i+1} %`]).flat()];
         const rows = journalData.map(trade => {
@@ -501,7 +509,7 @@ export const app = {
             const text = e.target?.result as string;
             const lines = text.split('\n').filter(line => line.trim() !== '');
             if (lines.length < 2) {
-                uiStore.showError("CSV ist leer oder hat nur eine Kopfzeile.");
+                uiStore.showError(new Error("CSV ist leer oder hat nur eine Kopfzeile."));
                 return;
             }
 
@@ -510,7 +518,7 @@ export const app = {
             const missingHeaders = requiredHeaders.filter(h => !headers.includes(h));
 
             if (missingHeaders.length > 0) {
-                uiStore.showError(`CSV-Datei fehlen benötigte Spalten: ${missingHeaders.join(', ')}`);
+                uiStore.showError(new Error(`CSV-Datei fehlen benötigte Spalten: ${missingHeaders.join(', ')}`));
                 return;
             }
 
@@ -573,7 +581,7 @@ export const app = {
                     uiStore.showFeedback('save', 2000);
                 }
             } else {
-                uiStore.showError("Keine gültigen Einträge in der CSV-Datei gefunden.");
+                uiStore.showError(new Error("Keine gültigen Einträge in der CSV-Datei gefunden."));
             }
         };
         reader.readAsText(file);
@@ -583,7 +591,7 @@ export const app = {
         const currentTradeState = get(tradeStore);
         const symbol = currentTradeState.symbol.toUpperCase().replace('/', '');
         if (!symbol) {
-            uiStore.showError("Bitte geben Sie ein Symbol ein.");
+            uiStore.showError(new Error("Bitte geben Sie ein Symbol ein."));
             return;
         }
         uiStore.update(state => ({ ...state, isPriceFetching: true }));
@@ -594,7 +602,7 @@ export const app = {
             app.calculateAndDisplay();
         } catch (error) {
             const message = error instanceof Error ? error.message : String(error);
-            uiStore.showError(message);
+            uiStore.showError(new Error(message));
         } finally {
             uiStore.update(state => ({ ...state, isPriceFetching: false }));
         }
@@ -623,7 +631,7 @@ export const app = {
         const currentTradeState = get(tradeStore);
         const symbol = currentTradeState.symbol.toUpperCase().replace('/', '');
         if (!symbol) {
-            uiStore.showError("Bitte geben Sie ein Symbol ein.");
+            uiStore.showError(new Error("Bitte geben Sie ein Symbol ein."));
             return;
         }
         uiStore.update(state => ({ ...state, isPriceFetching: true }));
@@ -638,7 +646,7 @@ export const app = {
             uiStore.showFeedback('copy', 700);
         } catch (error) {
             const message = error instanceof Error ? error.message : String(error);
-            uiStore.showError(message);
+            uiStore.showError(new Error(message));
         } finally {
             uiStore.update(state => ({ ...state, isPriceFetching: false }));
         }
@@ -664,7 +672,7 @@ export const app = {
         const shouldBeLocked = forceState !== undefined ? forceState : !currentTradeState.isPositionSizeLocked;
 
         if (shouldBeLocked && (!currentResultsState.positionSize || parseDecimal(currentResultsState.positionSize).lte(0))) {
-            uiStore.showError("Positionsgröße kann nicht gesperrt werden, solange sie ungültig ist.");
+            uiStore.showError(new Error("Positionsgröße kann nicht gesperrt werden, solange sie ungültig ist."));
             return;
         }
 
@@ -683,7 +691,7 @@ export const app = {
         const shouldBeLocked = forceState !== undefined ? forceState : !currentTradeState.isRiskAmountLocked;
 
         if (shouldBeLocked && parseDecimal(currentTradeState.riskAmount).lte(0)) {
-            uiStore.showError("Risikobetrag kann nicht gesperrt werden, solange er ungültig ist.");
+            uiStore.showError(new Error("Risikobetrag kann nicht gesperrt werden, solange er ungültig ist."));
             return;
         }
 
@@ -705,7 +713,7 @@ export const app = {
     },
     adjustTpPercentages: (changedIndex: number | null) => {
         const currentAppState = get(tradeStore);
-        if (changedIndex !== null && currentAppState.targets[changedIndex].isLocked) {
+        if (changedIndex !== null && currentAppState.targets[changedIndex]?.isLocked) {
             return;
         }
 
@@ -722,55 +730,84 @@ export const app = {
             originalIndex: i
         }));
 
-        const totalSum = decTargets.reduce((sum, t) => sum.plus(t.percent), ZERO);
-        const diff = ONE_HUNDRED.minus(totalSum);
+        const largestRemainder = (numbers: Decimal[], sumTo: Decimal): Decimal[] => {
+            const integers = numbers.map(n => n.floor());
+            const remainders = numbers.map((n, i) => n.minus(integers[i]));
 
-        if (diff.isZero()) return;
+            let currentSum = integers.reduce((s, n) => s.plus(n), ZERO);
+            let diff = sumTo.minus(currentSum).toDP(0, Decimal.ROUND_DOWN).toNumber();
 
-        const otherUnlocked = decTargets.filter(t => !t.isLocked && t.originalIndex !== changedIndex);
+            const sortedRemainders = remainders
+                .map((r, i) => ({ remainder: r, index: i }))
+                .sort((a, b) => b.remainder.comparedTo(a.remainder));
 
-        if (otherUnlocked.length === 0) {
-            if (changedIndex !== null) {
-                decTargets[changedIndex].percent = decTargets[changedIndex].percent.plus(diff);
+            for (let i = 0; i < diff; i++) {
+                if (sortedRemainders[i]) {
+                    integers[sortedRemainders[i].index] = integers[sortedRemainders[i].index].plus(1);
+                }
+            }
+            return integers;
+        };
+
+        const lockedSum = decTargets.filter(t => t.isLocked).reduce((sum, t) => sum.plus(t.percent), ZERO);
+        if (lockedSum.gt(ONE_HUNDRED)) {
+            return;
+        }
+        const unlockedTotalTarget = ONE_HUNDRED.minus(lockedSum);
+
+        const unlockedTargets = decTargets.filter(t => !t.isLocked);
+        if (unlockedTargets.length === 0) return;
+
+        if (changedIndex !== null) {
+            const changedTarget = unlockedTargets.find(t => t.originalIndex === changedIndex);
+            const otherUnlockedTargets = unlockedTargets.filter(t => t.originalIndex !== changedIndex);
+
+            if (changedTarget && otherUnlockedTargets.length > 0) {
+                if (changedTarget.percent.gt(unlockedTotalTarget)) {
+                    changedTarget.percent = unlockedTotalTarget;
+                }
+
+                const sumOfOthers = otherUnlockedTargets.reduce((sum, t) => sum.plus(t.percent), ZERO);
+                const newSumForOthers = unlockedTotalTarget.minus(changedTarget.percent);
+
+                if (sumOfOthers.isZero()) {
+                    const share = newSumForOthers.div(otherUnlockedTargets.length);
+                    otherUnlockedTargets.forEach(t => t.percent = share);
+                } else {
+                    const ratio = newSumForOthers.isNegative() ? ZERO : newSumForOthers.div(sumOfOthers);
+                    otherUnlockedTargets.forEach(t => t.percent = t.percent.times(ratio));
+                }
+            }
+        } else {
+            const currentUnlockedSum = unlockedTargets.reduce((sum, t) => sum.plus(t.percent), ZERO);
+            if (!currentUnlockedSum.isZero()) {
+                const ratio = unlockedTotalTarget.div(currentUnlockedSum);
+                unlockedTargets.forEach(t => t.percent = t.percent.times(ratio));
+            } else {
+                const share = unlockedTotalTarget.div(unlockedTargets.length);
+                unlockedTargets.forEach(t => t.percent = share);
             }
         }
-        else if (diff.gt(ZERO)) {
-            const share = diff.div(otherUnlocked.length);
-            otherUnlocked.forEach(t => {
-                decTargets[t.originalIndex].percent = decTargets[t.originalIndex].percent.plus(share);
-            });
-        }
-        else {
-            let deficit = diff.abs();
-            for (let i = otherUnlocked.length - 1; i >= 0; i--) {
-                if (deficit.isZero()) break;
-                const target = otherUnlocked[i];
-                const originalTarget = decTargets[target.originalIndex];
-                const reduction = Decimal.min(deficit, originalTarget.percent);
 
-                originalTarget.percent = originalTarget.percent.minus(reduction);
-                deficit = deficit.minus(reduction);
+        const percentagesToRound = unlockedTargets.map(t => t.percent);
+        const roundedPercentages = largestRemainder(percentagesToRound, unlockedTotalTarget);
+
+        unlockedTargets.forEach((t, i) => {
+            const targetInDec = decTargets.find(dt => dt.originalIndex === t.originalIndex);
+            if(targetInDec) {
+                targetInDec.percent = roundedPercentages[i];
+            }
+        });
+
+        const finalSum = decTargets.reduce((sum, t) => sum.plus(t.percent), ZERO);
+        if (!finalSum.equals(ONE_HUNDRED) && decTargets.length > 0) {
+            const firstUnlocked = decTargets.find(t => !t.isLocked);
+            if (firstUnlocked) {
+                const finalDiff = ONE_HUNDRED.minus(finalSum);
+                firstUnlocked.percent = firstUnlocked.percent.plus(finalDiff);
             }
         }
 
-        let finalTargets = decTargets.map(t => ({
-            ...t,
-            percent: t.percent.toDecimalPlaces(0, Decimal.ROUND_HALF_UP)
-        }));
-
-        let finalSum = finalTargets.reduce((sum, t) => sum.plus(t.percent), ZERO);
-        let roundingDiff = ONE_HUNDRED.minus(finalSum);
-
-        if (!roundingDiff.isZero()) {
-            let targetToAdjust = finalTargets.find((t, i) => !t.isLocked && i !== changedIndex && t.percent.plus(roundingDiff).gte(0));
-            if (!targetToAdjust) {
-                targetToAdjust = finalTargets.find(t => !t.isLocked && t.percent.plus(roundingDiff).gte(0));
-            }
-            if (targetToAdjust) {
-                targetToAdjust.percent = targetToAdjust.percent.plus(roundingDiff);
-            }
-        }
-
-        updateTradeStore(state => ({ ...state, targets: finalTargets.map(t => ({price: t.price.toNumber(), percent: t.percent.toNumber(), isLocked: t.isLocked})) }));
+        updateTradeStore(state => ({ ...state, targets: decTargets.map(t => ({ price: t.price.toNumber(), percent: t.percent.toNumber(), isLocked: t.isLocked })) }));
     },
 };

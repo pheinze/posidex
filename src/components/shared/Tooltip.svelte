@@ -4,6 +4,8 @@
   let tooltipEl: HTMLElement;
   let triggerEl: HTMLElement;
 
+  const uniqueId = `tooltip-${Math.random().toString(36).substring(2, 9)}`;
+
   function show() {
     visible = true;
   }
@@ -27,7 +29,7 @@
     on:mouseleave={hide}
     type="button"
     class="tooltip-trigger"
-    aria-describedby="tooltip-text"
+    aria-describedby={uniqueId}
     on:focus={show}
     on:blur={hide}
     on:keydown={handleKeydown}
@@ -35,16 +37,15 @@
   >
     ?
   </button>
-  {#if visible}
-    <div
-      bind:this={tooltipEl}
-      id="tooltip-text"
-      role="tooltip"
-      class="tooltip-content"
-    >
-      {text}
-    </div>
-  {/if}
+  <div
+    bind:this={tooltipEl}
+    id={uniqueId}
+    role="tooltip"
+    class="tooltip-content"
+    style:visibility={visible ? 'visible' : 'hidden'}
+  >
+    {text}
+  </div>
 </div>
 
 <style>

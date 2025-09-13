@@ -13,7 +13,9 @@ export function trackClick(node: HTMLElement, params: TrackClickParams) {
 
   return {
     destroy() {
-      // No cleanup needed for this action
+      node.removeAttribute('data-mtm-category');
+      node.removeAttribute('data-mtm-action');
+      node.removeAttribute('data-mtm-name');
     }
   };
 }

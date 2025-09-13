@@ -59,10 +59,6 @@
     }
 </script>
 
-<style>
-    /* Highlighting removed as it was causing svelte-check warnings */
-</style>
-
 <div class="tp-row flex items-center gap-2 p-2 rounded-lg" style="background-color: var(--bg-tertiary);">
     <div class="flex-grow">
         <div class="flex justify-between items-center mb-1">
@@ -77,7 +73,7 @@
         <div class="grid grid-cols-2 gap-2">
             <input
                 type="text"
-                use:numberInput={{ maxDecimalPlaces: 4 }}
+                use:numberInput={{ maxDecimalPlaces: 4, minValue: 0 }}
                 value={format(price)}
                 on:input={handlePriceInput}
                 class="tp-price input-field w-full px-4 py-2 rounded-md"

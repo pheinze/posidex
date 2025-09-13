@@ -65,7 +65,11 @@ function createUiStore() {
             update(state => ({ ...state, [key]: true }));
             setTimeout(() => update(state => ({ ...state, [key]: false })), duration);
         },
-        showError: (message: string) => update(state => ({ ...state, errorMessage: message, showErrorMessage: true })),
+        showError: (error: Error | string) => {
+            console.error(error);
+            const message = error instanceof Error ? error.message : error;
+            update(state => ({ ...state, errorMessage: message, showErrorMessage: true }));
+        },
         hideError: () => update(state => ({ ...state, errorMessage: '', showErrorMessage: false })),
     };
 }

@@ -11,7 +11,6 @@ export type NumberInputOptions = {
 
 export function numberInput(node: HTMLInputElement, options: NumberInputOptions) {
     let { decimalPlaces, maxDecimalPlaces, isPercentage = false, noDecimals = false, maxValue, minValue } = options;
-    let stickyDecimalPlaces: number | null = null;
 
     const getDecimalPlaces = (value: string): number => {
         if (value.includes('.')) {
@@ -19,17 +18,6 @@ export function numberInput(node: HTMLInputElement, options: NumberInputOptions)
         }
         return 0;
     };
-
-    const updateStickyPrecision = (value: string) => {
-        const cleanValue = value.replace(',', '.').trim();
-        if (cleanValue === '' || isNaN(parseFloat(cleanValue))) {
-            stickyDecimalPlaces = null;
-        } else {
-            stickyDecimalPlaces = getDecimalPlaces(cleanValue);
-        }
-    };
-
-    updateStickyPrecision(node.value);
 
     function handleInput(event: Event) {
         const inputElement = event.target as HTMLInputElement;
@@ -59,8 +47,6 @@ export function numberInput(node: HTMLInputElement, options: NumberInputOptions)
                 inputElement.setSelectionRange(newCursorPosition, newCursorPosition);
             }
         }
-
-        updateStickyPrecision(inputElement.value);
     }
 
     function handleBlur(event: Event) {
@@ -125,7 +111,6 @@ export function numberInput(node: HTMLInputElement, options: NumberInputOptions)
 
         const operation = event.key === 'ArrowUp' ? 'add' : 'sub';
         const rawValue = node.value.replace(',', '.');
-        const cursorPosition = node.selectionStart ?? rawValue.length;
 
         if (rawValue.trim() === '' || isNaN(parseFloat(rawValue))) {
             handleEmptyInputArrow(operation);
@@ -133,80 +118,42 @@ export function numberInput(node: HTMLInputElement, options: NumberInputOptions)
         }
 
         try {
-            performStep(rawValue, operation, cursorPosition);
+            performStep(rawValue, operation);
         } catch (error) {
             console.error("Error in handleKeyDown:", error);
         }
     }
 
     function handleEmptyInputArrow(operation: 'add' | 'sub') {
-        let startValue = 1;
-        if(minValue !== undefined && startValue < minValue) {
-            startValue = minValue;
+        let startValue = new Decimal(minValue !== undefined ? minValue : 0);
+        if (operation === 'add') {
+            startValue = startValue.plus(calculateStep());
         }
-        let newValue = operation === 'add' ? new Decimal(startValue) : new Decimal(minValue !== undefined ? minValue : 0);
 
-        newValue = clampValue(newValue);
-
-        const finalValueString = newValue.toString();
+        const newValue = clampValue(startValue);
+        const finalValueString = formatNewValue(newValue);
         updateNodeValue(finalValueString, finalValueString.length);
     }
 
-    function performStep(rawValue: string, operation: 'add' | 'sub', cursorPosition: number) {
+    function performStep(rawValue: string, operation: 'add' | 'sub') {
         let value = new Decimal(rawValue);
-
-        const step = calculateStep(rawValue, cursorPosition);
+        const step = calculateStep();
         let newValue = value[operation](step);
         newValue = clampValue(newValue);
 
-        const originalLength = node.value.length;
-        const finalValueString = formatNewValue(newValue, operation);
-
-        const lengthDifference = finalValueString.length - originalLength;
-        const newCursorPosition = cursorPosition + lengthDifference;
-
-        updateNodeValue(finalValueString, newCursorPosition);
+        const finalValueString = formatNewValue(newValue);
+        updateNodeValue(finalValueString, finalValueString.length);
     }
 
-    function calculateStep(rawValue: string, cursorPosition: number): Decimal {
-        // For strict mode, the original cursor-based logic is sufficient.
-        if (decimalPlaces !== undefined) {
-            const decimalPointIndex = rawValue.indexOf('.');
-            let power;
-            if (decimalPointIndex === -1) {
-                power = rawValue.length - cursorPosition;
-            } else {
-                if (cursorPosition > decimalPointIndex) {
-                    power = (decimalPointIndex + 1) - cursorPosition;
-                } else {
-                    power = decimalPointIndex - cursorPosition;
-                }
-            }
-            return new Decimal(10).pow(power);
+    function calculateStep(): Decimal {
+        if (noDecimals) {
+            return new Decimal(1);
         }
-
-        // For dynamic mode, combine cursor position and sticky precision.
-        // 1. Calculate step based on cursor position.
-        const decimalPointIndex = rawValue.indexOf('.');
-        let power;
-        if (decimalPointIndex === -1) {
-            power = rawValue.length - cursorPosition;
-        } else {
-            if (cursorPosition > decimalPointIndex) {
-                power = (decimalPointIndex + 1) - cursorPosition;
-            } else {
-                power = decimalPointIndex - cursorPosition;
-            }
+        const limit = maxDecimalPlaces ?? decimalPlaces;
+        if (limit !== undefined) {
+            return new Decimal(1).dividedBy(new Decimal(10).pow(limit));
         }
-        const cursorStep = new Decimal(10).pow(power);
-
-        // 2. Calculate minimum step based on sticky precision.
-        const minStep = (stickyDecimalPlaces && stickyDecimalPlaces > 0)
-            ? new Decimal(10).pow(new Decimal(-stickyDecimalPlaces))
-            : new Decimal(1);
-
-        // 3. Return the larger of the two.
-        return Decimal.max(cursorStep, minStep);
+        return new Decimal(1);
     }
 
     function clampValue(value: Decimal): Decimal {
@@ -219,23 +166,14 @@ export function numberInput(node: HTMLInputElement, options: NumberInputOptions)
         return value;
     }
 
-    function formatNewValue(value: Decimal, operation: 'add' | 'sub'): string {
+    function formatNewValue(value: Decimal): string {
         if (noDecimals) {
             return value.toFixed(0);
         }
-
-        if (decimalPlaces !== undefined) {
-            return value.toFixed(decimalPlaces);
+        const limit = maxDecimalPlaces ?? decimalPlaces;
+        if (limit !== undefined) {
+            return value.toFixed(limit);
         }
-
-        if (stickyDecimalPlaces !== null) {
-            if (operation === 'add') {
-                return value.toFixed(stickyDecimalPlaces);
-            } else {
-                return value.toString();
-            }
-        }
-
         return value.toString();
     }
 
@@ -258,7 +196,6 @@ export function numberInput(node: HTMLInputElement, options: NumberInputOptions)
             noDecimals = newOptions.noDecimals ?? noDecimals;
             maxValue = newOptions.maxValue;
             minValue = newOptions.minValue;
-            updateStickyPrecision(node.value);
         },
         destroy() {
             node.removeEventListener('input', handleInput);
