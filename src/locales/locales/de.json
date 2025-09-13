@@ -172,5 +172,9 @@
   "languages": {
     "german": "Deutsch",
     "english": "Englisch"
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "theme": "Theme"
   }
 }

@@ -1,22 +1,16 @@
 <script lang="ts">
   import ModalFrame from '../shared/ModalFrame.svelte';
-  import { modalManager } from '../../services/modalManager';
   import { _ } from 'svelte-i18n';
   import { uiStore } from '../../stores/uiStore';
   import { themes, themeIcons } from '../../lib/constants';
 
-  let isOpen = false;
-  modalManager.subscribe(state => {
-    isOpen = state.currentModal === 'settings' && state.isOpen;
-  });
-
   function handleClose() {
-    modalManager.close();
+    uiStore.toggleSettingsModal(false);
   }
 </script>
 
 <ModalFrame
-  isOpen={isOpen}
+  isOpen={$uiStore.showSettingsModal}
   title={$_('settings.title')}
   on:close={handleClose}
   extraClasses="modal-size-sm"
