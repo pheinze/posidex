@@ -19,7 +19,9 @@
   on:focusin={show}
   on:focusout={hide}
 >
-  <slot />
+  <slot>
+    <span class="tooltip-trigger">?</span>
+  </slot>
   {#if visible && text}
     <div
       bind:this={tooltipEl}
@@ -35,7 +37,24 @@
 <style>
   .tooltip-container {
     position: relative;
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .tooltip-trigger {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 9999px;
+    background-color: var(--text-secondary);
+    color: var(--bg-secondary);
+    font-weight: bold;
+    cursor: help;
+    font-size: 0.75rem;
+    margin-left: 0.25rem;
+    line-height: 1rem;
   }
   .tooltip-content {
     width: 220px;
