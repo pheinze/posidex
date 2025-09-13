@@ -729,88 +729,63 @@ export const app = {
 
         type DecimalTarget = { price: Decimal; percent: Decimal; isLocked: boolean; originalIndex: number };
 
-        const decTargets: DecimalTarget[] = targets.map((t: { price: number | null; percent: number | null; isLocked: boolean }, i: number) => ({
+        const decTargets: DecimalTarget[] = targets.map((t: { price: string | null; percent: string | null; isLocked: boolean }, i: number) => ({
             price: parseDecimal(t.price),
             percent: parseDecimal(t.percent),
             isLocked: t.isLocked,
             originalIndex: i
         }));
 
-        const largestRemainder = (numbers: Decimal[], sumTo: Decimal): Decimal[] => {
-            const integers = numbers.map(n => n.floor());
-            const remainders = numbers.map((n, i) => n.minus(integers[i]));
+        const totalSum = decTargets.reduce((sum, t) => sum.plus(t.percent), ZERO);
+        const diff = ONE_HUNDRED.minus(totalSum);
 
-            let currentSum = integers.reduce((s, n) => s.plus(n), ZERO);
-            let diff = sumTo.minus(currentSum).toDP(0, Decimal.ROUND_DOWN).toNumber();
+        if (diff.isZero()) return;
 
-            const sortedRemainders = remainders
-                .map((r, i) => ({ remainder: r, index: i }))
-                .sort((a, b) => b.remainder.comparedTo(a.remainder));
+        const otherUnlocked = decTargets.filter(t => !t.isLocked && t.originalIndex !== changedIndex);
 
-            for (let i = 0; i < diff; i++) {
-                if (sortedRemainders[i]) {
-                    integers[sortedRemainders[i].index] = integers[sortedRemainders[i].index].plus(1);
+        if (otherUnlocked.length === 0) {
+            if (changedIndex !== null) {
+                const target = decTargets.find(t => t.originalIndex === changedIndex);
+                if (target) {
+                    target.percent = target.percent.plus(diff);
                 }
             }
-            return integers;
-        };
-
-        const lockedSum = decTargets.filter(t => t.isLocked).reduce((sum, t) => sum.plus(t.percent), ZERO);
-        if (lockedSum.gt(ONE_HUNDRED)) {
-            return;
         }
-        const unlockedTotalTarget = ONE_HUNDRED.minus(lockedSum);
-
-        const unlockedTargets = decTargets.filter(t => !t.isLocked);
-        if (unlockedTargets.length === 0) return;
-
-        if (changedIndex !== null) {
-            const changedTarget = unlockedTargets.find(t => t.originalIndex === changedIndex);
-            const otherUnlockedTargets = unlockedTargets.filter(t => t.originalIndex !== changedIndex);
-
-            if (changedTarget && otherUnlockedTargets.length > 0) {
-                if (changedTarget.percent.gt(unlockedTotalTarget)) {
-                    changedTarget.percent = unlockedTotalTarget;
+        else if (diff.gt(ZERO)) { // Surplus
+            const share = diff.div(otherUnlocked.length);
+            otherUnlocked.forEach(t => {
+                const target = decTargets.find(dt => dt.originalIndex === t.originalIndex);
+                if (target) {
+                    target.percent = target.percent.plus(share);
                 }
-
-                const sumOfOthers = otherUnlockedTargets.reduce((sum, t) => sum.plus(t.percent), ZERO);
-                const newSumForOthers = unlockedTotalTarget.minus(changedTarget.percent);
-
-                if (sumOfOthers.isZero()) {
-                    const share = newSumForOthers.div(otherUnlockedTargets.length);
-                    otherUnlockedTargets.forEach(t => t.percent = share);
-                } else {
-                    const ratio = newSumForOthers.isNegative() ? ZERO : newSumForOthers.div(sumOfOthers);
-                    otherUnlockedTargets.forEach(t => t.percent = t.percent.times(ratio));
+            });
+        }
+        else { // Deficit
+            let deficit = diff.abs();
+            for (let i = otherUnlocked.length - 1; i >= 0; i--) {
+                if (deficit.isZero()) break;
+                const targetToReduce = otherUnlocked[i];
+                const originalTarget = decTargets.find(dt => dt.originalIndex === targetToReduce.originalIndex);
+                if (originalTarget) {
+                    const reduction = Decimal.min(deficit, originalTarget.percent);
+                    originalTarget.percent = originalTarget.percent.minus(reduction);
+                    deficit = deficit.minus(reduction);
                 }
-            }
-        } else {
-            const currentUnlockedSum = unlockedTargets.reduce((sum, t) => sum.plus(t.percent), ZERO);
-            if (!currentUnlockedSum.isZero()) {
-                const ratio = unlockedTotalTarget.div(currentUnlockedSum);
-                unlockedTargets.forEach(t => t.percent = t.percent.times(ratio));
-            } else {
-                const share = unlockedTotalTarget.div(unlockedTargets.length);
-                unlockedTargets.forEach(t => t.percent = share);
             }
         }
 
-        const percentagesToRound = unlockedTargets.map(t => t.percent);
-        const roundedPercentages = largestRemainder(percentagesToRound, unlockedTotalTarget);
-
-        unlockedTargets.forEach((t, i) => {
-            const targetInDec = decTargets.find(dt => dt.originalIndex === t.originalIndex);
-            if(targetInDec) {
-                targetInDec.percent = roundedPercentages[i];
-            }
+        // Rounding logic
+        let finalSum = ZERO;
+        decTargets.forEach(t => {
+            t.percent = t.percent.toDecimalPlaces(0, Decimal.ROUND_HALF_UP);
+            finalSum = finalSum.plus(t.percent);
         });
 
-        const finalSum = decTargets.reduce((sum, t) => sum.plus(t.percent), ZERO);
-        if (!finalSum.equals(ONE_HUNDRED) && decTargets.length > 0) {
-            const firstUnlocked = decTargets.find(t => !t.isLocked);
-            if (firstUnlocked) {
-                const finalDiff = ONE_HUNDRED.minus(finalSum);
-                firstUnlocked.percent = firstUnlocked.percent.plus(finalDiff);
+        let roundingDiff = ONE_HUNDRED.minus(finalSum);
+        if (!roundingDiff.isZero()) {
+            const targetToAdjust = decTargets.find(t => !t.isLocked && t.percent.plus(roundingDiff).gte(ZERO));
+            if (targetToAdjust) {
+                targetToAdjust.percent = targetToAdjust.percent.plus(roundingDiff);
             }
         }
 
