@@ -619,3 +619,21 @@ input[type="checkbox"]:checked + .atr-toggle-track::after { transform: translate
 ::-webkit-scrollbar-thumb:hover {
     background-color: var(--accent-color);
 }
+
+/* Modal Size Utilities */
+.modal-size-sm {
+    @apply w-[90vw] max-w-lg;
+}
+.modal-size-journal {
+    width: 80vw;
+}
+.modal-size-instructions {
+    @apply w-[90vw] max-w-6xl;
+    aspect-ratio: 3 / 2;
+}
+
+@media (max-width: 768px) {
+    .modal-size-instructions {
+        aspect-ratio: auto;
+    }
+}

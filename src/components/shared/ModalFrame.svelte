@@ -59,7 +59,6 @@
         max-height: 90vh;
         display: flex;
         flex-direction: column;
-        width: 90vw;
     }
     .modal-header {
         display: flex;

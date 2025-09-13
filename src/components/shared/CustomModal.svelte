@@ -23,7 +23,7 @@
     isOpen={modalState.isOpen}
     title={modalState.title}
     on:close={() => handleConfirm(false)}
-    extraClasses="max-w-lg"
+    extraClasses="modal-size-sm"
 >
     <div class="prose dark:prose-invert w-full max-w-none">{@html modalState.message}</div>
 

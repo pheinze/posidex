@@ -369,7 +369,7 @@ import { trackCustomEvent } from '../services/trackingService';
     isOpen={$uiStore.showChangelogModal}
     title={$_('app.changelogTitle')}
     on:close={() => uiStore.toggleChangelogModal(false)}
-    extraClasses="max-w-6xl"
+    extraClasses="modal-size-instructions"
 >
     <div id="changelog-content" class="prose dark:prose-invert">
         {@html changelogContent}
@@ -380,7 +380,7 @@ import { trackCustomEvent } from '../services/trackingService';
     isOpen={$uiStore.showGuideModal}
     title={$_('app.guideTitle')}
     on:close={() => uiStore.toggleGuideModal(false)}
-    extraClasses="max-w-6xl"
+    extraClasses="modal-size-instructions"
 >
     <div id="guide-content" class="prose dark:prose-invert">
         {@html guideContent}
