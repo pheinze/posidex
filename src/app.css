@@ -703,6 +703,157 @@
 }
 
 /* =================================================================
+   Solarized Dark Theme
+   ================================================================= */
+.theme-solarized-dark {
+    /* --- Palette --- */
+    --base03: #002b36;
+    --base02: #073642;
+    --base01: #586e75;
+    --base00: #657b83;
+    --base0: #839496;
+    --base1: #93a1a1;
+    --yellow: #b58900;
+    --orange: #cb4b16;
+    --red: #dc322f;
+    --magenta: #d33682;
+    --violet: #6c71c4;
+    --blue: #268bd2;
+    --cyan: #2aa198;
+    --green: #859900;
+    --black-overlay: rgba(0, 0, 0, 0.7);
+
+    /* --- Mapping --- */
+    --bg-primary: var(--base03);
+    --bg-secondary: var(--base02);
+    --bg-tertiary: var(--base01);
+    --text-primary: var(--base0);
+    --text-secondary: var(--base1);
+    --border-color: var(--base01);
+    --accent-color: var(--blue);
+    --accent-color-hover: #54a9e0; /* Lighter blue */
+    --success-color: var(--green);
+    --danger-color: var(--red);
+    --warning-color: var(--yellow);
+    --btn-default-bg: var(--base01);
+    --btn-default-hover-bg: var(--base00);
+    --btn-default-text: var(--base0);
+    --btn-danger-bg: var(--red);
+    --btn-danger-hover-bg: var(--orange);
+    --btn-danger-text: var(--base03);
+    --btn-accent-bg: var(--blue);
+    --btn-accent-hover-bg: #54a9e0; /* Lighter blue */
+    --btn-accent-text: var(--base03);
+    --btn-success-bg: var(--green);
+    --btn-success-hover-bg: #9cb400; /* Lighter green */
+    --btn-success-text: var(--base03);
+    --toggle-bg-off: var(--base01);
+    --toggle-bg-on: var(--blue);
+    --toggle-circle-bg: var(--base0);
+    --overlay-color: var(--black-overlay);
+}
+
+/* =================================================================
+   Catppuccin (Mocha) Theme
+   ================================================================= */
+.theme-catppuccin {
+    /* --- Palette --- */
+    --cat-base: #1e1e2e;
+    --cat-mantle: #181825;
+    --cat-crust: #11111b;
+    --cat-surface0: #313244;
+    --cat-surface1: #45475a;
+    --cat-surface2: #585b70;
+    --cat-text: #cdd6f4;
+    --cat-subtext1: #bac2de;
+    --cat-overlay2: #9399b2;
+    --cat-red: #f38ba8;
+    --cat-green: #a6e3a1;
+    --cat-yellow: #f9e2af;
+    --cat-blue: #89b4fa;
+    --cat-pink: #f5c2e7;
+    --cat-teal: #94e2d5;
+    --cat-lavender: #b4befe;
+    --black-overlay: rgba(0, 0, 0, 0.7);
+
+    /* --- Mapping --- */
+    --bg-primary: var(--cat-base);
+    --bg-secondary: var(--cat-mantle);
+    --bg-tertiary: var(--cat-surface0);
+    --text-primary: var(--cat-text);
+    --text-secondary: var(--cat-subtext1);
+    --border-color: var(--cat-surface1);
+    --accent-color: var(--cat-lavender);
+    --accent-color-hover: #c4c9fe; /* Lighter lavender */
+    --success-color: var(--cat-green);
+    --danger-color: var(--cat-red);
+    --warning-color: var(--cat-yellow);
+    --btn-default-bg: var(--cat-surface1);
+    --btn-default-hover-bg: var(--cat-surface2);
+    --btn-default-text: var(--cat-text);
+    --btn-danger-bg: var(--cat-red);
+    --btn-danger-hover-bg: #f5a0b8; /* Lighter red */
+    --btn-danger-text: var(--cat-base);
+    --btn-accent-bg: var(--cat-lavender);
+    --btn-accent-hover-bg: #c4c9fe; /* Lighter lavender */
+    --btn-accent-text: var(--cat-base);
+    --btn-success-bg: var(--cat-green);
+    --btn-success-hover-bg: #baf5b5; /* Lighter green */
+    --btn-success-text: var(--cat-base);
+    --toggle-bg-off: var(--cat-surface1);
+    --toggle-bg-on: var(--cat-lavender);
+    --toggle-circle-bg: var(--cat-text);
+    --overlay-color: var(--black-overlay);
+}
+
+/* =================================================================
+   One Dark Pro Theme
+   ================================================================= */
+.theme-one-dark-pro {
+    /* --- Palette --- */
+    --one-bg: #282c34;
+    --one-fg: #abb2bf;
+    --one-comment: #5c6370;
+    --one-red: #e06c75;
+    --one-green: #98c379;
+    --one-yellow: #e5c07b;
+    --one-orange: #d19a66;
+    --one-blue: #61afef;
+    --one-purple: #c678dd;
+    --one-cyan: #56b6c2;
+    --black-overlay: rgba(0, 0, 0, 0.7);
+
+    /* --- Mapping --- */
+    --bg-primary: var(--one-bg);
+    --bg-secondary: #21252b; /* Slightly darker */
+    --bg-tertiary: #3b4048; /* Slightly lighter */
+    --text-primary: var(--one-fg);
+    --text-secondary: var(--one-comment);
+    --border-color: var(--one-comment);
+    --accent-color: var(--one-blue);
+    --accent-color-hover: #7ec1f7; /* Lighter blue */
+    --success-color: var(--one-green);
+    --danger-color: var(--one-red);
+    --warning-color: var(--one-yellow);
+    --btn-default-bg: var(--one-comment);
+    --btn-default-hover-bg: #6e7886; /* Lighter comment */
+    --btn-default-text: var(--one-fg);
+    --btn-danger-bg: var(--one-red);
+    --btn-danger-hover-bg: #e68b92; /* Lighter red */
+    --btn-danger-text: var(--one-bg);
+    --btn-accent-bg: var(--one-blue);
+    --btn-accent-hover-bg: #7ec1f7; /* Lighter blue */
+    --btn-accent-text: var(--one-bg);
+    --btn-success-bg: var(--one-green);
+    --btn-success-hover-bg: #b1d69a; /* Lighter green */
+    --btn-success-text: var(--one-bg);
+    --toggle-bg-off: var(--one-comment);
+    --toggle-bg-on: var(--one-blue);
+    --toggle-circle-bg: var(--one-fg);
+    --overlay-color: var(--black-overlay);
+}
+
+/* =================================================================
    Base & Component Styles
    ================================================================= */
 body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); transition: background 0.3s, color 0.3s; position: relative; }
