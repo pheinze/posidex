@@ -867,6 +867,102 @@
     --overlay-color: var(--black-overlay);
 }
 
+/* =================================================================
+   Obsidian Theme
+   ================================================================= */
+.theme-obsidian {
+    /* --- Palette --- */
+    --obsidian-bg: #1e1e1e;
+    --obsidian-bg-alt: #2a2a2a;
+    --obsidian-border: #3f3f3f;
+    --obsidian-fg: #dadada;
+    --obsidian-red: #fb464c;
+    --obsidian-green: #44cf6e;
+    --obsidian-yellow: #e0de71;
+    --obsidian-blue: #027aff;
+    --black-transparent: rgba(0, 0, 0, 0.3);
+    --black-overlay: rgba(0, 0, 0, 0.7);
+
+    /* --- Mapping --- */
+    --bg-primary: var(--obsidian-bg);
+    --bg-secondary: var(--obsidian-bg-alt);
+    --bg-tertiary: var(--obsidian-border);
+    --text-primary: var(--obsidian-fg);
+    --text-secondary: #999999; /* --color-base-60 */
+    --border-color: var(--obsidian-border);
+    --accent-color: var(--obsidian-blue);
+    --accent-color-hover: #3593ff;
+    --success-color: var(--obsidian-green);
+    --danger-color: var(--obsidian-red);
+    --warning-color: var(--obsidian-yellow);
+    --shadow-tooltip: 0 30px 90px -20px var(--black-transparent);
+    --btn-default-bg: var(--obsidian-border);
+    --btn-default-hover-bg: #555555; /* --color-base-40 */
+    --btn-default-text: var(--obsidian-fg);
+    --btn-danger-bg: var(--obsidian-red);
+    --btn-danger-hover-bg: #fc6b70;
+    --btn-danger-text: #1e1e1e;
+    --btn-accent-bg: var(--obsidian-blue);
+    --btn-accent-hover-bg: #3593ff;
+    --btn-accent-text: #ffffff;
+    --btn-success-bg: var(--obsidian-green);
+    --btn-success-hover-bg: #68d98c;
+    --btn-success-text: #1e1e1e;
+    --toggle-bg-off: var(--obsidian-border);
+    --toggle-bg-on: var(--obsidian-blue);
+    --toggle-circle-bg: var(--obsidian-fg);
+    --overlay-color: var(--black-overlay);
+}
+
+/* =================================================================
+   Dracula Soft Theme
+   ================================================================= */
+.theme-dracula-soft {
+    /* --- Palette --- */
+    --drac-soft-bg: #282a36;
+    --drac-soft-bg-alt: #383a59;
+    --drac-soft-border: #44475a;
+    --drac-soft-fg: #f8f8f2;
+    --drac-soft-comment: #6272a4;
+    --drac-soft-purple: #b491c8;
+    --drac-soft-pink: #e089b3;
+    --drac-soft-green: #7de89f;
+    --drac-soft-red: #e07878;
+    --drac-soft-yellow: #dcdf9a;
+    --black-transparent: rgba(0, 0, 0, 0.3);
+    --black-overlay: rgba(0, 0, 0, 0.7);
+
+    /* --- Mapping --- */
+    --bg-primary: var(--drac-soft-bg);
+    --bg-secondary: var(--drac-soft-bg-alt);
+    --bg-tertiary: var(--drac-soft-border);
+    --text-primary: var(--drac-soft-fg);
+    --text-secondary: var(--drac-soft-comment);
+    --border-color: var(--drac-soft-border);
+    --accent-color: var(--drac-soft-pink);
+    --accent-color-hover: #e6a0c1;
+    --success-color: var(--drac-soft-green);
+    --danger-color: var(--drac-soft-red);
+    --warning-color: var(--drac-soft-yellow);
+    --shadow-tooltip: 0 30px 90px -20px var(--black-transparent);
+    --btn-default-bg: var(--drac-soft-border);
+    --btn-default-hover-bg: var(--drac-soft-comment);
+    --btn-default-text: var(--drac-soft-fg);
+    --btn-danger-bg: var(--drac-soft-red);
+    --btn-danger-hover-bg: #e68f8f;
+    --btn-danger-text: var(--drac-soft-bg);
+    --btn-accent-bg: var(--drac-soft-pink);
+    --btn-accent-hover-bg: #e6a0c1;
+    --btn-accent-text: var(--drac-soft-bg);
+    --btn-success-bg: var(--drac-soft-green);
+    --btn-success-hover-bg: #97f0b6;
+    --btn-success-text: var(--drac-soft-bg);
+    --toggle-bg-off: var(--drac-soft-border);
+    --toggle-bg-on: var(--drac-soft-purple);
+    --toggle-circle-bg: var(--drac-soft-fg);
+    --overlay-color: var(--black-overlay);
+}
+
 
 /* =================================================================
    Base & Component Styles
