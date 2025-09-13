@@ -52,6 +52,7 @@ const initialUiState: UiState = {
  */
 function createUiStore() {
     const { subscribe, update, set } = writable<UiState>(initialUiState);
+    let feedbackTimeoutId: number | null = null;
 
     return {
         subscribe,
@@ -95,8 +96,18 @@ function createUiStore() {
          */
         showFeedback: (type: 'copy' | 'save', duration = 2000) => {
             const key = type === 'copy' ? 'showCopyFeedback' : 'showSaveFeedback';
+
+            // BUGFIX: Clear any existing timeout to prevent premature closing of the new feedback.
+            if (feedbackTimeoutId) {
+                clearTimeout(feedbackTimeoutId);
+            }
+
             update(state => ({ ...state, [key]: true }));
-            setTimeout(() => update(state => ({ ...state, [key]: false })), duration);
+
+            feedbackTimeoutId = window.setTimeout(() => {
+                update(state => ({ ...state, [key]: false }));
+                feedbackTimeoutId = null;
+            }, duration);
         },
         /** Displays an error message. */
         showError: (message: string) => update(state => ({ ...state, errorMessage: message, showErrorMessage: true })),

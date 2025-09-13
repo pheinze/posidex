@@ -87,11 +87,12 @@ describe('app service - adjustTpPercentages (Pivot Logic)', () => {
         // Expectation: Since pivot (60) + locked (50) > 100, the pivot logic is skipped.
         // Instead, all unlocked targets (TP2 at 60, TP3 at 20) are scaled to fit the remaining 50%.
         // Their sum is 80. Scaling factor = 50/80 = 0.625.
-        // New TP2 = 60 * 0.625 = 37.5 -> 38
-        // New TP3 = 20 * 0.625 = 12.5 -> 12
+        // New TP2 = 60 * 0.625 = 37.5. New TP3 = 20 * 0.625 = 12.5
+        // Rounded: TP2=38, TP3=13. Sum=51. Difference=-1.
+        // Largest target was TP2, so it becomes 38-1=37.
         expect(targets[0].percent!.equals(new Decimal(50))).toBe(true); // Locked
-        expect(targets[1].percent!.equals(new Decimal(38))).toBe(true);
-        expect(targets[2].percent!.equals(new Decimal(12))).toBe(true);
+        expect(targets[1].percent!.equals(new Decimal(37))).toBe(true);
+        expect(targets[2].percent!.equals(new Decimal(13))).toBe(true);
     });
 
 

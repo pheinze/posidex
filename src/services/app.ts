@@ -133,8 +133,10 @@ export const app = {
             if (values.useAtrSl) {
                 // BUGFIX: Add an explicit guard to prevent ATR calculation without a valid entry price.
                 if (values.entryPrice.lte(0)) {
-                    // Mark as invalid if ATR values are present but entry is not, then exit.
-                    newResults.isAtrSlInvalid = values.atrValue.gt(0) || values.atrMultiplier.gt(0);
+                    // If ATR is active but there's no entry price, it's an invalid state that needs a clear error message.
+                    if (values.atrValue.gt(0) || values.atrMultiplier.gt(0)) {
+                        return { status: CONSTANTS.STATUS_INVALID, message: "Please enter an Entry Price to calculate the ATR Stop-Loss.", fields: ['entryPrice'] };
+                    }
                     return { status: CONSTANTS.STATUS_INCOMPLETE };
                 }
 
@@ -525,6 +527,11 @@ export const app = {
             localStorage.setItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY, JSON.stringify(presets));
             app.populatePresetLoader();
             updatePresetStore(state => ({ ...state, selectedPreset: '' }));
+
+            // BUGFIX: Reset inputs to avoid confusion after deleting the active preset.
+            resetAllInputs();
+            uiStore.showError('dashboard.promptForData'); // Gently prompt user to enter new data.
+
         } catch { uiStore.showError("Could not delete preset."); }
     },
 
@@ -666,7 +673,8 @@ export const app = {
                 return;
             }
 
-            const entries = lines.slice(1).map(line => {
+            const failedRows: { rowNumber: number; line: string; error: string }[] = [];
+            const successfulEntries = lines.slice(1).map((line, index) => {
                 const values = line.split(',');
                 const entry: { [key: string]: string } = rawHeaders.reduce((obj: { [key: string]: string }, header, index) => {
                     obj[header.toLowerCase()] = values[index] ? values[index].trim() : '';
@@ -676,6 +684,13 @@ export const app = {
                 const getValue = (field: string) => entry[findHeader(field, rawHeaders)?.toLowerCase() || ''];
 
                 try {
+                    // Basic validation to ensure essential values are present and numeric where needed
+                    const id = parseInt(getValue('id'), 10);
+                    const entryPrice = parseDecimal(getValue('entryPrice'));
+                    if (isNaN(id) || entryPrice.isNaN()) {
+                        throw new Error("Invalid or missing ID or Entry Price.");
+                    }
+
                     const targets = [];
                     for (let j = 1; j <= 5; j++) {
                         const priceHeader = rawHeaders.find(h => h.toLowerCase() === `tp${j} preis` || h.toLowerCase() === `tp${j} price`);
@@ -692,7 +707,7 @@ export const app = {
                     const realizedPnlValue = getValue('realizedPnl');
 
                     return {
-                        id: parseInt(getValue('id'), 10),
+                        id: id,
                         date: parseDateFlexible(getValue('date'), getValue('time')),
                         symbol: getValue('symbol'),
                         tradeType: getValue('tradeType').toLowerCase(),
@@ -701,7 +716,7 @@ export const app = {
                         riskPercentage: parseDecimal(getValue('riskPercentage') || '0'),
                         leverage: parseDecimal(getValue('leverage') || '1'),
                         fees: parseDecimal(getValue('fees') || '0.1'),
-                        entryPrice: parseDecimal(getValue('entryPrice')),
+                        entryPrice: entryPrice,
                         stopLossPrice: parseDecimal(getValue('stopLossPrice')),
                         totalRR: parseDecimal(getValue('totalRR') || '0'),
                         totalNetProfit: parseDecimal(getValue('totalNetProfit') || '0'),
@@ -712,23 +727,36 @@ export const app = {
                         realizedPnl: realizedPnlValue ? parseDecimal(realizedPnlValue) : null
                     } as JournalEntry;
                 } catch (err: unknown) {
-                    console.warn("Error processing a row:", entry, err);
+                    const error = err instanceof Error ? err.message : 'Unknown error';
+                    failedRows.push({ rowNumber: index + 2, line, error });
+                    console.warn(`Error processing CSV row ${index + 2}:`, { line, error });
                     return null;
                 }
             }).filter((entry): entry is JournalEntry => entry !== null);
 
-            if (entries.length > 0) {
-                const currentJournal = get(journalStore);
-                const combined = [...currentJournal, ...entries];
-                const unique = Array.from(new Map(combined.map(trade => [trade.id, trade])).values());
+            if (successfulEntries.length === 0 && failedRows.length === 0) {
+                 uiStore.showError("No valid entries found in the CSV file.");
+                 return;
+            }
 
-                if (await modalManager.show("Confirm Import", `You are about to import ${entries.length} trades. Existing trades with the same ID will be overwritten. Continue?`, "confirm")) {
-                    journalStore.set(unique);
-                    trackCustomEvent('Journal', 'Import', 'CSV', entries.length);
+            let confirmMessage = `You are about to import ${successfulEntries.length} trades.`;
+            if (failedRows.length > 0) {
+                confirmMessage += ` ${failedRows.length} rows could not be imported due to errors.`;
+            }
+             confirmMessage += " Existing trades with the same ID will be overwritten. Continue?";
+
+            if (await modalManager.show("Confirm Import", confirmMessage, "confirm")) {
+                const currentJournal = get(journalStore);
+                const combined = [...currentJournal, ...successfulEntries];
+                const unique = Array.from(new Map(combined.map(trade => [trade.id, trade])).values());
+                journalStore.set(unique);
+                trackCustomEvent('Journal', 'Import', 'CSV', successfulEntries.length);
+
+                if (failedRows.length > 0) {
+                    uiStore.showError(`${successfulEntries.length} trades imported. ${failedRows.length} rows were skipped due to errors.`);
+                } else {
                     uiStore.showFeedback('save', 2000);
                 }
-            } else {
-                uiStore.showError("No valid entries found in the CSV file.");
             }
         };
         reader.readAsText(file);
@@ -961,16 +989,27 @@ export const app = {
                 targetsToAdjust.forEach((t: { percent: Decimal }) => t.percent = t.percent.times(scalingFactor));
             }
 
-            // Apply rounding to all but the last element to avoid rounding errors.
-            let roundedSum = ZERO;
-            for (let i = 0; i < targetsToAdjust.length - 1; i++) {
-                const rounded = targetsToAdjust[i].percent.toDecimalPlaces(0, Decimal.ROUND_HALF_UP);
-                targetsToAdjust[i].percent = rounded;
-                roundedSum = roundedSum.plus(rounded);
+            // BUGFIX: Implement smarter rounding to distribute remainder more fairly.
+            // Find the target with the largest percentage to absorb the rounding difference.
+            let largestTarget = targetsToAdjust[0];
+            for (let i = 1; i < targetsToAdjust.length; i++) {
+                if (targetsToAdjust[i].percent.gt(largestTarget.percent)) {
+                    largestTarget = targetsToAdjust[i];
+                }
             }
-            // The last element gets the remainder.
-            const lastTarget = targetsToAdjust[targetsToAdjust.length - 1];
-            lastTarget.percent = sumToDistribute.minus(roundedSum).toDecimalPlaces(0, Decimal.ROUND_HALF_UP);
+
+            // Round all targets normally first.
+            let roundedSum = ZERO;
+            targetsToAdjust.forEach(t => {
+                t.percent = t.percent.toDecimalPlaces(0, Decimal.ROUND_HALF_UP);
+                roundedSum = roundedSum.plus(t.percent);
+            });
+
+            // Adjust the largest target by the rounding difference.
+            const difference = sumToDistribute.minus(roundedSum);
+            if (largestTarget) {
+                largestTarget.percent = largestTarget.percent.plus(difference);
+            }
         }
 
         const finalTargets = decTargets.map((t: TakeProfitTarget) => ({

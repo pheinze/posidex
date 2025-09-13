@@ -16,7 +16,7 @@
     import { _, locale } from '../locales/i18n'; // Import locale
     import { get } from 'svelte/store'; // Import get
     import { loadInstruction } from '../services/markdownLoader';
-    import { formatDynamicDecimal } from '../utils/utils';
+    import { formatDynamicDecimal, debounce } from '../utils/utils';
     import { trackClick } from '../lib/actions';
 import { trackCustomEvent } from '../services/trackingService';
     import { createBackup, restoreFromBackup } from '../services/backupService';
@@ -33,6 +33,10 @@ import { trackCustomEvent } from '../services/trackingService';
     let fileInput: HTMLInputElement;
     let changelogContent = '';
     let guideContent = '';
+
+    const debouncedCalculate = debounce(() => {
+        app.calculateAndDisplay();
+    }, 250);
 
     // Initialisierung der App-Logik, sobald die Komponente gemountet ist
     onMount(() => {
@@ -78,17 +82,9 @@ import { trackCustomEvent } from '../services/trackingService';
         $tradeStore.tradeType,
         $tradeStore.targets;
 
-        // Only trigger if all necessary inputs are defined (not null/undefined from initial load)
-        // and not during initial setup where values might be empty
-        if ($tradeStore.accountSize !== undefined && $tradeStore.riskPercentage !== undefined &&
-            $tradeStore.entryPrice !== undefined && $tradeStore.leverage !== undefined &&
-            $tradeStore.fees !== undefined && $tradeStore.symbol !== undefined &&
-            $tradeStore.atrValue !== undefined && $tradeStore.atrMultiplier !== undefined &&
-            $tradeStore.useAtrSl !== undefined && $tradeStore.tradeType !== undefined &&
-            $tradeStore.targets !== undefined) {
-            
-            app.calculateAndDisplay();
-        }
+        // The debounced function is called on every change, but will only execute
+        // app.calculateAndDisplay() after 250ms of inactivity.
+        debouncedCalculate();
     }
 
     function handleTradeSetupError(e: CustomEvent<string>) {

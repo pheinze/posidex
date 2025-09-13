@@ -29,6 +29,7 @@ export const calculator = {
         let breakEvenPrice;
         if (tradeType === CONSTANTS.TRADE_TYPE_LONG) {
             const denominator = new Decimal(1).minus(feeFactor);
+            // BUGFIX: Explicitly handle division by zero when fees are 100%
             breakEvenPrice = denominator.isZero() ? new Decimal(Infinity) : values.entryPrice.times(feeFactor.plus(1)).div(denominator);
         } else {
             breakEvenPrice = values.entryPrice.times(new Decimal(1).minus(feeFactor)).div(feeFactor.plus(1));

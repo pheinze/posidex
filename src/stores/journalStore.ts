@@ -3,6 +3,7 @@ import { browser } from '$app/environment';
 import { Decimal } from 'decimal.js';
 import { CONSTANTS } from '../lib/constants';
 import type { JournalEntry } from './types';
+import { debounce } from '../utils/utils';
 
 /**
  * Loads journal entries from the browser's Local Storage.
@@ -39,6 +40,17 @@ export function loadJournalFromLocalStorage(): JournalEntry[] {
     }
 }
 
+const saveJournalToLocalStorage = debounce((value: JournalEntry[]) => {
+    if (browser) {
+        try {
+            localStorage.setItem(CONSTANTS.LOCAL_STORAGE_JOURNAL_KEY, JSON.stringify(value));
+        } catch (e) {
+            console.warn("Could not save journal to localStorage.", e);
+        }
+    }
+}, 1000);
+
+
 /**
  * A Svelte `writable` store that manages the list of trade journal entries.
  * The store is initialized with data loaded from Local Storage.
@@ -48,11 +60,5 @@ export function loadJournalFromLocalStorage(): JournalEntry[] {
 export const journalStore = writable<JournalEntry[]>(loadJournalFromLocalStorage());
 
 journalStore.subscribe(value => {
-    if (browser) {
-        try {
-            localStorage.setItem(CONSTANTS.LOCAL_STORAGE_JOURNAL_KEY, JSON.stringify(value));
-        } catch (e) {
-            console.warn("Could not save journal to localStorage.", e);
-        }
-    }
+    saveJournalToLocalStorage(value);
 });
