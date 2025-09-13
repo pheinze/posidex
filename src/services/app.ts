@@ -182,7 +182,9 @@ export const app = {
             const riskAmount = parseDecimal(currentTradeState.riskAmount);
             if (riskAmount.gt(0) && values.accountSize.gt(0)) {
                 const newRiskPercentage = riskAmount.div(values.accountSize).times(100);
-                updateTradeStore(state => ({ ...state, riskPercentage: newRiskPercentage.toNumber() }));
+                if (!parseDecimal(currentTradeState.riskPercentage).toDP(8).equals(newRiskPercentage.toDP(8))) {
+                    updateTradeStore(state => ({ ...state, riskPercentage: newRiskPercentage.toNumber() }));
+                }
                 values.riskPercentage = newRiskPercentage;
             }
             baseMetrics = calculator.calculateBaseMetrics(values, currentTradeState.tradeType);
@@ -197,7 +199,9 @@ export const app = {
             const riskAmount = riskPerUnit.times(currentTradeState.lockedPositionSize);
             const newRiskPercentage = values.accountSize.isZero() ? new Decimal(0) : riskAmount.div(values.accountSize).times(100);
 
-            updateTradeStore(state => ({ ...state, riskPercentage: newRiskPercentage.toNumber(), riskAmount: riskAmount.toNumber() }));
+            if (!parseDecimal(currentTradeState.riskPercentage).toDP(8).equals(newRiskPercentage.toDP(8)) || !parseDecimal(currentTradeState.riskAmount).toDP(8).equals(riskAmount.toDP(8))) {
+                updateTradeStore(state => ({ ...state, riskPercentage: newRiskPercentage.toNumber(), riskAmount: riskAmount.toNumber() }));
+            }
             values.riskPercentage = newRiskPercentage;
 
             baseMetrics = calculator.calculateBaseMetrics(values, currentTradeState.tradeType);
@@ -207,7 +211,9 @@ export const app = {
             baseMetrics = calculator.calculateBaseMetrics(values, currentTradeState.tradeType);
             if (baseMetrics) {
                 const finalMetrics = baseMetrics;
-                updateTradeStore(state => ({ ...state, riskAmount: finalMetrics.riskAmount.toNumber() }));
+                if (!parseDecimal(currentTradeState.riskAmount).toDP(8).equals(finalMetrics.riskAmount.toDP(8))) {
+                    updateTradeStore(state => ({ ...state, riskAmount: finalMetrics.riskAmount.toNumber() }));
+                }
             }
         }
 
