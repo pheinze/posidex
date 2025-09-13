@@ -3,7 +3,6 @@
     import PortfolioInputs from '../components/inputs/PortfolioInputs.svelte';
     import TradeSetupInputs from '../components/inputs/TradeSetupInputs.svelte';
     import TakeProfitTargets from '../components/inputs/TakeProfitTargets.svelte';
-    import CustomModal from '../components/shared/CustomModal.svelte';
     import VisualBar from '../components/shared/VisualBar.svelte';
     import { CONSTANTS, themes, themeIcons, icons } from '../lib/constants';
     import { app } from '../services/app';
@@ -13,9 +12,8 @@
     import { uiStore } from '../stores/uiStore';
     import { modalManager } from '../services/modalManager';
     import { onMount } from 'svelte';
-    import { _, locale } from '../locales/i18n'; // Import locale
+    import { _ } from '../locales/i18n'; // Import locale
     import { get } from 'svelte/store'; // Import get
-    import { loadInstruction } from '../services/markdownLoader';
     import { formatDynamicDecimal } from '../utils/utils';
     import { trackClick } from '../lib/actions';
 import { trackCustomEvent } from '../services/trackingService';
@@ -25,40 +23,15 @@ import { trackCustomEvent } from '../services/trackingService';
     import SummaryResults from '../components/results/SummaryResults.svelte';
     import LanguageSwitcher from '../components/shared/LanguageSwitcher.svelte';
     import Tooltip from '../components/shared/Tooltip.svelte';
-    import JournalView from '../components/shared/JournalView.svelte';
     import CachyIcon from '../components/shared/CachyIcon.svelte';
-    import ModalFrame from '../components/shared/ModalFrame.svelte';
     import SettingsButton from '../components/settings/SettingsButton.svelte';
-    import SettingsModal from '../components/settings/SettingsModal.svelte';
 
     let fileInput: HTMLInputElement;
-    let changelogContent = '';
-    let guideContent = '';
 
     // Initialisierung der App-Logik, sobald die Komponente gemountet ist
     onMount(() => {
         app.init();
     });
-
-    // Load changelog content when modal is opened
-    $: if ($uiStore.showChangelogModal && changelogContent === '') {
-        loadInstruction('changelog').then(content => {
-            changelogContent = content.html;
-        });
-    }
-
-    // Load guide content when modal is opened
-    $: if ($uiStore.showGuideModal && guideContent === '') {
-        loadInstruction('guide').then(content => {
-            guideContent = content.html;
-        });
-    }
-
-    // Reset content when locale changes to force refetch
-    $: if ($locale) {
-        guideContent = '';
-        changelogContent = '';
-    }
 
     // Reactive statement to trigger app.calculateAndDisplay() when relevant inputs change
     $: {
@@ -366,31 +339,3 @@ import { trackCustomEvent } from '../services/trackingService';
     <a href="/journal" class="text-link" use:trackClick={{ category: 'Navigation', action: 'Click', name: 'ViewJournalPage' }}>Journal Page</a>
     <SettingsButton />
 </footer>
-
-<JournalView />
-
-<CustomModal />
-
-<SettingsModal />
-
-<ModalFrame
-    isOpen={$uiStore.showChangelogModal}
-    title={$_('app.changelogTitle')}
-    on:close={() => uiStore.toggleChangelogModal(false)}
-    extraClasses="modal-size-instructions"
->
-    <div id="changelog-content" class="prose dark:prose-invert">
-        {@html changelogContent}
-    </div>
-</ModalFrame>
-
-<ModalFrame
-    isOpen={$uiStore.showGuideModal}
-    title={$_('app.guideTitle')}
-    on:close={() => uiStore.toggleGuideModal(false)}
-    extraClasses="modal-size-instructions"
->
-    <div id="guide-content" class="prose dark:prose-invert">
-        {@html guideContent}
-    </div>
-</ModalFrame>
