@@ -30,33 +30,117 @@
     src: url('/fonts/Inter_18pt-Bold.ttf') format('truetype');
 }
 
-:root {
-    --bg-primary: #0f172a; --bg-secondary: #1e293b; --bg-tertiary: #334155;
-    --text-primary: #e2e8f0; --text-secondary: #94a3b8; --border-color: #475569;
-    --accent-color: #38bdf8; --accent-color-hover: #0ea5e9;
-    --success-color: #22c55e; --danger-color: #ef4444; --warning-color: #facc15;
-    --shadow-tooltip: 0 30px 90px -20px rgba(0, 0, 0, 0.3);
-    --btn-default-bg: #475569; --btn-default-hover-bg: #64748b; --btn-default-text: #e2e8f0;
-    --btn-danger-bg: #991b1b; --btn-danger-hover-bg: #b91c1c; --btn-danger-text: #e2e8f0;
-    --btn-accent-bg: #0ea5e9; --btn-accent-hover-bg: #0284c7; --btn-accent-text: #e2e8f0;
-    --btn-success-bg: #22c55e; --btn-success-hover-bg: #16a34a; --btn-success-text: #e2e8f0;
-    --toggle-bg-off: #475569; --toggle-bg-on: #0ea5e9; --toggle-circle-bg: var(--text-primary);
-    --overlay-color: rgba(0, 0, 0, 0.7);
-}
-.theme-light {
-    --bg-primary: #f1f5f9; --bg-secondary: #ffffff; --bg-tertiary: #e2e8f0;
-    --text-primary: #1e293b; --text-secondary: #64748b; --border-color: #cbd5e1;
-    --accent-color: #38bdf8; --accent-color-hover: #0ea5e9;
-    --success-color: #16a34a; --danger-color: #dc2626; --warning-color: #f59e0b;
-    --shadow-tooltip: 0 30px 90px -20px rgba(0, 0, 0, 0.1);
-    --btn-default-bg: #94a3b8; --btn-default-hover-bg: #cbd5e1; --btn-default-text: #1e293b;
-    --btn-danger-bg: #ef4444; --btn-danger-hover-bg: #dc2626; --btn-danger-text: #ffffff;
-    --btn-accent-bg: #38bdf8; --btn-accent-hover-bg: #0ea5e9; --btn-accent-text: #ffffff;
-    --btn-success-bg: #16a34a; --btn-success-hover-bg: #15803d; --btn-success-text: #ffffff;
-    --toggle-bg-off: #94a3b8; --toggle-bg-on: #38bdf8; --toggle-circle-bg: var(--text-primary);
-    --overlay-color: rgba(255, 255, 255, 0.7);
+/* =================================================================
+   Root & Default Theme
+   ================================================================= */
+:root, .theme-default {
+    /* --- Palette --- */
+    --blue-950: #0f172a;
+    --blue-900: #1e293b;
+    --blue-800: #334155;
+    --blue-700: #475569;
+    --blue-600: #64748b;
+    --blue-300: #94a3b8;
+    --blue-100: #e2e8f0;
+    --sky-400: #38bdf8;
+    --sky-500: #0ea5e9;
+    --sky-600: #0284c7;
+    --green-500: #22c55e;
+    --green-600: #16a34a;
+    --red-500: #ef4444;
+    --red-800: #991b1b;
+    --red-900: #b91c1c;
+    --yellow-400: #facc15;
+    --black-transparent: rgba(0, 0, 0, 0.3);
+    --black-overlay: rgba(0, 0, 0, 0.7);
+
+    /* --- Mapping --- */
+    --bg-primary: var(--blue-950);
+    --bg-secondary: var(--blue-900);
+    --bg-tertiary: var(--blue-800);
+    --text-primary: var(--blue-100);
+    --text-secondary: var(--blue-300);
+    --border-color: var(--blue-700);
+    --accent-color: var(--sky-400);
+    --accent-color-hover: var(--sky-500);
+    --success-color: var(--green-500);
+    --danger-color: var(--red-500);
+    --warning-color: var(--yellow-400);
+    --shadow-tooltip: 0 30px 90px -20px var(--black-transparent);
+    --btn-default-bg: var(--blue-700);
+    --btn-default-hover-bg: var(--blue-600);
+    --btn-default-text: var(--blue-100);
+    --btn-danger-bg: var(--red-800);
+    --btn-danger-hover-bg: var(--red-900);
+    --btn-danger-text: var(--blue-100);
+    --btn-accent-bg: var(--sky-500);
+    --btn-accent-hover-bg: var(--sky-600);
+    --btn-accent-text: var(--blue-100);
+    --btn-success-bg: var(--green-500);
+    --btn-success-hover-bg: var(--green-600);
+    --btn-success-text: var(--blue-100);
+    --toggle-bg-off: var(--blue-700);
+    --toggle-bg-on: var(--sky-500);
+    --toggle-circle-bg: var(--text-primary);
+    --overlay-color: var(--black-overlay);
 }
 
+/* =================================================================
+   Light Theme
+   ================================================================= */
+.theme-light {
+    /* --- Palette --- */
+    --slate-100: #f1f5f9;
+    --white: #ffffff;
+    --slate-200: #e2e8f0;
+    --slate-800: #1e293b;
+    --slate-500: #64748b;
+    --slate-300: #cbd5e1;
+    --slate-400: #94a3b8;
+    --sky-400: #38bdf8;
+    --sky-500: #0ea5e9;
+    --green-600: #16a34a;
+    --green-700: #15803d;
+    --red-600: #dc2626;
+    --red-500: #ef4444;
+    --amber-500: #f59e0b;
+    --black-transparent: rgba(0, 0, 0, 0.1);
+    --white-transparent: rgba(255, 255, 255, 0.7);
+
+    /* --- Mapping --- */
+    --bg-primary: var(--slate-100);
+    --bg-secondary: var(--white);
+    --bg-tertiary: var(--slate-200);
+    --text-primary: var(--slate-800);
+    --text-secondary: var(--slate-500);
+    --border-color: var(--slate-300);
+    --accent-color: var(--sky-400);
+    --accent-color-hover: var(--sky-500);
+    --success-color: var(--green-600);
+    --danger-color: var(--red-600);
+    --warning-color: var(--amber-500);
+    --shadow-tooltip: 0 30px 90px -20px var(--black-transparent);
+    --btn-default-bg: var(--slate-400);
+    --btn-default-hover-bg: var(--slate-300);
+    --btn-default-text: var(--slate-800);
+    --btn-danger-bg: var(--red-500);
+    --btn-danger-hover-bg: var(--red-600);
+    --btn-danger-text: var(--white);
+    --btn-accent-bg: var(--sky-400);
+    --btn-accent-hover-bg: var(--sky-500);
+    --btn-accent-text: var(--white);
+    --btn-success-bg: var(--green-600);
+    --btn-success-hover-bg: var(--green-700);
+    --btn-success-text: var(--white);
+    --toggle-bg-off: var(--slate-400);
+    --toggle-bg-on: var(--sky-400);
+    --toggle-circle-bg: var(--text-primary);
+    --overlay-color: var(--white-transparent);
+}
+
+/* =================================================================
+   Meteorite Theme
+   ================================================================= */
 .theme-meteorite {
     /* --- Core Palette --- */
     --core-purple: #4e21e7;
@@ -64,267 +148,361 @@
     --core-green-free: #0da49a;
     --core-blue-pro: #334eff;
     --core-red-insights: #ee485f;
-
-    /* --- Light & Dark Shades --- */
     --purple-light: #ede8fd;
     --purple-dark: #0c082f;
-    --green-free-light: #e6f6f5;
-    --green-free-dark: #002039;
-    --blue-pro-light: #eaedff;
-    --blue-pro-dark: #08103f;
-    --red-insights-light: #feecef;
-    --red-insights-dark: #0f0523;
-
-    /* --- Gradients --- */
+    --highlight-purple-alt: #c2befa;
+    --highlight-red: #fa9de7;
     --gradient-purple-light: #2b1f99;
     --gradient-purple-dark: #0c082f;
-    --gradient-green-light: #3c8499;
-    --gradient-green-dark: #002039;
-    --gradient-blue-light: #283a80; /* Custom derived color */
-    --gradient-blue-dark: #08103f;
-    --gradient-red-light: #6d2954;
-    --gradient-red-dark: #0f0523;
+    --bg-secondary-derived: #1a154a;
+    --accent-hover-derived: #5c71ff;
+    --default-hover-derived: #5b587d;
+    --danger-hover-derived: #f46d7e;
+    --success-hover-derived: #3db6af;
+    --overlay-derived: rgba(12, 8, 47, 0.7);
 
-    /* --- Highlighting Colors --- */
-    --highlight-purple: #7383f5;
-    --highlight-purple-alt: #c2befa;
-    --highlight-green: #48b082;
-    --highlight-green-alt: #7fb5a8;
-    --highlight-blue: #80b8f2;
-    --highlight-blue-alt: #c2cfed;
-    --highlight-red: #fa9de7;
-    --highlight-red-alt: #ffe0ee;
-
-    /* --- Theming Variables (Meteorite) --- */
-    /* Backgrounds and Text based on Purple */
+    /* --- Mapping --- */
     --bg-primary: radial-gradient(farthest-side at top, var(--gradient-purple-light), var(--gradient-purple-dark));
-    --bg-secondary: #1a154a; /* Derived intermediate color */
+    --bg-secondary: var(--bg-secondary-derived);
     --bg-tertiary: var(--gradient-purple-light);
     --text-primary: var(--purple-light);
     --text-secondary: var(--highlight-purple-alt);
     --border-color: var(--core-meteorite);
-
-    /* Accent color based on Blue PRO */
     --accent-color: var(--core-blue-pro);
-    --accent-color-hover: #5c71ff; /* Blue Button hover color */
-
-    /* UI Feedback Colors */
+    --accent-color-hover: var(--accent-hover-derived);
     --success-color: var(--core-green-free);
     --danger-color: var(--core-red-insights);
     --warning-color: var(--highlight-red);
-
-    /* Button Colors */
     --btn-default-bg: var(--core-meteorite);
-    --btn-default-hover-bg: #5b587d; /* Derived from Meteorite */
+    --btn-default-hover-bg: var(--default-hover-derived);
     --btn-default-text: var(--purple-light);
-
     --btn-danger-bg: var(--core-red-insights);
-    --btn-danger-hover-bg: #f46d7e;
+    --btn-danger-hover-bg: var(--danger-hover-derived);
     --btn-danger-text: #ffffff;
-
     --btn-accent-bg: var(--core-blue-pro);
-    --btn-accent-hover-bg: #5c71ff;
+    --btn-accent-hover-bg: var(--accent-hover-derived);
     --btn-accent-text: #ffffff;
-
     --btn-success-bg: var(--core-green-free);
-    --btn-success-hover-bg: #3db6af;
+    --btn-success-hover-bg: var(--success-hover-derived);
     --btn-success-text: #ffffff;
-
-    /* Toggle Switch */
     --toggle-bg-off: var(--core-meteorite);
     --toggle-bg-on: var(--core-blue-pro);
     --toggle-circle-bg: var(--text-primary);
-
-    --overlay-color: rgba(12, 8, 47, 0.7); /* Based on purple-dark */
+    --overlay-color: var(--overlay-derived);
 }
 
+/* =================================================================
+   Steel Theme
+   ================================================================= */
 .theme-steel {
-    /* Using the same full palette definition for completeness */
     /* --- Core Palette --- */
     --core-purple: #4e21e7;
     --core-meteorite: #433f65;
     --core-green-free: #0da49a;
     --core-blue-pro: #334eff;
     --core-red-insights: #ee485f;
-
-    /* --- Light & Dark Shades --- */
-    --purple-light: #ede8fd;
-    --purple-dark: #0c082f;
-    --green-free-light: #e6f6f5;
-    --green-free-dark: #002039;
     --blue-pro-light: #eaedff;
     --blue-pro-dark: #08103f;
-    --red-insights-light: #feecef;
-    --red-insights-dark: #0f0523;
-
-    /* --- Gradients --- */
-    --gradient-purple-light: #2b1f99;
-    --gradient-purple-dark: #0c082f;
-    --gradient-green-light: #3c8499;
-    --gradient-green-dark: #002039;
-    --gradient-blue-light: #3c6e99;
-    --gradient-blue-dark: #08103f;
-    --gradient-red-light: #6d2954;
-    --gradient-red-dark: #0f0523;
-
-    /* --- Highlighting Colors --- */
-    --highlight-purple: #7383f5;
-    --highlight-purple-alt: #c2befa;
-    --highlight-green: #48b082;
-    --highlight-green-alt: #7fb5a8;
-    --highlight-blue: #80b8f2;
     --highlight-blue-alt: #c2cfed;
     --highlight-red: #fa9de7;
-    --highlight-red-alt: #ffe0ee;
+    --gradient-blue-light: #3c6e99;
+    --gradient-blue-dark: #08103f;
+    --bg-secondary-derived: #1a2a6c;
+    --bg-tertiary-derived: #283a80;
+    --accent-hover-derived: #5c71ff;
+    --default-hover-derived: #5b587d;
+    --danger-hover-derived: #f46d7e;
+    --success-hover-derived: #3db6af;
+    --overlay-derived: rgba(8, 16, 63, 0.7);
 
-    /* --- Theming Variables (Steel) --- */
-    /* Backgrounds and Text based on Blue */
+    /* --- Mapping --- */
     --bg-primary: radial-gradient(farthest-side at top, var(--gradient-blue-light), var(--gradient-blue-dark));
-    --bg-secondary: #1a2a6c; /* Derived intermediate color */
-    --bg-tertiary: #283a80; /* Custom derived color for better contrast */
+    --bg-secondary: var(--bg-secondary-derived);
+    --bg-tertiary: var(--bg-tertiary-derived);
     --text-primary: var(--blue-pro-light);
     --text-secondary: var(--highlight-blue-alt);
-    --border-color: var(--core-meteorite); /* Using Meteorite for borders as a neutral choice */
-
-    /* Accent color based on Blue PRO */
+    --border-color: var(--core-meteorite);
     --accent-color: var(--core-blue-pro);
-    --accent-color-hover: #5c71ff; /* Button hover color */
-
-    /* UI Feedback Colors */
+    --accent-color-hover: var(--accent-hover-derived);
     --success-color: var(--core-green-free);
     --danger-color: var(--core-red-insights);
     --warning-color: var(--highlight-red);
-
-    /* Button Colors */
     --btn-default-bg: var(--core-meteorite);
-    --btn-default-hover-bg: #5b587d;
+    --btn-default-hover-bg: var(--default-hover-derived);
     --btn-default-text: var(--blue-pro-light);
-
     --btn-danger-bg: var(--core-red-insights);
-    --btn-danger-hover-bg: #f46d7e;
+    --btn-danger-hover-bg: var(--danger-hover-derived);
     --btn-danger-text: #ffffff;
-
     --btn-accent-bg: var(--core-blue-pro);
-    --btn-accent-hover-bg: #5c71ff;
+    --btn-accent-hover-bg: var(--accent-hover-derived);
     --btn-accent-text: #ffffff;
-
     --btn-success-bg: var(--core-green-free);
-    --btn-success-hover-bg: #3db6af;
+    --btn-success-hover-bg: var(--success-hover-derived);
     --btn-success-text: #ffffff;
-
-    /* Toggle Switch */
     --toggle-bg-off: var(--core-meteorite);
     --toggle-bg-on: var(--core-blue-pro);
     --toggle-circle-bg: var(--text-primary);
-
-    --overlay-color: rgba(8, 16, 63, 0.7); /* Based on blue-pro-dark */
+    --overlay-color: var(--overlay-derived);
 }
 
-
+/* =================================================================
+   VIP Theme
+   ================================================================= */
 .theme-VIP {
-    --bg-primary: #121212;
-    --bg-secondary: #1e1e1e;
-    --bg-tertiary: #2c2c2c;
-    --text-primary: #e0e0e0;
-    --text-secondary: #b0b0b0;
-    --border-color: #444;
+    /* --- Palette --- */
+    --gray-900: #121212;
+    --gray-800: #1e1e1e;
+    --gray-700: #2c2c2c;
+    --gray-200: #e0e0e0;
+    --gray-400: #b0b0b0;
+    --gray-600: #444;
+    --lime-300: #e2ff00;
+    --lime-400: #cde200;
+    --green-500: #4caf50;
+    --green-600: #43a047;
+    --red-500: #f44336;
+    --orange-500: #ff9800;
+    --gray-blue-400: #9598a1;
+    --gray-blue-500: #82858d;
+    --red-800: #b71c1c;
+    --red-700: #d32f2f;
+    --white: #ffffff;
+    --black-overlay: rgba(0, 0, 0, 0.7);
 
-    /* Neue Akzentfarbe und Hover-Zustand */
-    --accent-color: #e2ff00;
-    --accent-color-hover: #cde200;
-
-    /* Standard-UI-Feedback-Farben, mit neuer Warnfarbe */
-    --success-color: #4caf50;
-    --danger-color: #f44336;
-    --warning-color: #ff9800;
-
-    /* Standard-Button mit der neuen grauen Farbe */
-    --btn-default-bg: #9598a1;
-    --btn-default-hover-bg: #82858d;
-    --btn-default-text: #121212; /* Dunkler Text für besseren Kontrast */
-
-    /* Danger-Button (unverändert) */
-    --btn-danger-bg: #b71c1c;
-    --btn-danger-hover-bg: #d32f2f;
-    --btn-danger-text: #e0e0e0;
-
-    /* Akzent-Button mit der neuen Akzentfarbe */
-    --btn-accent-bg: #e2ff00;
-    --btn-accent-hover-bg: #cde200;
-    --btn-accent-text: #121212; /* Dunkler Text für besseren Kontrast */
-    --btn-success-bg: #4caf50; --btn-success-hover-bg: #43a047; --btn-success-text: #ffffff;
-
-    /* Toggle-Switch mit der neuen Akzentfarbe */
-    --toggle-bg-off: #444;
-    --toggle-bg-on: #e2ff00;
+    /* --- Mapping --- */
+    --bg-primary: var(--gray-900);
+    --bg-secondary: var(--gray-800);
+    --bg-tertiary: var(--gray-700);
+    --text-primary: var(--gray-200);
+    --text-secondary: var(--gray-400);
+    --border-color: var(--gray-600);
+    --accent-color: var(--lime-300);
+    --accent-color-hover: var(--lime-400);
+    --success-color: var(--green-500);
+    --danger-color: var(--red-500);
+    --warning-color: var(--orange-500);
+    --btn-default-bg: var(--gray-blue-400);
+    --btn-default-hover-bg: var(--gray-blue-500);
+    --btn-default-text: var(--gray-900);
+    --btn-danger-bg: var(--red-800);
+    --btn-danger-hover-bg: var(--red-700);
+    --btn-danger-text: var(--gray-200);
+    --btn-accent-bg: var(--lime-300);
+    --btn-accent-hover-bg: var(--lime-400);
+    --btn-accent-text: var(--gray-900);
+    --btn-success-bg: var(--green-500);
+    --btn-success-hover-bg: var(--green-600);
+    --btn-success-text: var(--white);
+    --toggle-bg-off: var(--gray-600);
+    --toggle-bg-on: var(--lime-300);
     --toggle-circle-bg: var(--text-primary);
-
-    --overlay-color: rgba(0, 0, 0, 0.7);
+    --overlay-color: var(--black-overlay);
 }
 
+/* =================================================================
+   Matrix Theme
+   ================================================================= */
 .theme-matrix {
-    --bg-primary: #000000;
-    --bg-secondary: #0D0D0D;
-    --bg-tertiary: #1a1a1a;
-    --text-primary: #00ff41;
-    --text-secondary: #00b32d;
-    --border-color: #00802b;
-    --accent-color: #00ff41;
-    --accent-color-hover: #00e639;
-    --success-color: #00ff41;
-    --danger-color: #ff0000;
-    --warning-color: #ffff00;
-    --btn-default-bg: #00802b;
-    --btn-default-hover-bg: #00b32d;
-    --btn-default-text: #000000;
-    --btn-danger-bg: #990000;
-    --btn-danger-hover-bg: #cc0000;
-    --btn-danger-text: #000000;
-    --btn-accent-bg: #00ff41; --btn-accent-hover-bg: #00e639;
-    --btn-accent-text: #000000;
-    --btn-success-bg: #00ff41; --btn-success-hover-bg: #00e639; --btn-success-text: #000000;
-    --toggle-bg-off: #00802b;
-    --toggle-bg-on: #00ff41;
+    /* --- Palette --- */
+    --black: #000000;
+    --gray-950: #0D0D0D;
+    --gray-900: #1a1a1a;
+    --green-400: #00ff41;
+    --green-500: #00e639;
+    --green-600: #00b32d;
+    --green-700: #00802b;
+    --red-500: #ff0000;
+    --red-800: #990000;
+    --red-900: #cc0000;
+    --yellow-400: #ffff00;
+    --black-overlay: rgba(0, 0, 0, 0.7);
+
+    /* --- Mapping --- */
+    --bg-primary: var(--black);
+    --bg-secondary: var(--gray-950);
+    --bg-tertiary: var(--gray-900);
+    --text-primary: var(--green-400);
+    --text-secondary: var(--green-600);
+    --border-color: var(--green-700);
+    --accent-color: var(--green-400);
+    --accent-color-hover: var(--green-500);
+    --success-color: var(--green-400);
+    --danger-color: var(--red-500);
+    --warning-color: var(--yellow-400);
+    --btn-default-bg: var(--green-700);
+    --btn-default-hover-bg: var(--green-600);
+    --btn-default-text: var(--black);
+    --btn-danger-bg: var(--red-800);
+    --btn-danger-hover-bg: var(--red-900);
+    --btn-danger-text: var(--black);
+    --btn-accent-bg: var(--green-400);
+    --btn-accent-hover-bg: var(--green-500);
+    --btn-accent-text: var(--black);
+    --btn-success-bg: var(--green-400);
+    --btn-success-hover-bg: var(--green-500);
+    --btn-success-text: var(--black);
+    --toggle-bg-off: var(--green-700);
+    --toggle-bg-on: var(--green-400);
     --toggle-circle-bg: var(--text-primary);
-    --overlay-color: rgba(0, 0, 0, 0.7);
-}
-.theme-dracula {
-    --bg-primary: #282a36; --bg-secondary: #383a59; --bg-tertiary: #44475a;
-    --text-primary: #f8f8f2; --text-secondary: #bd93f9; --border-color: #6272a4;
-    --accent-color: #ff79c6; --accent-color-hover: #ff92d0;
-    --success-color: #50fa7b; --danger-color: #ff5555; --warning-color: #f1fa8c;
-    --btn-default-bg: #44475a; --btn-default-hover-bg: #6272a4; --btn-default-text: #f8f8f2;
-    --btn-danger-bg: #ff5555; --btn-danger-hover-bg: #ff6e6e; --btn-danger-text: #282a36;
-    --btn-accent-bg: #ff79c6; --btn-accent-hover-bg: #ff92d0; --btn-accent-text: #282a36;
-    --btn-success-bg: #50fa7b; --btn-success-hover-bg: #62faa4; --btn-success-text: #282a36;
-    --toggle-bg-off: #44475a; --toggle-bg-on: #bd93f9; --toggle-circle-bg: var(--text-primary);
-    --overlay-color: rgba(0, 0, 0, 0.7);
-}
-.theme-solarized-light {
-    --bg-primary: #fdf6e3; --bg-secondary: #eee8d5; --bg-tertiary: #e7e1cf;
-    --text-primary: #657b83; --text-secondary: #586e75; --border-color: #93a1a1;
-    --accent-color: #268bd2; --accent-color-hover: #1e6a9e;
-    --success-color: #859900; --danger-color: #dc322f; --warning-color: #b58900;
-    --btn-default-bg: #93a1a1; --btn-default-hover-bg: #839496; --btn-default-text: #fdf6e3;
-    --btn-danger-bg: #dc322f; --btn-danger-hover-bg: #cb4b16; --btn-danger-text: #fdf6e3;
-    --btn-accent-bg: #268bd2; --btn-accent-hover-bg: #1e6a9e; --btn-accent-text: #fdf6e3;
-    --btn-success-bg: #859900; --btn-success-hover-bg: #728300; --btn-success-text: #fdf6e3;
-    --toggle-bg-off: #93a1a1; --toggle-bg-on: #268bd2; --toggle-circle-bg: #fdf6e3;
-    --overlay-color: rgba(255, 255, 255, 0.7);
-}
-.theme-nord {
-    --bg-primary: #2e3440; --bg-secondary: #3b4252; --bg-tertiary: #434c5e;
-    --text-primary: #d8dee9; --text-secondary: #e5e9f0; --border-color: #4c566a;
-    --accent-color: #88c0d0; --accent-color-hover: #8fbcbb;
-    --success-color: #a3be8c; --danger-color: #bf616a; --warning-color: #ebcb8b;
-    --btn-default-bg: #434c5e; --btn-default-hover-bg: #4c566a; --btn-default-text: #d8dee9;
-    --btn-danger-bg: #bf616a; --btn-danger-hover-bg: #d08770; --btn-danger-text: #2e3440;
-    --btn-accent-bg: #88c0d0; --btn-accent-hover-bg: #8fbcbb; --btn-accent-text: #2e3440;
-    --btn-success-bg: #a3be8c; --btn-success-hover-bg: #99b57e; --btn-success-text: #2e3440;
-    --toggle-bg-off: #434c5e; --toggle-bg-on: #88c0d0; --toggle-circle-bg: #d8dee9;
-    --overlay-color: rgba(0, 0, 0, 0.7);
+    --overlay-color: var(--black-overlay);
 }
 
+/* =================================================================
+   Dracula Theme
+   ================================================================= */
+.theme-dracula {
+    /* --- Palette --- */
+    --dark-purple-800: #282a36;
+    --dark-purple-700: #383a59;
+    --dark-purple-600: #44475a;
+    --dark-purple-400: #6272a4;
+    --light-gray: #f8f8f2;
+    --purple: #bd93f9;
+    --pink: #ff79c6;
+    --pink-hover: #ff92d0;
+    --green: #50fa7b;
+    --green-hover: #62faa4;
+    --red: #ff5555;
+    --red-hover: #ff6e6e;
+    --yellow: #f1fa8c;
+    --black-overlay: rgba(0, 0, 0, 0.7);
+
+    /* --- Mapping --- */
+    --bg-primary: var(--dark-purple-800);
+    --bg-secondary: var(--dark-purple-700);
+    --bg-tertiary: var(--dark-purple-600);
+    --text-primary: var(--light-gray);
+    --text-secondary: var(--purple);
+    --border-color: var(--dark-purple-400);
+    --accent-color: var(--pink);
+    --accent-color-hover: var(--pink-hover);
+    --success-color: var(--green);
+    --danger-color: var(--red);
+    --warning-color: var(--yellow);
+    --btn-default-bg: var(--dark-purple-600);
+    --btn-default-hover-bg: var(--dark-purple-400);
+    --btn-default-text: var(--light-gray);
+    --btn-danger-bg: var(--red);
+    --btn-danger-hover-bg: var(--red-hover);
+    --btn-danger-text: var(--dark-purple-800);
+    --btn-accent-bg: var(--pink);
+    --btn-accent-hover-bg: var(--pink-hover);
+    --btn-accent-text: var(--dark-purple-800);
+    --btn-success-bg: var(--green);
+    --btn-success-hover-bg: var(--green-hover);
+    --btn-success-text: var(--dark-purple-800);
+    --toggle-bg-off: var(--dark-purple-600);
+    --toggle-bg-on: var(--purple);
+    --toggle-circle-bg: var(--text-primary);
+    --overlay-color: var(--black-overlay);
+}
+
+/* =================================================================
+   Solarized Light Theme
+   ================================================================= */
+.theme-solarized-light {
+    /* --- Palette --- */
+    --base3: #fdf6e3;
+    --base2: #eee8d5;
+    --base1: #e7e1cf;
+    --base00: #657b83;
+    --base01: #586e75;
+    --base02: #93a1a1;
+    --base03: #839496;
+    --base04: #002b36; /* Added for high contrast text */
+    --blue: #268bd2;
+    --blue-dark: #1e6a9e;
+    --green: #859900;
+    --green-dark: #728300;
+    --red: #dc322f;
+    --orange: #cb4b16;
+    --yellow: #b58900;
+    --white-overlay: rgba(255, 255, 255, 0.7);
+
+    /* --- Mapping --- */
+    --bg-primary: var(--base3);
+    --bg-secondary: var(--base2);
+    --bg-tertiary: var(--base1);
+    --text-primary: var(--base00);
+    --text-secondary: var(--base01);
+    --border-color: var(--base02);
+    --accent-color: var(--blue);
+    --accent-color-hover: var(--blue-dark);
+    --success-color: var(--green);
+    --danger-color: var(--red);
+    --warning-color: var(--yellow);
+    --btn-default-bg: var(--base02);
+    --btn-default-hover-bg: var(--base03);
+    --btn-default-text: var(--base3);
+    --btn-danger-bg: var(--red);
+    --btn-danger-hover-bg: var(--orange);
+    --btn-danger-text: var(--base3);
+    --btn-accent-bg: var(--blue);
+    --btn-accent-hover-bg: var(--blue-dark);
+    --btn-accent-text: var(--base3);
+    --btn-success-bg: var(--green);
+    --btn-success-hover-bg: var(--green-dark);
+    --btn-success-text: var(--base3);
+    --toggle-bg-off: var(--base02);
+    --toggle-bg-on: var(--blue);
+    --toggle-circle-bg: var(--base3);
+    --overlay-color: var(--white-overlay);
+}
+
+/* =================================================================
+   Nord Theme
+   ================================================================= */
+.theme-nord {
+    /* --- Palette --- */
+    --polar-night-1: #2e3440;
+    --polar-night-2: #3b4252;
+    --polar-night-3: #434c5e;
+    --polar-night-4: #4c566a;
+    --snow-storm-1: #d8dee9;
+    --snow-storm-2: #e5e9f0;
+    --frost-3: #88c0d0;
+    --frost-4: #8fbcbb;
+    --aurora-green: #a3be8c;
+    --aurora-green-dark: #99b57e;
+    --aurora-red: #bf616a;
+    --aurora-orange: #d08770;
+    --aurora-yellow: #ebcb8b;
+    --black-overlay: rgba(0, 0, 0, 0.7);
+
+    /* --- Mapping --- */
+    --bg-primary: var(--polar-night-1);
+    --bg-secondary: var(--polar-night-2);
+    --bg-tertiary: var(--polar-night-3);
+    --text-primary: var(--snow-storm-1);
+    --text-secondary: var(--snow-storm-2);
+    --border-color: var(--polar-night-4);
+    --accent-color: var(--frost-3);
+    --accent-color-hover: var(--frost-4);
+    --success-color: var(--aurora-green);
+    --danger-color: var(--aurora-red);
+    --warning-color: var(--aurora-yellow);
+    --btn-default-bg: var(--polar-night-3);
+    --btn-default-hover-bg: var(--polar-night-4);
+    --btn-default-text: var(--snow-storm-1);
+    --btn-danger-bg: var(--aurora-red);
+    --btn-danger-hover-bg: var(--aurora-orange);
+    --btn-danger-text: var(--polar-night-1);
+    --btn-accent-bg: var(--frost-3);
+    --btn-accent-hover-bg: var(--frost-4);
+    --btn-accent-text: var(--polar-night-1);
+    --btn-success-bg: var(--aurora-green);
+    --btn-success-hover-bg: var(--aurora-green-dark);
+    --btn-success-text: var(--polar-night-1);
+    --toggle-bg-off: var(--polar-night-3);
+    --toggle-bg-on: var(--frost-3);
+    --toggle-circle-bg: var(--snow-storm-1);
+    --overlay-color: var(--black-overlay);
+}
+
+
+/* =================================================================
+   Base & Component Styles
+   ================================================================= */
 body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); transition: background 0.3s, color 0.3s; position: relative; }
 .calculator-wrapper { background-color: var(--bg-secondary); }
 .input-field { background-color: var(--bg-tertiary); border: 1px solid var(--border-color); color: var(--text-primary); }
@@ -345,8 +523,8 @@ input[type=number] { -moz-appearance: textfield; }
 
 .trade-type-switch button { padding: 0.5rem 1rem; border-radius: 0.375rem; transition: all 0.2s ease-in-out; border: 1px solid transparent; }
 .trade-type-switch button.active { font-weight: 700; }
-.trade-type-switch button.long.active { background-color: var(--success-color); border-color: var(--success-color); color: var(--btn-default-text); }
-.trade-type-switch button.short.active { background-color: var(--danger-color); border-color: var(--danger-color); color: var(--btn-default-text); }
+.trade-type-switch button.long.active { background-color: var(--success-color); border-color: var(--success-color); color: var(--btn-success-text); }
+.trade-type-switch button.short.active { background-color: var(--danger-color); border-color: var(--danger-color); color: var(--btn-danger-text); }
 .trade-type-switch button:not(.active) { background-color: var(--bg-tertiary); color: var(--text-primary); }
 .trade-type-switch { background-color: var(--bg-tertiary); }
 
@@ -530,7 +708,7 @@ input[type="checkbox"]:checked + .atr-toggle-track::after { transform: translate
 .stat-value { font-size: 1.25rem; font-weight: 700; }
 .stat-label { font-size: 0.75rem; color: var(--text-secondary); }
 .suggestion-item { background-color: var(--bg-secondary); padding: 0.5rem 1rem; cursor: pointer; color: var(--text-primary); }
-.suggestion-item:hover { background-color: var(--accent-color); color: #ffffff; }
+.suggestion-item:hover { background-color: var(--accent-color); color: var(--btn-accent-text); }
 
 .prose h3 { margin-top: 1.5em; margin-bottom: 0.5em; font-size: 1.25rem; font-weight: 600; border-bottom: 1px solid var(--border-color); padding-bottom: 0.3em;}
 .prose p { margin-bottom: 1em; line-height: 1.6; }
@@ -554,53 +732,24 @@ input[type="checkbox"]:checked + .atr-toggle-track::after { transform: translate
   text-decoration: underline;
 }
 
-/* Accessibility fix for button contrast */
+/* =================================================================
+   Accessibility & Specific Overrides
+   ================================================================= */
+/*
+  The following overrides ensure proper text contrast on buttons
+  where the default text color (--btn-success-text, --btn-danger-text)
+  does not provide enough contrast against the button's background color
+  in a specific theme.
+*/
 
-/* VIP Theme: Use light text on green 'Long' button */
-.theme-VIP .trade-type-switch button.long.active {
-    color: #ffffff;
-}
-
-/* Dracula Theme: Use dark text on bright 'Long' and 'Short' buttons */
-.theme-dracula .trade-type-switch button.long.active,
-.theme-dracula .trade-type-switch button.short.active {
-    color: #282a36;
-}
-
-/* Solarized Light Theme: Use very dark/light text for contrast */
+/* Solarized Light: Use dark text on light green 'Long' button */
 .theme-solarized-light .trade-type-switch button.long.active {
-    color: #002b36; /* Use dark color for contrast on olive */
-}
-.theme-solarized-light .trade-type-switch button.short.active {
-    color: #ffffff; /* Use white for better contrast on red */
+    color: var(--base04);
 }
 
-/* Nord Theme: Use dark text on light 'Long' and 'Short' buttons */
-.theme-nord .trade-type-switch button.long.active,
-.theme-nord .trade-type-switch button.short.active {
-    color: #2e3440;
-}
-
-/* User-requested color override for 'Short' button text */
-.theme-light .trade-type-switch button.short.active,
-.theme-VIP .trade-type-switch button.short.active,
-.theme-matrix .trade-type-switch button.short.active {
-    color: #ffffff; /* Use light text color as requested */
-}
-
-/* --- Accessibility fix for 'Clear Journal' button in Matrix theme --- */
-.theme-matrix #clear-journal-btn {
-    color: var(--text-primary);
-}
-
-/* --- Accessibility fix for suggestion dropdown hover color --- */
-.theme-VIP .suggestion-item:hover {
-    color: #121212;
-}
-.theme-matrix .suggestion-item:hover {
-    color: #000000;
-}
-
+/* =================================================================
+   Scrollbar & Modal Styles
+   ================================================================= */
 /* Themed Scrollbar Styles */
 ::-webkit-scrollbar {
     width: 12px;
