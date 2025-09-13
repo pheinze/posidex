@@ -2,7 +2,6 @@
   export let text = '';
   let visible = false;
   let tooltipEl: HTMLElement;
-  let triggerEl: HTMLElement;
 
   function show() {
     visible = true;
@@ -11,31 +10,17 @@
   function hide() {
     visible = false;
   }
-
-  function handleKeydown(event: KeyboardEvent) {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      visible = !visible;
-    }
-  }
 </script>
 
-<div class="tooltip-container">
-  <button
-    bind:this={triggerEl}
-    on:mouseenter={show}
-    on:mouseleave={hide}
-    type="button"
-    class="tooltip-trigger"
-    aria-describedby="tooltip-text"
-    on:focus={show}
-    on:blur={hide}
-    on:keydown={handleKeydown}
-    tabindex="-1"
-  >
-    ?
-  </button>
-  {#if visible}
+<div
+  class="tooltip-container"
+  on:mouseenter={show}
+  on:mouseleave={hide}
+  on:focusin={show}
+  on:focusout={hide}
+>
+  <slot />
+  {#if visible && text}
     <div
       bind:this={tooltipEl}
       id="tooltip-text"
@@ -51,19 +36,6 @@
   .tooltip-container {
     position: relative;
     display: inline-block;
-  }
-  .tooltip-trigger {
-    background: var(--border-color);
-    color: var(--text-primary);
-    border-radius: 99px;
-    width: 1rem;
-    height: 1rem;
-    font-size: 0.7rem;
-    line-height: 1rem;
-    text-align: center;
-    border: none;
-    cursor: pointer;
-    padding: 0;
   }
   .tooltip-content {
     width: 220px;
