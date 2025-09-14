@@ -21,6 +21,7 @@
     "savePresetTitle": "Aktuelle Eingaben als Preset speichern",
     "savePresetAriaLabel": "Preset speichern",
     "deletePresetTitle": "Ausgewähltes Preset löschen",
+    "deletePresetDisabledTitle": "Bitte wähle zuerst ein Preset zum Löschen aus.",
     "resetButton": "Zurücksetzen",
     "resetButtonTitle": "Alle Eingaben zurücksetzen",
     "themeSwitcherAriaLabel": "Theme wechseln",

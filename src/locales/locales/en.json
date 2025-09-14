@@ -21,6 +21,7 @@
     "savePresetTitle": "Save current inputs as preset",
     "savePresetAriaLabel": "Save Preset",
     "deletePresetTitle": "Delete selected preset",
+    "deletePresetDisabledTitle": "Please select a preset to delete first.",
     "resetButton": "Reset",
     "resetButtonTitle": "Reset all inputs",
     "themeSwitcherAriaLabel": "Switch Theme",

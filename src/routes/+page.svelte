@@ -9,7 +9,7 @@
     import { app } from '../services/app';
     import { tradeStore, updateTradeStore, resetAllInputs, toggleAtrInputs } from '../stores/tradeStore';
     import { resultsStore } from '../stores/resultsStore';
-    import { presetStore } from '../stores/presetStore';
+    import { presetStore, updatePresetStore } from '../stores/presetStore';
     import { uiStore } from '../stores/uiStore';
     import { modalManager } from '../services/modalManager';
     import { onMount } from 'svelte';
@@ -34,6 +34,7 @@ import { trackCustomEvent } from '../services/trackingService';
     let fileInput: HTMLInputElement;
     let changelogContent = '';
     let guideContent = '';
+    let presetJustLoaded = false;
 
     // Initialisierung der App-Logik, sobald die Komponente gemountet ist
     onMount(() => {
@@ -79,6 +80,10 @@ import { trackCustomEvent } from '../services/trackingService';
         $tradeStore.tradeType,
         $tradeStore.targets;
 
+        if ($presetStore.selectedPreset && !presetJustLoaded) {
+            updatePresetStore(store => ({...store, selectedPreset: ''}));
+        }
+
         // Only trigger if all necessary inputs are defined (not null/undefined from initial load)
         // and not during initial setup where values might be empty
         if ($tradeStore.accountSize !== undefined && $tradeStore.riskPercentage !== undefined &&
@@ -87,8 +92,12 @@ import { trackCustomEvent } from '../services/trackingService';
             $tradeStore.atrValue !== undefined && $tradeStore.atrMultiplier !== undefined &&
             $tradeStore.useAtrSl !== undefined && $tradeStore.tradeType !== undefined &&
             $tradeStore.targets !== undefined) {
-            
+
             app.calculateAndDisplay();
+        }
+
+        if (presetJustLoaded) {
+            presetJustLoaded = false;
         }
     }
 
@@ -130,6 +139,9 @@ import { trackCustomEvent } from '../services/trackingService';
     function handlePresetLoad(event: Event) {
         const selectedPreset = (event.target as HTMLSelectElement).value;
         app.loadPreset(selectedPreset);
+        if (selectedPreset) {
+            presetJustLoaded = true;
+        }
     }
 
     function handleKeydown(event: KeyboardEvent) {
@@ -234,7 +246,7 @@ import { trackCustomEvent } from '../services/trackingService';
                     {/each}
                 </select>
                 <button id="save-preset-btn" class="text-sm bg-[var(--btn-default-bg)] hover:bg-[var(--btn-default-hover-bg)] text-[var(--btn-default-text)] font-bold py-2.5 px-2.5 rounded-lg" title="{$_('dashboard.savePresetTitle')}" aria-label="{$_('dashboard.savePresetAriaLabel')}" on:click={app.savePreset} use:trackClick={{ category: 'Presets', action: 'Click', name: 'SavePreset' }}>{@html icons.save}</button>
-                <button id="delete-preset-btn" class="text-sm bg-[var(--btn-danger-bg)] hover:bg-[var(--btn-danger-hover-bg)] text-[var(--btn-danger-text)] font-bold py-2.5 px-2.5 rounded-lg disabled:cursor-not-allowed" title="{$_('dashboard.deletePresetTitle')}" disabled={!$presetStore.selectedPreset} on:click={app.deletePreset} use:trackClick={{ category: 'Presets', action: 'Click', name: 'DeletePreset' }}>{@html icons.delete}</button>
+                <button id="delete-preset-btn" class="text-sm bg-[var(--btn-danger-bg)] hover:bg-[var(--btn-danger-hover-bg)] text-[var(--btn-danger-text)] font-bold py-2.5 px-2.5 rounded-lg disabled:cursor-not-allowed" title={!$presetStore.selectedPreset ? $_('dashboard.deletePresetDisabledTitle') : $_('dashboard.deletePresetTitle')} disabled={!$presetStore.selectedPreset} on:click={app.deletePreset} use:trackClick={{ category: 'Presets', action: 'Click', name: 'DeletePreset' }}>{@html icons.delete}</button>
                 <button id="reset-btn" class="text-sm bg-[var(--btn-default-bg)] hover:bg-[var(--btn-default-hover-bg)] text-[var(--btn-default-text)] font-bold py-2.5 px-2.5 rounded-lg flex items-center gap-2" title="{$_('dashboard.resetButtonTitle')}" on:click={resetAllInputs} use:trackClick={{ category: 'Actions', action: 'Click', name: 'ResetAll' }}>{@html icons.broom}</button>
                 <button
                     id="theme-switcher"
