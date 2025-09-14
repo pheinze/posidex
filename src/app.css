@@ -1459,6 +1459,10 @@ input[type=number] { -moz-appearance: textfield; }
 .trade-type-switch button:not(.active) { background-color: var(--bg-tertiary); color: var(--text-primary); }
 .trade-type-switch { background-color: var(--bg-tertiary); }
 
+.atr-formula-display {
+    overflow-wrap: break-word;
+}
+
 /* Styles for ATR Mode Switcher */
 .atr-mode-switcher {
     display: flex;

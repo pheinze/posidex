@@ -5,7 +5,6 @@
     import { createEventDispatcher } from 'svelte';
     import { icons } from '../../lib/constants';
     import { updateTradeStore } from '../../stores/tradeStore';
-    import { uiStore } from '../../stores/uiStore';
 
     export let accountSize: number | null;
     export let riskPercentage: number | null;
@@ -17,7 +16,6 @@
 
     function handleLockClick() {
         dispatch('toggleRiskAmountLock');
-        dispatch('manualchange');
     }
 
     const format = (val: number | null) => (val === null || val === undefined) ? '' : String(val);
@@ -26,21 +24,18 @@
         const target = e.target as HTMLInputElement;
         const value = target.value;
         updateTradeStore(s => ({ ...s, accountSize: value === '' ? null : parseFloat(value) }));
-        dispatch('manualchange');
     }
 
     function handleRiskPercentageInput(e: Event) {
         const target = e.target as HTMLInputElement;
         const value = target.value;
         updateTradeStore(s => ({ ...s, riskPercentage: value === '' ? null : parseFloat(value) }));
-        dispatch('manualchange');
     }
 
     function handleRiskAmountInput(e: Event) {
         const target = e.target as HTMLInputElement;
         const value = target.value;
         updateTradeStore(s => ({ ...s, riskAmount: value === '' ? null : parseFloat(value) }));
-        dispatch('manualchange');
     }
 </script>
 
@@ -49,11 +44,11 @@
     <div class="grid grid-cols-3 gap-4">
         <div>
             <label for="account-size" class="input-label text-xs">{$_('dashboard.portfolioInputs.accountSizeLabel')}</label>
-            <input id="account-size" type="text" use:numberInput={{ maxDecimalPlaces: 4 }} value={format(accountSize)} on:input={(e) => { handleAccountSizeInput(e); onboardingService.trackFirstInput(); }} class="input-field w-full px-4 py-2 rounded-md" class:invalid={$uiStore.invalidFields.includes('accountSize')} placeholder="{$_('dashboard.portfolioInputs.accountSizePlaceholder')}">
+            <input id="account-size" type="text" use:numberInput={{ maxDecimalPlaces: 4 }} value={format(accountSize)} on:input={handleAccountSizeInput} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.portfolioInputs.accountSizePlaceholder')}" on:input={onboardingService.trackFirstInput}>
         </div>
         <div>
             <label for="risk-percentage" class="input-label text-xs">{$_('dashboard.portfolioInputs.riskPerTradeLabel')}</label>
-            <input id="risk-percentage" type="text" use:numberInput={{ noDecimals: true, isPercentage: true, maxValue: 100, minValue: 0 }} value={format(riskPercentage)} on:input={(e) => { handleRiskPercentageInput(e); onboardingService.trackFirstInput(); }} class="input-field w-full px-4 py-2 rounded-md" class:invalid={$uiStore.invalidFields.includes('riskPercentage')} placeholder="{$_('dashboard.portfolioInputs.riskPerTradePlaceholder')}" disabled={isRiskAmountLocked || isPositionSizeLocked}>
+            <input id="risk-percentage" type="text" use:numberInput={{ noDecimals: true, isPercentage: true, maxValue: 100, minValue: 0 }} value={format(riskPercentage)} on:input={handleRiskPercentageInput} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.portfolioInputs.riskPerTradePlaceholder')}" on:input={onboardingService.trackFirstInput} disabled={isRiskAmountLocked || isPositionSizeLocked}>
         </div>
         <div>
             <label for="risk-amount" class="input-label text-xs">{$_('dashboard.portfolioInputs.riskAmountLabel')}</label>

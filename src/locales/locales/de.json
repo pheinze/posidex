@@ -2,7 +2,7 @@
   "app": {
     "title": "Cachy",
     "journalButton": "Journal",
-    "journalButtonTitle": "Trade Journal öffnen (Alt + J)",
+    "journalButtonTitle": "Trade Journal öffnen",
     "changelogTitle": "Changelog",
     "closeChangelogAriaLabel": "Changelog schließen",
     "guideButton": "Anleitung",
@@ -21,9 +21,8 @@
     "savePresetTitle": "Aktuelle Eingaben als Preset speichern",
     "savePresetAriaLabel": "Preset speichern",
     "deletePresetTitle": "Ausgewähltes Preset löschen",
-    "deletePresetDisabledTitle": "Bitte wähle zuerst ein Preset zum Löschen aus.",
     "resetButton": "Zurücksetzen",
-    "resetButtonTitle": "Alle Eingaben zurücksetzen (Alt + R)",
+    "resetButtonTitle": "Alle Eingaben zurücksetzen",
     "themeSwitcherAriaLabel": "Theme wechseln",
     "totalTradeMetrics": "Gesamt-Trade Metriken",
     "totalTradeMetricsTooltip": "Übersicht über die wichtigsten Kennzahlen für den gesamten Trade.",
@@ -58,8 +57,6 @@
       "header": "Allgemein",
       "longButton": "Long",
       "shortButton": "Short",
-      "longButtonTitle": "Trade-Typ auf Long setzen (Alt + L)",
-      "shortButtonTitle": "Trade-Typ auf Short setzen (Alt + S)",
       "leveragePlaceholder": "Hebel (z.B. 10x)",
       "feesPlaceholder": "Gebühren pro Trade (%)"
     },
@@ -76,7 +73,7 @@
       "header": "Trade Setup",
       "atrModeManual": "Manuell",
       "atrModeAuto": "Auto",
-      "atrTimeframeLabel": "Zeitrahmen",
+      "atrTimeframeLabel": "Timeframe",
       "atrLabel": "ATR",
       "atrMultiplierLabel": "Multiplier",
       "symbolPlaceholder": "Symbol (z.B. BTCUSDT)",
@@ -131,7 +128,6 @@
     },
     "riskRewardRatio": "Chance-Risiko-Verhältnis",
     "promptForData": "Bitte geben Sie die erforderlichen Handelsdaten ein, um die Berechnung zu starten.",
-    "promptForHighlightedFields": "Bitte füllen Sie die markierten Felder aus, um fortzufahren.",
     "instructionsTitle": "Anleitung: Dashboard"
   },
   "journal": {

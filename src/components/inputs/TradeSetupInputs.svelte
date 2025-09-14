@@ -7,7 +7,6 @@
     import { trackCustomEvent } from '../../services/trackingService';
     import { onboardingService } from '../../services/onboardingService';
     import { updateTradeStore } from '../../stores/tradeStore';
-    import { uiStore } from '../../stores/uiStore';
 
     const dispatch = createEventDispatcher();
 
@@ -31,7 +30,6 @@
     function toggleAtrSl() {
         trackCustomEvent('ATR', 'Toggle', useAtrSl ? 'On' : 'Off');
         dispatch('toggleAtrInputs', useAtrSl);
-        dispatch('manualchange');
     }
 
     function handleFetchPriceClick() {
@@ -43,13 +41,11 @@
 
     const handleSymbolInput = debounce(() => {
         app.updateSymbolSuggestions(symbol);
-        dispatch('manualchange');
     }, 200);
 
     function selectSuggestion(s: string) {
         trackCustomEvent('Symbol', 'SelectSuggestion', s);
         dispatch('selectSymbolSuggestion', s);
-        dispatch('manualchange');
     }
 
     function handleKeyDownSuggestion(event: KeyboardEvent, s: string) {
@@ -71,28 +67,24 @@
         const target = e.target as HTMLInputElement;
         const value = target.value;
         updateTradeStore(s => ({ ...s, entryPrice: value === '' ? null : parseFloat(value) }));
-        dispatch('manualchange');
     }
 
     function handleAtrValueInput(e: Event) {
         const target = e.target as HTMLInputElement;
         const value = target.value;
         updateTradeStore(s => ({ ...s, atrValue: value === '' ? null : parseFloat(value) }));
-        dispatch('manualchange');
     }
 
     function handleAtrMultiplierInput(e: Event) {
         const target = e.target as HTMLInputElement;
         const value = target.value;
         updateTradeStore(s => ({ ...s, atrMultiplier: value === '' ? null : parseFloat(value) }));
-        dispatch('manualchange');
     }
 
     function handleStopLossPriceInput(e: Event) {
         const target = e.target as HTMLInputElement;
         const value = target.value;
         updateTradeStore(s => ({ ...s, stopLossPrice: value === '' ? null : parseFloat(value) }));
-        dispatch('manualchange');
     }
 </script>
 
@@ -137,7 +129,7 @@
             {/if}
         </div>
         <div class="flex-grow">
-            <input id="entry-price-input" type="text" use:numberInput={{ maxDecimalPlaces: 4 }} value={format(entryPrice)} on:input={(e) => { handleEntryPriceInput(e); onboardingService.trackFirstInput(); }} class="input-field w-full px-4 py-2 rounded-md" class:invalid={$uiStore.invalidFields.includes('entryPrice')} placeholder="{$_('dashboard.tradeSetupInputs.entryPricePlaceholder')}">
+            <input id="entry-price-input" type="text" use:numberInput={{ maxDecimalPlaces: 4 }} value={format(entryPrice)} on:input={handleEntryPriceInput} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.tradeSetupInputs.entryPricePlaceholder')}" on:input={onboardingService.trackFirstInput}>
         </div>
     </div>
 
@@ -147,13 +139,13 @@
             <div class="atr-mode-switcher">
                 <button
                     class="btn-switcher {atrMode === 'manual' ? 'active' : ''}"
-                    on:click={() => { dispatch('setAtrMode', 'manual'); dispatch('manualchange'); }}
+                    on:click={() => dispatch('setAtrMode', 'manual')}
                 >
                     {$_('dashboard.tradeSetupInputs.atrModeManual')}
                 </button>
                 <button
                     class="btn-switcher {atrMode === 'auto' ? 'active' : ''}"
-                    on:click={() => { dispatch('setAtrMode', 'auto'); dispatch('manualchange'); }}
+                    on:click={() => dispatch('setAtrMode', 'auto')}
                 >
                     {$_('dashboard.tradeSetupInputs.atrModeAuto')}
                 </button>
@@ -167,19 +159,19 @@
         </div>
         {#if !useAtrSl}
             <div>
-                <input id="stop-loss-price-input" type="text" use:numberInput={{ maxDecimalPlaces: 4 }} value={format(stopLossPrice)} on:input={handleStopLossPriceInput} class="input-field w-full px-4 py-2 rounded-md" class:invalid={$uiStore.invalidFields.includes('stopLossPrice')} placeholder="{$_('dashboard.tradeSetupInputs.manualStopLossPlaceholder')}">
+                <input id="stop-loss-price-input" type="text" use:numberInput={{ maxDecimalPlaces: 4 }} value={format(stopLossPrice)} on:input={handleStopLossPriceInput} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.tradeSetupInputs.manualStopLossPlaceholder')}">
             </div>
         {:else}
             {#if atrMode === 'manual'}
                 <div class="grid grid-cols-2 gap-2 mt-2">
-                    <input id="atr-value-input" type="text" use:numberInput={{ maxDecimalPlaces: 4 }} value={format(atrValue)} on:input={handleAtrValueInput} class="input-field w-full px-4 py-2 rounded-md" class:invalid={$uiStore.invalidFields.includes('atrValue')} placeholder="{$_('dashboard.tradeSetupInputs.atrValuePlaceholder')}">
-                    <input id="atr-multiplier-input" type="text" use:numberInput={{ maxDecimalPlaces: 4 }} value={format(atrMultiplier)} on:input={handleAtrMultiplierInput} class="input-field w-full px-4 py-2 rounded-md" class:invalid={$uiStore.invalidFields.includes('atrMultiplier')} placeholder="{$_('dashboard.tradeSetupInputs.multiplierPlaceholder')}">
+                    <input id="atr-value-input" type="text" use:numberInput={{ maxDecimalPlaces: 4 }} value={format(atrValue)} on:input={handleAtrValueInput} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.tradeSetupInputs.atrValuePlaceholder')}">
+                    <input id="atr-multiplier-input" type="text" use:numberInput={{ maxDecimalPlaces: 4 }} value={format(atrMultiplier)} on:input={handleAtrMultiplierInput} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.tradeSetupInputs.multiplierPlaceholder')}">
                 </div>
             {:else}
                 <div class="grid grid-cols-3 gap-2 mt-2 items-end">
                     <div>
                         <label for="atr-timeframe" class="input-label !mb-1 text-xs">{$_('dashboard.tradeSetupInputs.atrTimeframeLabel')}</label>
-                        <select id="atr-timeframe" bind:value={atrTimeframe} on:change={(e) => { dispatch('setAtrTimeframe', e.currentTarget.value); dispatch('manualchange'); }} class="input-field w-full px-4 py-2 rounded-md">
+                        <select id="atr-timeframe" bind:value={atrTimeframe} on:change={(e) => dispatch('setAtrTimeframe', e.currentTarget.value)} class="input-field w-full px-4 py-2 rounded-md">
                             <option value="5m">5m</option>
                             <option value="15m">15m</option>
                             <option value="1h">1h</option>
@@ -207,7 +199,7 @@
                 {@const lastEq = atrFormulaDisplay.lastIndexOf('=')}
                 {@const formula = atrFormulaDisplay.substring(0, lastEq + 1)}
                 {@const result = atrFormulaDisplay.substring(lastEq + 1)}
-                <div class="text-center text-xs mt-2" style="color: var(--text-primary);">
+                <div class="atr-formula-display text-center text-xs mt-2" style="color: var(--text-primary);">
                     <span>{formula}</span>
                     <span style={isAtrSlInvalid ? 'color: var(--danger--color)' : ''}>{result}</span>
                 </div>

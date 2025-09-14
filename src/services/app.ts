@@ -52,18 +52,6 @@ export const app = {
     calculator: calculator,
     uiManager: uiManager,
 
-    calculateRiskAmount: () => {
-        const currentTradeState = get(tradeStore);
-        if (currentTradeState.isRiskAmountLocked) return;
-
-        const accountSize = parseDecimal(currentTradeState.accountSize);
-        const riskPercentage = parseDecimal(currentTradeState.riskPercentage);
-
-        if (accountSize.gt(0) && riskPercentage.gt(0)) {
-            const riskAmount = accountSize.times(riskPercentage.div(100));
-            updateTradeStore(state => ({ ...state, riskAmount: riskAmount.toDP(2).toNumber() }));
-        }
-    },
 
     init: () => {
         if (browser) {
@@ -110,7 +98,7 @@ export const app = {
             const emptyFields = Object.keys(requiredFieldMap).filter(field => requiredFieldMap[field as keyof typeof requiredFieldMap].isZero());
 
             if (emptyFields.length > 0) {
-                return { status: CONSTANTS.STATUS_INCOMPLETE, fields: emptyFields };
+                return { status: CONSTANTS.STATUS_INCOMPLETE };
             }
 
             if (values.useAtrSl) {
@@ -184,7 +172,6 @@ export const app = {
 
         if (validationResult.status === CONSTANTS.STATUS_INCOMPLETE) {
             app.clearResults(true);
-            uiStore.setInvalidFields(validationResult.fields || []);
             return;
         }
 
@@ -278,9 +265,7 @@ export const app = {
     clearResults: (showGuidance = false) => {
         resultsStore.set(initialResultsState);
         if (showGuidance) {
-            const invalidFields = get(uiStore).invalidFields;
-            const message = invalidFields.length > 0 ? 'dashboard.promptForHighlightedFields' : 'dashboard.promptForData';
-            uiStore.showError(message);
+            uiStore.showError('dashboard.promptForData');
         } else {
             uiStore.hideError();
         }
@@ -368,7 +353,6 @@ export const app = {
             atrMultiplier: currentAppState.atrMultiplier,
             symbol: currentAppState.symbol,
             targets: currentAppState.targets,
-            tradeNotes: currentAppState.tradeNotes,
         };
     },
     saveSettings: () => {
@@ -404,10 +388,7 @@ export const app = {
                         { price: null, percent: 25, isLocked: false },
                         { price: null, percent: 25, isLocked: false }
                     ],
-                    tradeNotes: settings.tradeNotes || '',
                 }));
-                // Set the initial saved state for the dirty check
-                updatePresetStore(state => ({ ...state, savedState: app.getInputsAsObject() }));
                 toggleAtrInputs(settings.useAtrSl || false);
                 return;
             }
@@ -422,12 +403,11 @@ export const app = {
             try {
                 const presets = JSON.parse(localStorage.getItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY) || '{}');
                 if (presets[presetName] && !(await modalManager.show("Überschreiben?", `Preset "${presetName}" existiert bereits. Möchten Sie es überschreiben?`, "confirm"))) return;
-                const newPreset = app.getInputsAsObject();
-                presets[presetName] = newPreset;
+                presets[presetName] = app.getInputsAsObject();
                 localStorage.setItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY, JSON.stringify(presets));
                 uiStore.showFeedback('save');
                 app.populatePresetLoader();
-                updatePresetStore(state => ({ ...state, selectedPreset: presetName, savedState: newPreset }));
+                updatePresetStore(state => ({ ...state, selectedPreset: presetName }));
             } catch {
                 uiStore.showError("Preset konnte nicht gespeichert werden. Der lokale Speicher ist möglicherweise voll oder blockiert.");
             }
@@ -471,9 +451,8 @@ export const app = {
                         { price: null, percent: 25, isLocked: false },
                         { price: null, percent: 25, isLocked: false }
                     ],
-                    tradeNotes: preset.tradeNotes || '',
                 }));
-                updatePresetStore(state => ({ ...state, selectedPreset: presetName, savedState: preset }));
+                updatePresetStore(state => ({ ...state, selectedPreset: presetName }));
                 toggleAtrInputs(preset.useAtrSl || false);
                 return;
             }
@@ -613,10 +592,6 @@ export const app = {
             updateTradeStore(state => ({ ...state, entryPrice: price.toDP(4).toNumber() }));
             uiStore.showFeedback('copy', 700);
             app.calculateAndDisplay();
-
-            if (get(tradeStore).useAtrSl && get(tradeStore).atrMode === 'auto') {
-                app.fetchAtr();
-            }
         } catch (error) {
             const message = error instanceof Error ? error.message : String(error);
             uiStore.showError(message);
@@ -673,9 +648,6 @@ export const app = {
         updateTradeStore(s => ({ ...s, symbol: symbol }));
         uiStore.update(s => ({ ...s, showSymbolSuggestions: false, symbolSuggestions: [] }));
         app.handleFetchPrice();
-        if (get(tradeStore).useAtrSl) {
-            app.fetchAtr();
-        }
     },
 
     updateSymbolSuggestions: (query: string) => {

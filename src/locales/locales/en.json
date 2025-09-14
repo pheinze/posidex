@@ -2,7 +2,7 @@
   "app": {
     "title": "Cachy",
     "journalButton": "Journal",
-    "journalButtonTitle": "Open Trade Journal (Alt + J)",
+    "journalButtonTitle": "Open Trade Journal",
     "changelogTitle": "Changelog",
     "closeChangelogAriaLabel": "Close Changelog",
     "guideButton": "Guide",
@@ -21,9 +21,8 @@
     "savePresetTitle": "Save current inputs as preset",
     "savePresetAriaLabel": "Save Preset",
     "deletePresetTitle": "Delete selected preset",
-    "deletePresetDisabledTitle": "Please select a preset to delete first.",
     "resetButton": "Reset",
-    "resetButtonTitle": "Reset all inputs (Alt + R)",
+    "resetButtonTitle": "Reset all inputs",
     "themeSwitcherAriaLabel": "Switch Theme",
     "totalTradeMetrics": "Total Trade Metrics",
     "totalTradeMetricsTooltip": "Overview of the most important key figures for the entire trade.",
@@ -58,8 +57,6 @@
       "header": "General",
       "longButton": "Long",
       "shortButton": "Short",
-      "longButtonTitle": "Set trade type to Long (Alt + L)",
-      "shortButtonTitle": "Set trade type to Short (Alt + S)",
       "leveragePlaceholder": "Leverage (e.g. 10x)",
       "feesPlaceholder": "Fees per Trade (%)"
     },
@@ -131,7 +128,6 @@
     },
     "riskRewardRatio": "Risk/Reward Ratio",
     "promptForData": "Please enter the required trade data to start the calculation.",
-    "promptForHighlightedFields": "Please fill in the highlighted fields to proceed.",
     "instructionsTitle": "Instructions: Dashboard"
   },
   "journal": {

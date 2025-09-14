@@ -4,9 +4,6 @@
     import { numberInput } from '../../utils/inputUtils';
     import { _ } from '../../locales/i18n';
     import { trackClick } from '../../lib/actions';
-    import { createEventDispatcher } from 'svelte';
-
-    const dispatch = createEventDispatcher();
 
     export let tradeType: string;
     export let leverage: number | null;
@@ -14,7 +11,6 @@
 
     function setTradeType(type: string) {
         updateTradeStore(s => ({ ...s, tradeType: type }));
-        dispatch('manualchange');
     }
 
     const format = (val: number | null) => (val === null || val === undefined) ? '' : String(val);
@@ -23,14 +19,12 @@
         const target = e.target as HTMLInputElement;
         const value = target.value;
         updateTradeStore(s => ({ ...s, leverage: value === '' ? null : parseFloat(value) }));
-        dispatch('manualchange');
     }
 
     function handleFeesInput(e: Event) {
         const target = e.target as HTMLInputElement;
         const value = target.value;
         updateTradeStore(s => ({ ...s, fees: value === '' ? null : parseFloat(value) }));
-        dispatch('manualchange');
     }
 </script>
 
@@ -45,7 +39,6 @@
                 aria-checked={tradeType === CONSTANTS.TRADE_TYPE_LONG}
                 on:click={() => setTradeType(CONSTANTS.TRADE_TYPE_LONG)}
                 use:trackClick={{ category: 'GeneralInputs', action: 'SetTradeType', name: 'Long' }}
-                title="{$_('dashboard.generalInputs.longButtonTitle')}"
             >{$_('dashboard.generalInputs.longButton')}</button>
             <button
                 class="short w-1/2"
@@ -54,7 +47,6 @@
                 aria-checked={tradeType === CONSTANTS.TRADE_TYPE_SHORT}
                 on:click={() => setTradeType(CONSTANTS.TRADE_TYPE_SHORT)}
                 use:trackClick={{ category: 'GeneralInputs', action: 'SetTradeType', name: 'Short' }}
-                title="{$_('dashboard.generalInputs.shortButtonTitle')}"
             >{$_('dashboard.generalInputs.shortButton')}</button>
         </div>
         <div class="grid grid-cols-2 gap-4">
