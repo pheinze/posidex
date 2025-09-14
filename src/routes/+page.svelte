@@ -12,7 +12,7 @@
     import { presetStore, updatePresetStore } from '../stores/presetStore';
     import { uiStore } from '../stores/uiStore';
     import { modalManager } from '../services/modalManager';
-    import { onMount } from 'svelte';
+    import { onMount, tick } from 'svelte';
     import { _, locale } from '../locales/i18n'; // Import locale
     import { get } from 'svelte/store'; // Import get
     import { loadInstruction } from '../services/markdownLoader';
@@ -34,7 +34,7 @@ import { trackCustomEvent } from '../services/trackingService';
     let fileInput: HTMLInputElement;
     let changelogContent = '';
     let guideContent = '';
-    let presetJustLoaded = false;
+    let isPresetLoading = false;
 
     // Initialisierung der App-Logik, sobald die Komponente gemountet ist
     onMount(() => {
@@ -80,8 +80,8 @@ import { trackCustomEvent } from '../services/trackingService';
         $tradeStore.tradeType,
         $tradeStore.targets;
 
-        if ($presetStore.selectedPreset && !presetJustLoaded) {
-            updatePresetStore(store => ({...store, selectedPreset: ''}));
+        if ($presetStore.selectedPreset && !isPresetLoading) {
+            updatePresetStore((store) => ({ ...store, selectedPreset: '' }));
         }
 
         // Only trigger if all necessary inputs are defined (not null/undefined from initial load)
@@ -94,10 +94,6 @@ import { trackCustomEvent } from '../services/trackingService';
             $tradeStore.targets !== undefined) {
 
             app.calculateAndDisplay();
-        }
-
-        if (presetJustLoaded) {
-            presetJustLoaded = false;
         }
     }
 
@@ -136,12 +132,17 @@ import { trackCustomEvent } from '../services/trackingService';
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
         .join(' ');
 
-    function handlePresetLoad(event: Event) {
+    async function handlePresetLoad(event: Event) {
         const selectedPreset = (event.target as HTMLSelectElement).value;
+        if (!selectedPreset) return;
+
+        isPresetLoading = true;
         app.loadPreset(selectedPreset);
-        if (selectedPreset) {
-            presetJustLoaded = true;
-        }
+
+        // Wait for all reactive updates triggered by loadPreset to finish
+        await tick();
+
+        isPresetLoading = false;
     }
 
     function handleKeydown(event: KeyboardEvent) {
