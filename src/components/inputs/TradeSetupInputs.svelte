@@ -7,6 +7,7 @@
     import { trackCustomEvent } from '../../services/trackingService';
     import { onboardingService } from '../../services/onboardingService';
     import { updateTradeStore } from '../../stores/tradeStore';
+    import { uiStore } from '../../stores/uiStore';
 
     const dispatch = createEventDispatcher();
 
@@ -136,7 +137,7 @@
             {/if}
         </div>
         <div class="flex-grow">
-            <input id="entry-price-input" type="text" use:numberInput={{ maxDecimalPlaces: 4 }} value={format(entryPrice)} on:input={(e) => { handleEntryPriceInput(e); onboardingService.trackFirstInput(); }} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.tradeSetupInputs.entryPricePlaceholder')}">
+            <input id="entry-price-input" type="text" use:numberInput={{ maxDecimalPlaces: 4 }} value={format(entryPrice)} on:input={(e) => { handleEntryPriceInput(e); onboardingService.trackFirstInput(); }} class="input-field w-full px-4 py-2 rounded-md" class:invalid={$uiStore.invalidFields.includes('entryPrice')} placeholder="{$_('dashboard.tradeSetupInputs.entryPricePlaceholder')}">
         </div>
     </div>
 
@@ -166,13 +167,13 @@
         </div>
         {#if !useAtrSl}
             <div>
-                <input id="stop-loss-price-input" type="text" use:numberInput={{ maxDecimalPlaces: 4 }} value={format(stopLossPrice)} on:input={handleStopLossPriceInput} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.tradeSetupInputs.manualStopLossPlaceholder')}">
+                <input id="stop-loss-price-input" type="text" use:numberInput={{ maxDecimalPlaces: 4 }} value={format(stopLossPrice)} on:input={handleStopLossPriceInput} class="input-field w-full px-4 py-2 rounded-md" class:invalid={$uiStore.invalidFields.includes('stopLossPrice')} placeholder="{$_('dashboard.tradeSetupInputs.manualStopLossPlaceholder')}">
             </div>
         {:else}
             {#if atrMode === 'manual'}
                 <div class="grid grid-cols-2 gap-2 mt-2">
-                    <input id="atr-value-input" type="text" use:numberInput={{ maxDecimalPlaces: 4 }} value={format(atrValue)} on:input={handleAtrValueInput} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.tradeSetupInputs.atrValuePlaceholder')}">
-                    <input id="atr-multiplier-input" type="text" use:numberInput={{ maxDecimalPlaces: 4 }} value={format(atrMultiplier)} on:input={handleAtrMultiplierInput} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.tradeSetupInputs.multiplierPlaceholder')}">
+                    <input id="atr-value-input" type="text" use:numberInput={{ maxDecimalPlaces: 4 }} value={format(atrValue)} on:input={handleAtrValueInput} class="input-field w-full px-4 py-2 rounded-md" class:invalid={$uiStore.invalidFields.includes('atrValue')} placeholder="{$_('dashboard.tradeSetupInputs.atrValuePlaceholder')}">
+                    <input id="atr-multiplier-input" type="text" use:numberInput={{ maxDecimalPlaces: 4 }} value={format(atrMultiplier)} on:input={handleAtrMultiplierInput} class="input-field w-full px-4 py-2 rounded-md" class:invalid={$uiStore.invalidFields.includes('atrMultiplier')} placeholder="{$_('dashboard.tradeSetupInputs.multiplierPlaceholder')}">
                 </div>
             {:else}
                 <div class="grid grid-cols-3 gap-2 mt-2 items-end">

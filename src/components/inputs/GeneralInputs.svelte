@@ -45,6 +45,7 @@
                 aria-checked={tradeType === CONSTANTS.TRADE_TYPE_LONG}
                 on:click={() => setTradeType(CONSTANTS.TRADE_TYPE_LONG)}
                 use:trackClick={{ category: 'GeneralInputs', action: 'SetTradeType', name: 'Long' }}
+                title="{$_('dashboard.generalInputs.longButtonTitle')}"
             >{$_('dashboard.generalInputs.longButton')}</button>
             <button
                 class="short w-1/2"
@@ -53,6 +54,7 @@
                 aria-checked={tradeType === CONSTANTS.TRADE_TYPE_SHORT}
                 on:click={() => setTradeType(CONSTANTS.TRADE_TYPE_SHORT)}
                 use:trackClick={{ category: 'GeneralInputs', action: 'SetTradeType', name: 'Short' }}
+                title="{$_('dashboard.generalInputs.shortButtonTitle')}"
             >{$_('dashboard.generalInputs.shortButton')}</button>
         </div>
         <div class="grid grid-cols-2 gap-4">

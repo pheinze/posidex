@@ -7,8 +7,16 @@ interface InstructionContent {
     title: string;
 }
 
+const cache = new Map<string, InstructionContent>();
+
 export async function loadInstruction(name: 'dashboard' | 'journal' | 'changelog' | 'guide'): Promise<InstructionContent> {
     const currentLocale = get(locale);
+    const cacheKey = `${name}-${currentLocale}`;
+
+    if (cache.has(cacheKey)) {
+        return cache.get(cacheKey)!;
+    }
+
     const filePath = `/instructions/${name}.${currentLocale}.md`;
 
     try {
@@ -29,7 +37,10 @@ export async function loadInstruction(name: 'dashboard' | 'journal' | 'changelog
         const titleMatch = firstLine.match(/^#\s*(.*)/);
         const title = titleMatch ? titleMatch[1] : '';
 
-        return { html: htmlContent, title: title };
+        const content = { html: htmlContent, title: title };
+        cache.set(cacheKey, content); // Save to cache
+
+        return content;
 
     } catch (error) {
         console.error(`Failed to load or parse markdown for ${name} in ${currentLocale}:`, error);

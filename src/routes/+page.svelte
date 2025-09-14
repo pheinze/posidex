@@ -9,7 +9,7 @@
     import { app } from '../services/app';
     import { tradeStore, updateTradeStore, resetAllInputs, toggleAtrInputs } from '../stores/tradeStore';
     import { resultsStore } from '../stores/resultsStore';
-    import { presetStore, updatePresetStore } from '../stores/presetStore';
+    import { presetStore, updatePresetStore, isDirty } from '../stores/presetStore';
     import { uiStore } from '../stores/uiStore';
     import { modalManager } from '../services/modalManager';
     import { onMount } from 'svelte';
@@ -239,7 +239,7 @@ import { trackCustomEvent } from '../services/trackingService';
                         <option value={presetName}>{presetName}</option>
                     {/each}
                 </select>
-                <button id="save-preset-btn" class="text-sm bg-[var(--btn-default-bg)] hover:bg-[var(--btn-default-hover-bg)] text-[var(--btn-default-text)] font-bold py-2.5 px-2.5 rounded-lg" title="{$_('dashboard.savePresetTitle')}" aria-label="{$_('dashboard.savePresetAriaLabel')}" on:click={app.savePreset} use:trackClick={{ category: 'Presets', action: 'Click', name: 'SavePreset' }}>{@html icons.save}</button>
+                <button id="save-preset-btn" class="text-sm bg-[var(--btn-default-bg)] hover:bg-[var(--btn-default-hover-bg)] text-[var(--btn-default-text)] font-bold py-2.5 px-2.5 rounded-lg disabled:cursor-not-allowed" title="{$_('dashboard.savePresetTitle')}" aria-label="{$_('dashboard.savePresetAriaLabel')}" on:click={app.savePreset} use:trackClick={{ category: 'Presets', action: 'Click', name: 'SavePreset' }} disabled={!$isDirty}>{@html icons.save}</button>
                 <button id="delete-preset-btn" class="text-sm bg-[var(--btn-danger-bg)] hover:bg-[var(--btn-danger-hover-bg)] text-[var(--btn-danger-text)] font-bold py-2.5 px-2.5 rounded-lg disabled:cursor-not-allowed" title={!$presetStore.selectedPreset ? $_('dashboard.deletePresetDisabledTitle') : $_('dashboard.deletePresetTitle')} disabled={!$presetStore.selectedPreset} on:click={app.deletePreset} use:trackClick={{ category: 'Presets', action: 'Click', name: 'DeletePreset' }}>{@html icons.delete}</button>
                 <button id="reset-btn" class="text-sm bg-[var(--btn-default-bg)] hover:bg-[var(--btn-default-hover-bg)] text-[var(--btn-default-text)] font-bold py-2.5 px-2.5 rounded-lg flex items-center gap-2" title="{$_('dashboard.resetButtonTitle')}" on:click={() => { resetAllInputs(); handleManualInputChange(); }} use:trackClick={{ category: 'Actions', action: 'Click', name: 'ResetAll' }}>{@html icons.broom}</button>
                 <button
@@ -354,7 +354,7 @@ import { trackCustomEvent } from '../services/trackingService';
             calculatedTpDetails={$resultsStore.calculatedTpDetails}
         />
         <footer class="md:col-span-2">
-            <textarea id="tradeNotes" class="input-field w-full px-4 py-2 rounded-md mb-4" rows="2" placeholder="{$_('dashboard.tradeNotesPlaceholder')}" bind:value={$tradeStore.tradeNotes}></textarea>
+            <textarea id="tradeNotes" class="input-field w-full px-4 py-2 rounded-md mb-4" rows="2" placeholder="{$_('dashboard.tradeNotesPlaceholder')}" bind:value={$tradeStore.tradeNotes} on:input={handleManualInputChange}></textarea>
             <div class="flex items-center gap-4">
                 <button id="save-journal-btn" class="w-full font-bold py-3 px-4 rounded-lg btn-primary-action" on:click={app.addTrade} disabled={$resultsStore.positionSize === '-'} use:trackClick={{ category: 'Journal', action: 'Click', name: 'SaveTrade' }}>{$_('dashboard.addTradeToJournal')}</button>
                 <button id="show-dashboard-readme-btn" class="font-bold p-3 rounded-lg btn-secondary-action" title="{$_('dashboard.showInstructionsTitle')}" aria-label="{$_('dashboard.showInstructionsAriaLabel')}" on:click={() => app.uiManager.showReadme('dashboard')} use:trackClick={{ category: 'Navigation', action: 'Click', name: 'ShowInstructions' }}>{@html icons.book}</button>

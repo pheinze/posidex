@@ -98,7 +98,7 @@ export const app = {
             const emptyFields = Object.keys(requiredFieldMap).filter(field => requiredFieldMap[field as keyof typeof requiredFieldMap].isZero());
 
             if (emptyFields.length > 0) {
-                return { status: CONSTANTS.STATUS_INCOMPLETE };
+                return { status: CONSTANTS.STATUS_INCOMPLETE, fields: emptyFields };
             }
 
             if (values.useAtrSl) {
@@ -172,6 +172,7 @@ export const app = {
 
         if (validationResult.status === CONSTANTS.STATUS_INCOMPLETE) {
             app.clearResults(true);
+            uiStore.setInvalidFields(validationResult.fields || []);
             return;
         }
 
@@ -353,6 +354,7 @@ export const app = {
             atrMultiplier: currentAppState.atrMultiplier,
             symbol: currentAppState.symbol,
             targets: currentAppState.targets,
+            tradeNotes: currentAppState.tradeNotes,
         };
     },
     saveSettings: () => {
@@ -388,7 +390,10 @@ export const app = {
                         { price: null, percent: 25, isLocked: false },
                         { price: null, percent: 25, isLocked: false }
                     ],
+                    tradeNotes: preset.tradeNotes || '',
                 }));
+                // Set the initial saved state for the dirty check
+                updatePresetStore(state => ({ ...state, savedState: app.getInputsAsObject() }));
                 toggleAtrInputs(settings.useAtrSl || false);
                 return;
             }
@@ -403,11 +408,12 @@ export const app = {
             try {
                 const presets = JSON.parse(localStorage.getItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY) || '{}');
                 if (presets[presetName] && !(await modalManager.show("Überschreiben?", `Preset "${presetName}" existiert bereits. Möchten Sie es überschreiben?`, "confirm"))) return;
-                presets[presetName] = app.getInputsAsObject();
+                const newPreset = app.getInputsAsObject();
+                presets[presetName] = newPreset;
                 localStorage.setItem(CONSTANTS.LOCAL_STORAGE_PRESETS_KEY, JSON.stringify(presets));
                 uiStore.showFeedback('save');
                 app.populatePresetLoader();
-                updatePresetStore(state => ({ ...state, selectedPreset: presetName }));
+                updatePresetStore(state => ({ ...state, selectedPreset: presetName, savedState: newPreset }));
             } catch {
                 uiStore.showError("Preset konnte nicht gespeichert werden. Der lokale Speicher ist möglicherweise voll oder blockiert.");
             }
@@ -451,8 +457,9 @@ export const app = {
                         { price: null, percent: 25, isLocked: false },
                         { price: null, percent: 25, isLocked: false }
                     ],
+                    tradeNotes: preset.tradeNotes || '',
                 }));
-                updatePresetStore(state => ({ ...state, selectedPreset: presetName }));
+                updatePresetStore(state => ({ ...state, selectedPreset: presetName, savedState: preset }));
                 toggleAtrInputs(preset.useAtrSl || false);
                 return;
             }

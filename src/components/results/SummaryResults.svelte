@@ -43,7 +43,7 @@
             <button id="copy-btn" class="copy-btn" aria-label="{$_('dashboard.summaryResults.copyPositionSizeAriaLabel')}" on:click={handleCopy}>
                 {@html icons.copy}
             </button>
-            {#if showCopyFeedback}<span id="copy-feedback" class="copy-feedback visible">{$_('dashboard.summaryResults.copiedFeedback')}</span>{/if}
+            <span id="copy-feedback" class="copy-feedback" class:visible={showCopyFeedback}>{$_('dashboard.summaryResults.copiedFeedback')}</span>
         </div>
         <span id="positionSize" class="result-value text-lg" style:color="var(--success-color)">{positionSize}</span>
     </div>
