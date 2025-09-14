@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { uiStore } from '../../stores/uiStore';
     import { icons } from '../../lib/constants';
     import { createEventDispatcher } from 'svelte';
     import { numberInput } from '../../utils/inputUtils';
@@ -81,6 +82,7 @@
                 value={format(price)}
                 on:input={handlePriceInput}
                 class="tp-price input-field w-full px-4 py-2 rounded-md"
+                class:invalid={$uiStore.invalidFields.includes('targets')}
                 placeholder="{$_('dashboard.takeProfitRow.pricePlaceholder')}"
                 id="tp-price-{index}"
             >
@@ -91,6 +93,7 @@
                 on:input={handlePercentInput}
                 class="tp-percent input-field w-full px-4 py-2 rounded-md"
                 class:locked-input={isLocked}
+                class:invalid={$uiStore.invalidFields.includes('targets')}
                 disabled={isLocked}
                 placeholder="%"
                 id="tp-percent-{index}"

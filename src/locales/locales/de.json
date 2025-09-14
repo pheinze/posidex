@@ -128,6 +128,7 @@
     },
     "riskRewardRatio": "Chance-Risiko-Verhältnis",
     "promptForData": "Bitte geben Sie die erforderlichen Handelsdaten ein, um die Berechnung zu starten.",
+    "incompleteFields": "Bitte füllen Sie alle erforderlichen Felder aus.",
     "instructionsTitle": "Anleitung: Dashboard"
   },
   "journal": {

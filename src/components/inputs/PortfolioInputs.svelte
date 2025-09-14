@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { uiStore } from '../../stores/uiStore';
     import { numberInput } from '../../utils/inputUtils';
     import { _ } from '../../locales/i18n';
     import { onboardingService } from '../../services/onboardingService';
@@ -44,11 +45,11 @@
     <div class="grid grid-cols-3 gap-4">
         <div>
             <label for="account-size" class="input-label text-xs">{$_('dashboard.portfolioInputs.accountSizeLabel')}</label>
-            <input id="account-size" type="text" use:numberInput={{ maxDecimalPlaces: 4 }} value={format(accountSize)} on:input={handleAccountSizeInput} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.portfolioInputs.accountSizePlaceholder')}" on:input={onboardingService.trackFirstInput}>
+            <input id="account-size" type="text" use:numberInput={{ maxDecimalPlaces: 4 }} value={format(accountSize)} on:input={handleAccountSizeInput} class="input-field w-full px-4 py-2 rounded-md" class:invalid={$uiStore.invalidFields.includes('accountSize')} placeholder="{$_('dashboard.portfolioInputs.accountSizePlaceholder')}" on:input={onboardingService.trackFirstInput}>
         </div>
         <div>
             <label for="risk-percentage" class="input-label text-xs">{$_('dashboard.portfolioInputs.riskPerTradeLabel')}</label>
-            <input id="risk-percentage" type="text" use:numberInput={{ noDecimals: true, isPercentage: true, maxValue: 100, minValue: 0 }} value={format(riskPercentage)} on:input={handleRiskPercentageInput} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.portfolioInputs.riskPerTradePlaceholder')}" on:input={onboardingService.trackFirstInput} disabled={isRiskAmountLocked || isPositionSizeLocked}>
+            <input id="risk-percentage" type="text" use:numberInput={{ noDecimals: true, isPercentage: true, maxValue: 100, minValue: 0 }} value={format(riskPercentage)} on:input={handleRiskPercentageInput} class="input-field w-full px-4 py-2 rounded-md" class:invalid={$uiStore.invalidFields.includes('riskPercentage')} placeholder="{$_('dashboard.portfolioInputs.riskPerTradePlaceholder')}" on:input={onboardingService.trackFirstInput} disabled={isRiskAmountLocked || isPositionSizeLocked}>
         </div>
         <div>
             <label for="risk-amount" class="input-label text-xs">{$_('dashboard.portfolioInputs.riskAmountLabel')}</label>

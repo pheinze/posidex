@@ -98,7 +98,7 @@ export const app = {
             const emptyFields = Object.keys(requiredFieldMap).filter(field => requiredFieldMap[field as keyof typeof requiredFieldMap].isZero());
 
             if (emptyFields.length > 0) {
-                return { status: CONSTANTS.STATUS_INCOMPLETE };
+                return { status: CONSTANTS.STATUS_INCOMPLETE, fields: emptyFields };
             }
 
             if (values.useAtrSl) {
@@ -166,15 +166,19 @@ export const app = {
         if (validationResult.status === CONSTANTS.STATUS_INVALID) {
             trackCustomEvent('Calculation', 'Error', validationResult.message);
             uiStore.showError(validationResult.message || "");
+            uiStore.setInvalidFields(validationResult.fields || []);
             app.clearResults();
             return;
         }
 
         if (validationResult.status === CONSTANTS.STATUS_INCOMPLETE) {
-            app.clearResults(true);
+            uiStore.setInvalidFields(validationResult.fields || []);
+            uiStore.showError('dashboard.incompleteFields');
+            app.clearResults(false);
             return;
         }
 
+        uiStore.setInvalidFields([]);
         let values = validationResult.data as TradeValues;
         let baseMetrics: BaseMetrics | null;
 

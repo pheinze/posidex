@@ -10,7 +10,13 @@ import type { AppState } from '../stores/types';
 
 // Mock the uiStore to prevent errors during tests
 vi.mock('../stores/uiStore', () => ({
-    uiStore: { showError: vi.fn(), showFeedback: vi.fn(), update: vi.fn(), hideError: vi.fn() }
+    uiStore: {
+        showError: vi.fn(),
+        showFeedback: vi.fn(),
+        update: vi.fn(),
+        hideError: vi.fn(),
+        setInvalidFields: vi.fn()
+    }
 }));
 
 // Mock the apiService to prevent actual network calls
