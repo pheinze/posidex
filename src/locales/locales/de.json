@@ -2,7 +2,7 @@
   "app": {
     "title": "Cachy",
     "journalButton": "Journal",
-    "journalButtonTitle": "Trade Journal öffnen",
+    "journalButtonTitle": "Trade Journal öffnen (Alt+J)",
     "changelogTitle": "Changelog",
     "closeChangelogAriaLabel": "Changelog schließen",
     "guideButton": "Anleitung",
@@ -22,7 +22,7 @@
     "savePresetAriaLabel": "Preset speichern",
     "deletePresetTitle": "Ausgewähltes Preset löschen",
     "resetButton": "Zurücksetzen",
-    "resetButtonTitle": "Alle Eingaben zurücksetzen",
+    "resetButtonTitle": "Alle Eingaben zurücksetzen (Alt+R)",
     "themeSwitcherAriaLabel": "Theme wechseln",
     "totalTradeMetrics": "Gesamt-Trade Metriken",
     "totalTradeMetricsTooltip": "Übersicht über die wichtigsten Kennzahlen für den gesamten Trade.",
@@ -57,6 +57,8 @@
       "header": "Allgemein",
       "longButton": "Long",
       "shortButton": "Short",
+      "longButtonTitle": "Long-Trade (Alt+L)",
+      "shortButtonTitle": "Short-Trade (Alt+S)",
       "leveragePlaceholder": "Hebel (z.B. 10x)",
       "feesPlaceholder": "Gebühren pro Trade (%)"
     },
