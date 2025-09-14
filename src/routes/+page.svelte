@@ -60,6 +60,13 @@ import { trackCustomEvent } from '../services/trackingService';
         changelogContent = '';
     }
 
+    // Reactive statement for instant risk amount calculation
+    $: {
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+        $tradeStore.accountSize, $tradeStore.riskPercentage;
+        app.calculateRiskAmount();
+    }
+
     // Reactive statement to trigger app.calculateAndDisplay() when relevant inputs change
     $: {
         // Trigger calculation when any of these inputs change

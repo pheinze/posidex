@@ -52,6 +52,18 @@ export const app = {
     calculator: calculator,
     uiManager: uiManager,
 
+    calculateRiskAmount: () => {
+        const currentTradeState = get(tradeStore);
+        if (currentTradeState.isRiskAmountLocked) return;
+
+        const accountSize = parseDecimal(currentTradeState.accountSize);
+        const riskPercentage = parseDecimal(currentTradeState.riskPercentage);
+
+        if (accountSize.gt(0) && riskPercentage.gt(0)) {
+            const riskAmount = accountSize.times(riskPercentage.div(100));
+            updateTradeStore(state => ({ ...state, riskAmount: riskAmount.toDP(2).toNumber() }));
+        }
+    },
 
     init: () => {
         if (browser) {
@@ -266,7 +278,9 @@ export const app = {
     clearResults: (showGuidance = false) => {
         resultsStore.set(initialResultsState);
         if (showGuidance) {
-            uiStore.showError('dashboard.promptForData');
+            const invalidFields = get(uiStore).invalidFields;
+            const message = invalidFields.length > 0 ? 'dashboard.promptForHighlightedFields' : 'dashboard.promptForData';
+            uiStore.showError(message);
         } else {
             uiStore.hideError();
         }
@@ -390,7 +404,7 @@ export const app = {
                         { price: null, percent: 25, isLocked: false },
                         { price: null, percent: 25, isLocked: false }
                     ],
-                    tradeNotes: preset.tradeNotes || '',
+                    tradeNotes: settings.tradeNotes || '',
                 }));
                 // Set the initial saved state for the dirty check
                 updatePresetStore(state => ({ ...state, savedState: app.getInputsAsObject() }));

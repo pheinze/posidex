@@ -131,6 +131,7 @@
     },
     "riskRewardRatio": "Risk/Reward Ratio",
     "promptForData": "Please enter the required trade data to start the calculation.",
+    "promptForHighlightedFields": "Please fill in the highlighted fields to proceed.",
     "instructionsTitle": "Instructions: Dashboard"
   },
   "journal": {
