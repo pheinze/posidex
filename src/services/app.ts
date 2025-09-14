@@ -613,6 +613,10 @@ export const app = {
             updateTradeStore(state => ({ ...state, entryPrice: price.toDP(4).toNumber() }));
             uiStore.showFeedback('copy', 700);
             app.calculateAndDisplay();
+
+            if (get(tradeStore).useAtrSl && get(tradeStore).atrMode === 'auto') {
+                app.fetchAtr();
+            }
         } catch (error) {
             const message = error instanceof Error ? error.message : String(error);
             uiStore.showError(message);
