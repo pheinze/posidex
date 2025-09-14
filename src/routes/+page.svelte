@@ -158,7 +158,7 @@ import { trackCustomEvent } from '../services/trackingService';
                     break;
                 case 'j':
                     event.preventDefault();
-                    uiStore.toggleJournalModal(!$uiStore.showJournalModal);
+                    uiStore.toggleJournalModal(!get(uiStore).showJournalModal);
                     break;
             }
         }
