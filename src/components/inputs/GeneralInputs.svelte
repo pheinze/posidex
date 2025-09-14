@@ -4,6 +4,9 @@
     import { numberInput } from '../../utils/inputUtils';
     import { _ } from '../../locales/i18n';
     import { trackClick } from '../../lib/actions';
+    import { createEventDispatcher } from 'svelte';
+
+    const dispatch = createEventDispatcher();
 
     export let tradeType: string;
     export let leverage: number | null;
@@ -11,6 +14,7 @@
 
     function setTradeType(type: string) {
         updateTradeStore(s => ({ ...s, tradeType: type }));
+        dispatch('manualchange');
     }
 
     const format = (val: number | null) => (val === null || val === undefined) ? '' : String(val);
@@ -19,12 +23,14 @@
         const target = e.target as HTMLInputElement;
         const value = target.value;
         updateTradeStore(s => ({ ...s, leverage: value === '' ? null : parseFloat(value) }));
+        dispatch('manualchange');
     }
 
     function handleFeesInput(e: Event) {
         const target = e.target as HTMLInputElement;
         const value = target.value;
         updateTradeStore(s => ({ ...s, fees: value === '' ? null : parseFloat(value) }));
+        dispatch('manualchange');
     }
 </script>
 

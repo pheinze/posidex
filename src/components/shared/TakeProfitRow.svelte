@@ -25,10 +25,12 @@
             updateTradeStore(s => ({ ...s, targets: currentTargets }));
             app.adjustTpPercentages(index);
         }
+        dispatch('manualchange');
     }
 
     function removeRow() {
         dispatch('remove', index);
+        dispatch('manualchange');
     }
 
     const format = (val: number | null) => (val === null || val === undefined) ? '' : String(val);
@@ -43,6 +45,7 @@
             currentTargets[index].price = newPrice;
             updateTradeStore(s => ({...s, targets: currentTargets}));
         }
+        dispatch('manualchange');
     }
 
     function handlePercentInput(e: Event) {
@@ -56,6 +59,7 @@
             updateTradeStore(s => ({...s, targets: currentTargets}));
             app.adjustTpPercentages(index);
         }
+        dispatch('manualchange');
     }
 </script>
 

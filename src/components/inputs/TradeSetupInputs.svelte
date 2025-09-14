@@ -30,6 +30,7 @@
     function toggleAtrSl() {
         trackCustomEvent('ATR', 'Toggle', useAtrSl ? 'On' : 'Off');
         dispatch('toggleAtrInputs', useAtrSl);
+        dispatch('manualchange');
     }
 
     function handleFetchPriceClick() {
@@ -41,11 +42,13 @@
 
     const handleSymbolInput = debounce(() => {
         app.updateSymbolSuggestions(symbol);
+        dispatch('manualchange');
     }, 200);
 
     function selectSuggestion(s: string) {
         trackCustomEvent('Symbol', 'SelectSuggestion', s);
         dispatch('selectSymbolSuggestion', s);
+        dispatch('manualchange');
     }
 
     function handleKeyDownSuggestion(event: KeyboardEvent, s: string) {
@@ -67,24 +70,28 @@
         const target = e.target as HTMLInputElement;
         const value = target.value;
         updateTradeStore(s => ({ ...s, entryPrice: value === '' ? null : parseFloat(value) }));
+        dispatch('manualchange');
     }
 
     function handleAtrValueInput(e: Event) {
         const target = e.target as HTMLInputElement;
         const value = target.value;
         updateTradeStore(s => ({ ...s, atrValue: value === '' ? null : parseFloat(value) }));
+        dispatch('manualchange');
     }
 
     function handleAtrMultiplierInput(e: Event) {
         const target = e.target as HTMLInputElement;
         const value = target.value;
         updateTradeStore(s => ({ ...s, atrMultiplier: value === '' ? null : parseFloat(value) }));
+        dispatch('manualchange');
     }
 
     function handleStopLossPriceInput(e: Event) {
         const target = e.target as HTMLInputElement;
         const value = target.value;
         updateTradeStore(s => ({ ...s, stopLossPrice: value === '' ? null : parseFloat(value) }));
+        dispatch('manualchange');
     }
 </script>
 
@@ -129,7 +136,7 @@
             {/if}
         </div>
         <div class="flex-grow">
-            <input id="entry-price-input" type="text" use:numberInput={{ maxDecimalPlaces: 4 }} value={format(entryPrice)} on:input={handleEntryPriceInput} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.tradeSetupInputs.entryPricePlaceholder')}" on:input={onboardingService.trackFirstInput}>
+            <input id="entry-price-input" type="text" use:numberInput={{ maxDecimalPlaces: 4 }} value={format(entryPrice)} on:input={(e) => { handleEntryPriceInput(e); onboardingService.trackFirstInput(); }} class="input-field w-full px-4 py-2 rounded-md" placeholder="{$_('dashboard.tradeSetupInputs.entryPricePlaceholder')}">
         </div>
     </div>
 
@@ -139,13 +146,13 @@
             <div class="atr-mode-switcher">
                 <button
                     class="btn-switcher {atrMode === 'manual' ? 'active' : ''}"
-                    on:click={() => dispatch('setAtrMode', 'manual')}
+                    on:click={() => { dispatch('setAtrMode', 'manual'); dispatch('manualchange'); }}
                 >
                     {$_('dashboard.tradeSetupInputs.atrModeManual')}
                 </button>
                 <button
                     class="btn-switcher {atrMode === 'auto' ? 'active' : ''}"
-                    on:click={() => dispatch('setAtrMode', 'auto')}
+                    on:click={() => { dispatch('setAtrMode', 'auto'); dispatch('manualchange'); }}
                 >
                     {$_('dashboard.tradeSetupInputs.atrModeAuto')}
                 </button>
@@ -171,7 +178,7 @@
                 <div class="grid grid-cols-3 gap-2 mt-2 items-end">
                     <div>
                         <label for="atr-timeframe" class="input-label !mb-1 text-xs">{$_('dashboard.tradeSetupInputs.atrTimeframeLabel')}</label>
-                        <select id="atr-timeframe" bind:value={atrTimeframe} on:change={(e) => dispatch('setAtrTimeframe', e.currentTarget.value)} class="input-field w-full px-4 py-2 rounded-md">
+                        <select id="atr-timeframe" bind:value={atrTimeframe} on:change={(e) => { dispatch('setAtrTimeframe', e.currentTarget.value); dispatch('manualchange'); }} class="input-field w-full px-4 py-2 rounded-md">
                             <option value="5m">5m</option>
                             <option value="15m">15m</option>
                             <option value="1h">1h</option>

@@ -12,7 +12,7 @@
     import { presetStore, updatePresetStore } from '../stores/presetStore';
     import { uiStore } from '../stores/uiStore';
     import { modalManager } from '../services/modalManager';
-    import { onMount, tick } from 'svelte';
+    import { onMount } from 'svelte';
     import { _, locale } from '../locales/i18n'; // Import locale
     import { get } from 'svelte/store'; // Import get
     import { loadInstruction } from '../services/markdownLoader';
@@ -34,7 +34,6 @@ import { trackCustomEvent } from '../services/trackingService';
     let fileInput: HTMLInputElement;
     let changelogContent = '';
     let guideContent = '';
-    let isPresetLoading = false;
 
     // Initialisierung der App-Logik, sobald die Komponente gemountet ist
     onMount(() => {
@@ -80,10 +79,6 @@ import { trackCustomEvent } from '../services/trackingService';
         $tradeStore.tradeType,
         $tradeStore.targets;
 
-        if ($presetStore.selectedPreset && !isPresetLoading) {
-            updatePresetStore((store) => ({ ...store, selectedPreset: '' }));
-        }
-
         // Only trigger if all necessary inputs are defined (not null/undefined from initial load)
         // and not during initial setup where values might be empty
         if ($tradeStore.accountSize !== undefined && $tradeStore.riskPercentage !== undefined &&
@@ -94,6 +89,12 @@ import { trackCustomEvent } from '../services/trackingService';
             $tradeStore.targets !== undefined) {
 
             app.calculateAndDisplay();
+        }
+    }
+
+    function handleManualInputChange() {
+        if ($presetStore.selectedPreset) {
+            updatePresetStore((store) => ({ ...store, selectedPreset: '' }));
         }
     }
 
@@ -132,17 +133,9 @@ import { trackCustomEvent } from '../services/trackingService';
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
         .join(' ');
 
-    async function handlePresetLoad(event: Event) {
+    function handlePresetLoad(event: Event) {
         const selectedPreset = (event.target as HTMLSelectElement).value;
-        if (!selectedPreset) return;
-
-        isPresetLoading = true;
         app.loadPreset(selectedPreset);
-
-        // Wait for all reactive updates triggered by loadPreset to finish
-        await tick();
-
-        isPresetLoading = false;
     }
 
     function handleKeydown(event: KeyboardEvent) {
@@ -248,7 +241,7 @@ import { trackCustomEvent } from '../services/trackingService';
                 </select>
                 <button id="save-preset-btn" class="text-sm bg-[var(--btn-default-bg)] hover:bg-[var(--btn-default-hover-bg)] text-[var(--btn-default-text)] font-bold py-2.5 px-2.5 rounded-lg" title="{$_('dashboard.savePresetTitle')}" aria-label="{$_('dashboard.savePresetAriaLabel')}" on:click={app.savePreset} use:trackClick={{ category: 'Presets', action: 'Click', name: 'SavePreset' }}>{@html icons.save}</button>
                 <button id="delete-preset-btn" class="text-sm bg-[var(--btn-danger-bg)] hover:bg-[var(--btn-danger-hover-bg)] text-[var(--btn-danger-text)] font-bold py-2.5 px-2.5 rounded-lg disabled:cursor-not-allowed" title={!$presetStore.selectedPreset ? $_('dashboard.deletePresetDisabledTitle') : $_('dashboard.deletePresetTitle')} disabled={!$presetStore.selectedPreset} on:click={app.deletePreset} use:trackClick={{ category: 'Presets', action: 'Click', name: 'DeletePreset' }}>{@html icons.delete}</button>
-                <button id="reset-btn" class="text-sm bg-[var(--btn-default-bg)] hover:bg-[var(--btn-default-hover-bg)] text-[var(--btn-default-text)] font-bold py-2.5 px-2.5 rounded-lg flex items-center gap-2" title="{$_('dashboard.resetButtonTitle')}" on:click={resetAllInputs} use:trackClick={{ category: 'Actions', action: 'Click', name: 'ResetAll' }}>{@html icons.broom}</button>
+                <button id="reset-btn" class="text-sm bg-[var(--btn-default-bg)] hover:bg-[var(--btn-default-hover-bg)] text-[var(--btn-default-text)] font-bold py-2.5 px-2.5 rounded-lg flex items-center gap-2" title="{$_('dashboard.resetButtonTitle')}" on:click={() => { resetAllInputs(); handleManualInputChange(); }} use:trackClick={{ category: 'Actions', action: 'Click', name: 'ResetAll' }}>{@html icons.broom}</button>
                 <button
                     id="theme-switcher"
                     class="text-sm bg-[var(--btn-default-bg)] hover:bg-[var(--btn-default-hover-bg)] text-[var(--btn-default-text)] font-bold py-2 px-2.5 rounded-lg"
@@ -265,9 +258,10 @@ import { trackCustomEvent } from '../services/trackingService';
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
         <div>
-            <GeneralInputs bind:tradeType={$tradeStore.tradeType} bind:leverage={$tradeStore.leverage} bind:fees={$tradeStore.fees} />
+            <GeneralInputs on:manualchange={handleManualInputChange} bind:tradeType={$tradeStore.tradeType} bind:leverage={$tradeStore.leverage} bind:fees={$tradeStore.fees} />
 
             <PortfolioInputs
+                on:manualchange={handleManualInputChange}
                 bind:accountSize={$tradeStore.accountSize}
                 bind:riskPercentage={$tradeStore.riskPercentage}
                 bind:riskAmount={$tradeStore.riskAmount}
@@ -279,6 +273,7 @@ import { trackCustomEvent } from '../services/trackingService';
         </div>
 
         <TradeSetupInputs
+            on:manualchange={handleManualInputChange}
             bind:symbol={$tradeStore.symbol}
             bind:entryPrice={$tradeStore.entryPrice}
             bind:useAtrSl={$tradeStore.useAtrSl}
@@ -306,7 +301,7 @@ import { trackCustomEvent } from '../services/trackingService';
         />
     </div>
 
-    <TakeProfitTargets bind:targets={$tradeStore.targets} on:change={handleTargetsChange} on:remove={handleTpRemove} calculatedTpDetails={$resultsStore.calculatedTpDetails} />
+    <TakeProfitTargets on:manualchange={handleManualInputChange} bind:targets={$tradeStore.targets} on:change={handleTargetsChange} on:remove={handleTpRemove} calculatedTpDetails={$resultsStore.calculatedTpDetails} />
 
     {#if $uiStore.showErrorMessage}
         <div id="error-message" class="text-center text-sm font-medium mt-4 md:col-span-2" style:color="var(--danger-color)">{$_($uiStore.errorMessage)}</div>

@@ -14,6 +14,7 @@
 
     function addTakeProfitRow() {
         app.addTakeProfitRow();
+        dispatch('manualchange');
     }
 
     function handleRemove(event: CustomEvent<number>) {
@@ -43,6 +44,7 @@
                 isLocked={target.isLocked}
                 tpDetail={tpDetail}
                 on:remove={handleRemove}
+                on:manualchange={() => dispatch('manualchange')}
             />
         {/each}
     </div>
