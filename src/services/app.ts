@@ -669,6 +669,9 @@ export const app = {
         updateTradeStore(s => ({ ...s, symbol: symbol }));
         uiStore.update(s => ({ ...s, showSymbolSuggestions: false, symbolSuggestions: [] }));
         app.handleFetchPrice();
+        if (get(tradeStore).useAtrSl) {
+            app.fetchAtr();
+        }
     },
 
     updateSymbolSuggestions: (query: string) => {

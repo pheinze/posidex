@@ -76,7 +76,7 @@
       "header": "Trade Setup",
       "atrModeManual": "Manuell",
       "atrModeAuto": "Auto",
-      "atrTimeframeLabel": "Timeframe",
+      "atrTimeframeLabel": "Zeitrahmen",
       "atrLabel": "ATR",
       "atrMultiplierLabel": "Multiplier",
       "symbolPlaceholder": "Symbol (z.B. BTCUSDT)",
