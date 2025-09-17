@@ -1,7 +1,7 @@
 import type { RequestHandler } from '@sveltejs/kit';
 import { json } from '@sveltejs/kit';
 
-export const GET: RequestHandler = async ({ url }) => {
+export const GET: RequestHandler = async ({ url, fetch }) => {
     const symbols = url.searchParams.get('symbols');
     if (!symbols) {
         return json({ message: 'Query parameter "symbols" is required.' }, { status: 400 });

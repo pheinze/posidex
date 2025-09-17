@@ -1,7 +1,7 @@
 import type { RequestHandler } from '@sveltejs/kit';
 import { json } from '@sveltejs/kit';
 
-export const GET: RequestHandler = async ({ url }) => {
+export const GET: RequestHandler = async ({ url, fetch }) => {
     const symbol = url.searchParams.get('symbol');
     const interval = url.searchParams.get('interval');
     const limit = url.searchParams.get('limit') || '15'; // Default limit
