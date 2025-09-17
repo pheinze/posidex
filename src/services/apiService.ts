@@ -8,23 +8,45 @@ export interface Kline {
 }
 
 export const apiService = {
-    async fetchBinancePrice(symbol: string): Promise<Decimal> {
-        const response = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`);
-        if (!response.ok) throw new Error(`Symbol nicht gefunden oder API-Fehler (${response.status})`);
-        const data = await response.json();
-        return new Decimal(data.price);
+    async fetchBitunixPrice(symbol: string): Promise<Decimal> {
+        try {
+            const response = await fetch(`https://fapi.bitunix.com/api/v1/futures/market/tickers?symbols=${symbol}`);
+            if (!response.ok) throw new Error('apiErrors.symbolNotFound');
+            const res = await response.json();
+            if (res.code !== 0 || !res.data || res.data.length === 0) {
+                throw new Error('apiErrors.invalidResponse');
+            }
+            const data = res.data[0];
+            return new Decimal(data.lastPrice);
+        } catch (e) {
+            // Re-throw custom error messages or a generic one
+            if (e instanceof Error && (e.message === 'apiErrors.symbolNotFound' || e.message === 'apiErrors.invalidResponse')) {
+                throw e;
+            }
+            throw new Error('apiErrors.generic');
+        }
     },
 
-    async fetchKlines(symbol: string, interval: string, limit: number = 15): Promise<Kline[]> {
-        const response = await fetch(`https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`);
-        if (!response.ok) throw new Error(`Kerzendaten konnten nicht geladen werden (${response.status})`);
-        const data: [number, string, string, string, string, ...unknown[]][] = await response.json();
+    async fetchBitunixKlines(symbol: string, interval: string, limit: number = 15): Promise<Kline[]> {
+        try {
+            const response = await fetch(`https://fapi.bitunix.com/api/v1/futures/market/kline?symbol=${symbol}&interval=${interval}&limit=${limit}`);
+            if (!response.ok) throw new Error('apiErrors.klineError');
+            const res = await response.json();
+            if (res.code !== 0 || !res.data) {
+                throw new Error('apiErrors.invalidResponse');
+            }
 
-        // Map the raw array data to a more usable object format
-        return data.map(kline => ({
-            high: new Decimal(kline[2]),
-            low: new Decimal(kline[3]),
-            close: new Decimal(kline[4]),
-        }));
+            // Map the response data to the required Kline interface
+            return res.data.map((kline: { high: string, low: string, close: string }) => ({
+                high: new Decimal(kline.high),
+                low: new Decimal(kline.low),
+                close: new Decimal(kline.close),
+            }));
+        } catch (e) {
+            if (e instanceof Error && (e.message === 'apiErrors.klineError' || e.message === 'apiErrors.invalidResponse')) {
+                throw e;
+            }
+            throw new Error('apiErrors.generic');
+        }
     }
 };

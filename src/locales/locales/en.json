@@ -178,5 +178,11 @@
     "theme": "Theme",
     "language": "Language",
     "backup": "Backup"
+  },
+  "apiErrors": {
+    "symbolNotFound": "Symbol not found on Bitunix or API error.",
+    "invalidResponse": "Invalid response from the Bitunix API.",
+    "klineError": "Could not load candlestick data from Bitunix.",
+    "generic": "An unknown API error occurred."
   }
 }
