@@ -10,7 +10,7 @@ export interface Kline {
 export const apiService = {
     async fetchBitunixPrice(symbol: string): Promise<Decimal> {
         try {
-            const response = await fetch(`https://fapi.bitunix.com/api/v1/futures/market/tickers?symbols=${symbol}`);
+            const response = await fetch(`/api/tickers?symbols=${symbol}`);
             if (!response.ok) throw new Error('apiErrors.symbolNotFound');
             const res = await response.json();
             if (res.code !== 0 || !res.data || res.data.length === 0) {
@@ -29,7 +29,7 @@ export const apiService = {
 
     async fetchBitunixKlines(symbol: string, interval: string, limit: number = 15): Promise<Kline[]> {
         try {
-            const response = await fetch(`https://fapi.bitunix.com/api/v1/futures/market/kline?symbol=${symbol}&interval=${interval}&limit=${limit}`);
+            const response = await fetch(`/api/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`);
             if (!response.ok) throw new Error('apiErrors.klineError');
             const res = await response.json();
             if (res.code !== 0 || !res.data) {
