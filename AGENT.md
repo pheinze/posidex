@@ -89,3 +89,35 @@ Um die Zuverlässigkeit von automatisierten UI-Tests mit Playwright zu gewährle
 3.  **Robuste Test-Skripte:**
     *   Verwenden Sie `click()` auf ein Element, um den `:focus`-Zustand zu simulieren, anstatt sich auf `:hover` zu verlassen, da dies in Testumgebungen zuverlässiger ist.
     *   Verwenden Sie `expect(locator).toBeVisible()` und andere Web-First-Assertions, um explizit auf das Erscheinen von Elementen zu warten, anstatt manuelle `waitForTimeout`-Verzögerungen zu nutzen.
+
+## 6. Versionierung und automatisierte Releases
+
+Das Projekt verwendet `semantic-release`, um den Release-Prozess vollständig zu automatisieren. Dies hat direkte Auswirkungen auf die Art und Weise, wie Commits erstellt werden müssen.
+
+*   **Automatisierter Prozess:** Bei jedem Push auf den `main`-Branch analysiert ein GitHub-Actions-Workflow die Commit-Nachrichten. Basierend auf diesen Nachrichten wird automatisch:
+    *   Die nächste Versionsnummer bestimmt (nach Semantic Versioning).
+    *   Die `package.json` und `package-lock.json` aktualisiert.
+    *   Ein `CHANGELOG.md` erstellt oder aktualisiert.
+    *   Ein neuer Git-Tag und ein GitHub-Release erstellt.
+
+*   **Verbindliche Commit-Konvention:** Damit dieser Automatismus funktioniert, **müssen alle Commits ausnahmslos** dem [Conventional Commits](https://www.conventionalcommits.org/)-Standard folgen. Der Agent ist dafür verantwortlich, diese Konvention bei jeder Code-Änderung anzuwenden.
+
+*   **Commit-Typen und ihre Auswirkungen:**
+    *   `feat`: Für neue Funktionalitäten. Führt zu einem **Minor**-Release (z.B. 1.2.3 -> 1.3.0).
+    *   `fix`: Für Fehlerbehebungen. Führt zu einem **Patch**-Release (z.B. 1.2.3 -> 1.2.4).
+    *   **Breaking Change:** Für Änderungen, die die Abwärtskompatibilität brechen. Dies wird durch einen `BREAKING CHANGE:`-Footer im Commit-Text signalisiert und führt zu einem **Major**-Release (z.B. 1.2.3 -> 2.0.0).
+    *   Andere Typen (`docs`, `chore`, `refactor`, `test`, etc.) führen zu **keinem** Release.
+
+*   **Beispiel für einen Commit:**
+    ```
+    feat: Implementierung der Benutzer-Authentifizierung via E-Mail
+
+    Ermöglicht Benutzern das Erstellen eines Kontos und das Anmelden.
+    ```
+
+*   **Beispiel für einen Breaking Change Commit:**
+    ```
+    refactor: Überarbeitung der API-Endpunkte für Konsistenz
+
+    BREAKING CHANGE: Der Endpunkt `/api/user` wurde zu `/api/users` umbenannt.
+    ```
