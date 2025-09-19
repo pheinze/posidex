@@ -1,3 +1,5 @@
+console.log('Server hooks are running...');
+
 import { sequence } from '@sveltejs/kit/hooks';
 import type { Handle } from '@sveltejs/kit';
 import { CONSTANTS } from './lib/constants';
