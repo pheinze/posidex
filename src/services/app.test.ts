@@ -1,4 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import * as fs from 'fs';
+import * as path from 'path';
 import { tradeStore, updateTradeStore, initialTradeState, toggleAtrInputs } from '../stores/tradeStore';
 import { resultsStore, initialResultsState } from '../stores/resultsStore';
 import { app } from './app';
@@ -204,6 +206,18 @@ describe('app service - adjustTpPercentages (Prioritized Logic)', () => {
         expect(targets[0].percent).toBe(60); // Locked, unchanged
         // The unlocked TPs (TP2 and TP3) should share the remaining 40%
         expect(targets[1].percent).toBe(40);
+    });
+});
+
+describe('Build Process', () => {
+    it('should create a production build output', () => {
+        // This test assumes that `npm run build` has been executed before the tests are run.
+        // It checks for the existence of the server entry point, which is critical for a production deployment.
+        const buildOutputPath = path.resolve(process.cwd(), 'build', 'index.js');
+
+        const exists = fs.existsSync(buildOutputPath);
+
+        expect(exists, `Production build output not found at ${buildOutputPath}. Make sure to run 'npm run build' before testing.`).toBe(true);
     });
 });
 
